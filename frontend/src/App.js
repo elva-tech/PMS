@@ -1,6 +1,6 @@
 import React from "react";
 import Landingpage from "./Pages/Landingpage";
-import { BrowserRouter as Router } from "react-router-dom";
+import { HashRouter as Router } from "react-router-dom";
 import Layout from "./containers/Layout";
 
 function App() {
