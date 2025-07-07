@@ -79,7 +79,6 @@ const Landingpage = () => {
 
         {/* Search Bar */}
         <div className="bg-white shadow-lg rounded-lg mx-auto mt-6 p-4 flex flex-col md:flex-row w-3/4 md:w-2/3 gap-4">
-          <button className="bg-gray-200 px-4 py-2 rounded-md">Buy</button>
           <select className="bg-gray-100 px-4 py-2 mx-2 rounded-md flex-1">
             <option>Property Type</option>
           </select>
