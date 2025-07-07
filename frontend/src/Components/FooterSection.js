@@ -30,10 +30,8 @@ const FooterSection = () => {
           </p>
           <div className="flex gap-4 text-white text-lg mt-4">
             <FaFacebookF className="cursor-pointer hover:text-blue-300 transition-colors duration-200" />
-            <FaTwitter className="cursor-pointer hover:text-blue-300 transition-colors duration-200" />
             <FaInstagram className="cursor-pointer hover:text-blue-300 transition-colors duration-200" />
             <FaLinkedinIn className="cursor-pointer hover:text-blue-300 transition-colors duration-200" />
-            <FaYoutube className="cursor-pointer hover:text-blue-300 transition-colors duration-200" />
           </div>
         </div>
 
