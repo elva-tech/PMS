@@ -44,7 +44,7 @@ export default function CreateProject({ setAddProjectModal }) {
   };
   return (
     <div className="fixed flex inset-0 items-center justify-center min-h-screen bg-black bg-opacity-50  p-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-lg max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="flex items-center mb-4">
           <HousePlus className=" text-black text-2xl mr-3" size={30} />
           <div>
