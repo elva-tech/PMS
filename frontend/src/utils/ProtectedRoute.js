@@ -19,9 +19,9 @@ const ProtectedRoute = ({ element }) => {
       return false;
     }
   };
-
-  const isAuthenticated =
-    user?.success && isLoggedIn && isTokenValid(user.data);
+  // Uncomment the line below if you want to check token validity in production level
+  // const isAuthenticated = user?.success && isLoggedIn && isTokenValid(user.data);
+  const isAuthenticated = user?.success && isLoggedIn;
   return isAuthenticated ? element : <Navigate to="/home" replace />;
 };
 
