@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { Upload } from "lucide-react";
 const UploadDocument = ({ setDocumentUploadModal }) => {
   const [files, setFiles] = useState([]);
 
@@ -69,7 +69,8 @@ const UploadDocument = ({ setDocumentUploadModal }) => {
             Cancel
           </button>
           <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center">
-            <i className="fas fa-upload mr-2"></i> Upload
+            <Upload size={18} />
+            <span className="ml-2">Upload</span>
           </button>
         </div>
       </div>

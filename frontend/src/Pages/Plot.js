@@ -44,9 +44,6 @@ const ProjectDetailsPage = () => {
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
                     Modern Residential Complex
                   </h1>
-                  <p className="text-sm sm:text-base text-white/90">
-                    Premium Living Experience
-                  </p>
                 </div>
               </div>
               <div className="flex gap-2 mt-4 md:mt-0 justify-center items-center">
