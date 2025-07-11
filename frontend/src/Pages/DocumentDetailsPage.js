@@ -60,33 +60,45 @@ const DocumentDetailsPage = () => {
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse rounded-lg overflow-hidden shadow-lg">
-          <thead>
-            <tr className="bg-blue-600 text-white">
-              <th className="p-3 text-left">File Name</th>
-              <th className="p-3 text-left">File Size</th>
-              <th className="p-3 text-left">Date</th>
-              <th className="p-3 text-left">Action</th>
+      <div className="overflow-x-auto rounded-xl border">
+        <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
+          <thead className="bg-blue-600 text-white">
+            <tr>
+              <th className="p-4 text-center md:text-left">File Name</th>
+              <th className="p-4 text-center md:text-left">File Size</th>
+              <th className="p-4 text-center md:text-left">Date</th>
+              <th className="p-4 text-center md:text-left">Action</th>
             </tr>
           </thead>
-          <tbody className="text-gray-600 text-xs md:text-sm font-semibold">
+          <tbody className="text-gray-900 text-xs md:text-sm font-semibold">
             {documents.map((doc, index) => (
               <tr
                 key={index}
-                className="border-b hover:bg-gray-100 text-sm md:text-base cursor-pointer"
+                className="border-b hover:bg-gray-100 text-sm md:text-base "
               >
-                <td className="p-2 flex flex-row items-center">
-                  <FileText className="text-blue-500 mr-2" /> {doc.name}
+                <td className="p-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-5">
+                      <FileText className="text-blue-500 w-full h-full" />
+                    </div>
+                    <span className="break-words">{doc.name}</span>
+                  </div>
                 </td>
                 <td className="p-2">
-                  <FileBox className="text-gray-500 mr-2 inline" /> {doc.size}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-5">
+                      <FileBox className="text-gray-500 w-full h-full" />
+                    </div>
+                    <span className="break-words">{doc.size}</span>
+                  </div>
                 </td>
                 <td className="p-2">
-                  <CalendarDays className="text-gray-500 mr-2 inline" />{" "}
-                  {doc.date}
+                  <div className="flex items-center">
+                    <CalendarDays className="text-gray-500 mr-2 inline text-center" />{" "}
+                    {doc.date}
+                  </div>
                 </td>
-                <td className="p-2">
+                <td className="p-4 flex items-center">
                   <button className="text-blue-500 hover:text-blue-700 mr-6">
                     <Eye size={18} />
                   </button>
