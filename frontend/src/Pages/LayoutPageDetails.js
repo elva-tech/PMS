@@ -2,10 +2,16 @@ import React from "react";
 import { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
 import QuoteModal from "../Components/QuoteModal";
+import ImageModal from "../Components/ImageModal";
 import BalajiLayoutMap from "../Images/BalajilayoutMap.png";
-import { Filter } from "lucide-react";
+import { Filter, ZoomIn } from "lucide-react";
+
 const LayoutPageDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [plotNo, setPlotNo] = useState("");
+
   const layoutdocuments = [
     { plotNo: "1", dimension: "30x40", facing: "East", status: "X" },
     { plotNo: "2", dimension: "30x40", facing: "East", status: "Y" },
@@ -29,54 +35,57 @@ const LayoutPageDetails = () => {
     { plotNo: "20", dimension: "30x40", facing: "East", status: "Y" },
     { plotNo: "21", dimension: "30x40", facing: "East", status: "X" },
   ];
+
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
   const pageCount = Math.ceil(layoutdocuments.length / itemsPerPage);
   const offset = currentPage * itemsPerPage;
   const currentData = layoutdocuments.slice(offset, offset + itemsPerPage);
+
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
-  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
-  const [plotNo, setPlotNo] = useState("");
+
   return (
     <>
-      <div className="flex flex-col md:flex-row justify-between items-center px-6 space-y-4 md:space-y-0">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white text-center md:text-left px-6">
+      <div className="flex flex-col md:flex-row justify-between items-center px-6 space-y-4 md:space-y-0 mt-4">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800 text-center md:text-left ">
           Balaji Layout Site Map
         </h2>
-        {/* <div className=" flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto px-6">
-                      <input
-                        type="text"
-                        placeholder="Search by Plot Number"
-                        className="border px-6 py-2 flex-1 rounded-md sm:w-64"
-                      />
-                      <Search className="absolute  top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <div className="bg-black text-white px-6 py-2 rounded-md  sm:w-auto cursor-pointer">
-                        Search
-                      </div>
-                    </div> */}
       </div>
-      <div className="flex justify-center aspect-[4/3] p-6">
-        <img
-          src={BalajiLayoutMap}
-          alt="Balaji Layout Map"
-          className="rounded-md border-black border-1 shadow-md"
-        />
+
+      <div className="relative w-full p-4 md:p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative group cursor-pointer rounded-lg overflow-hidden">
+            <img
+              src={BalajiLayoutMap}
+              alt="Balaji Layout Map"
+              className="w-full h-auto rounded-lg shadow-lg transition-transform duration-200"
+            />
+            <div className="absolute inset-0 md:hidden bg-black/20 flex items-center justify-center">
+              <div
+                className="bg-white/20 backdrop-blur-sm p-3 rounded-full active:bg-white/30 transition-all cursor-pointer"
+                onClick={() => setIsImageModalOpen(true)}
+              >
+                <ZoomIn className="text-white" size={24} />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="border-t border-gray-300 mt-6 p-2"></div>
-      <div className="p-4 md:p-8  flex justify-center items-center">
-        <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-4 md:p-6">
+
+      <div className="p-4 md:p-8 flex justify-center items-center">
+        <div className="w-full max-w-4xl bg-white">
           <div className="flex flex-col md:flex-row justify-between items-center mb-4">
             <h2 className="text-xl md:text-xl font-semibold flex items-center gap-2 mb-4 md:mb-0">
               Plot Details
             </h2>
             <div className="flex flex-row md:flex-row items-center gap-4 w-full md:w-auto">
-              <button className=" bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm md:text-base">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm md:text-base">
                 <Filter size={25} />
               </button>
 
-              <div className=" w-full md:w-auto">
+              <div className="w-full md:w-auto">
                 <input
                   type="text"
                   className="border rounded-md px-4 py-2 w-full md:w-auto"
@@ -84,22 +93,21 @@ const LayoutPageDetails = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                {/* <Search className=" absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 " /> */}
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse rounded-lg overflow-hidden">
-              <thead>
+          <div className="overflow-x-auto rounded-xl">
+            <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
+              <thead className="bg-blue-600 text-white">
                 <tr className="bg-blue-500 text-white text-left">
-                  <th className="p-3 text-left">Plot No</th>
-                  <th className="p-3 text-left">Dimension</th>
-                  <th className="p-3 text-left">Facing</th>
-                  <th className="p-3 text-center">Status</th>
+                  <th className="text-center px-4 py-2 md:p-4">Plot No</th>
+                  <th className="text-center px-4 py-2 md:p-4">Dimension</th>
+                  <th className="text-center px-4 py-2 md:p-4">Facing</th>
+                  <th className="text-center px-4 py-2 md:p-4">Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {currentData.map((doc, index) => (
                   <tr
                     key={index}
@@ -109,40 +117,46 @@ const LayoutPageDetails = () => {
                       setPlotNo(doc.plotNo);
                     }}
                   >
-                    <td className="p-3 text-left">{doc.plotNo}</td>
-                    <td className="p-3 text-left">{doc.dimension}</td>
-                    <td className="p-3 text-left">{doc.facing}</td>
-                    <td className="p-3 text-center">{doc.status}</td>
+                    <td className="text-center py-2">{doc.plotNo}</td>
+                    <td className="text-center py-2">{doc.dimension}</td>
+                    <td className="text-center py-2">{doc.facing}</td>
+                    <td className="text-center py-2">{doc.status}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            <div className="flex justify-center mt-4">
-              <ReactPaginate
-                previousLabel={"Previous"}
-                nextLabel={"Next"}
-                breakLabel={"..."}
-                pageCount={pageCount}
-                marginPagesDisplayed={2}
-                pageRangeDisplayed={3}
-                onPageChange={handlePageClick}
-                containerClassName={"flex space-x-2"}
-                activeClassName={"bg-blue-500 text-blue-600 px-3 py-1 rounded"}
-                pageClassName={"px-3 py-1 bg-gray-200 rounded cursor-pointer"}
-                previousClassName={
-                  "px-3 py-1 bg-gray-300 rounded cursor-pointer"
-                }
-                nextClassName={"px-3 py-1 bg-gray-300 rounded cursor-pointer"}
-              />
-            </div>
+          </div>
+          <div className="flex justify-center mt-4">
+            <ReactPaginate
+              previousLabel={"Previous"}
+              nextLabel={"Next"}
+              breakLabel={"..."}
+              pageCount={pageCount}
+              marginPagesDisplayed={2}
+              pageRangeDisplayed={3}
+              onPageChange={handlePageClick}
+              containerClassName={"flex space-x-2"}
+              activeClassName={"px-3 py-1 bg-blue-500 text-white rounded"}
+              pageClassName={"px-3 py-1 bg-blue-200 rounded cursor-pointer"}
+              previousClassName={"px-3 py-1 bg-gray-300 rounded cursor-pointer"}
+              nextClassName={"px-3 py-1 bg-gray-300 rounded cursor-pointer"}
+            />
           </div>
         </div>
       </div>
+
       {isQuoteOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-gray-700 z-50">
           <QuoteModal onClose={() => setIsQuoteOpen(false)} plotNo={plotNo} />
         </div>
+      )}
+
+      {isImageModalOpen && (
+        <ImageModal
+          imageUrl={BalajiLayoutMap}
+          altText="Balaji Layout Map"
+          onClose={() => setIsImageModalOpen(false)}
+        />
       )}
     </>
   );
