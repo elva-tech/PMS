@@ -49,7 +49,7 @@ const DocumentDetailsPage = () => {
         <h2 className="text-xl font-semibold flex items-center">
           <Files className="text-blue-600 mr-2" /> Documents
         </h2>
-        <div className="flex flex-row items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-row items-center justify-center gap-4 w-full md:w-auto">
           <button
             className="bg-blue-600 text-white px-2 py-2 rounded flex items-center hover:bg-blue-700"
             onClick={handleFileUploadModal}
