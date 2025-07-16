@@ -29,16 +29,30 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// API Health Check route
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "API is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Root route for API information
-app.get("/", (req, res) => {
-  res.json({
+app.get(["/", "/api"], (req, res) => {
+  res.status(200).json({
     status: "success",
     message: "Welcome to Real Estate Management System API",
     version: "1.0.0",
-    endpoints: {
-      auth: "/api/v1/auth",
-      contact: "/api/v1/contact",
+    documentation: {
+      description: "Available API Endpoints",
+      endpoints: {
+        health: "/api/health",
+        auth: "/api/v1/auth",
+        contact: "/api/v1/contact",
+      },
     },
+    serverTime: new Date().toISOString(),
   });
 });
 
@@ -46,11 +60,12 @@ app.get("/", (req, res) => {
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/auth", authRoutes);
 
-// Handle 404 - Route not found
-app.use((req, res, next) => {
-  const error = new Error("Not found");
-  error.status = 404;
-  next(error);
+// Handle undefined routes
+app.all("*", (req, res, next) => {
+  const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  err.status = 404;
+  err.statusCode = 404;
+  next(err);
 });
 
 app.use(errorConverter);
