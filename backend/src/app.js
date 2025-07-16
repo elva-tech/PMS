@@ -16,8 +16,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.options("*", cors());
 
+// Development logging
 if (config.env !== "test") {
   app.use(morgan("dev"));
+}
+
+// Production logging
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - ${res.statusCode}`);
+    next();
+  });
 }
 
 app.use("/api/v1/contact", contactRoutes);

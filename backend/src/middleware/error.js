@@ -1,4 +1,3 @@
-// Converts any error to a standard format (ApiError)
 const errorConverter = (err, req, res, next) => {
   let error = err;
   if (!(error instanceof Error)) {
@@ -8,11 +7,12 @@ const errorConverter = (err, req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  res.status(statusCode).json({
-    success: false,
-    error: message,
+  console.error("Error:", err.message);
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode);
+  res.json({
+    message: err.message,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 };
 
