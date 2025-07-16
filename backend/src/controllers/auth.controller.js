@@ -1,6 +1,17 @@
 const jwt = require("jsonwebtoken");
+const httpStatus = require("http-status");
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
+const validateToken = (token) => {
+  try {
+    if (!token) return false;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded;
+  } catch (error) {
+    return false;
+  }
+};
 
 // Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
@@ -46,7 +57,42 @@ const logout = (req, res) => {
   });
 };
 
+const validate = (req, res) => {
+  try {
+    // Get token from header
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "No token provided",
+      });
+    }
+
+    const decoded = validateToken(token);
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      valid: true,
+      user: decoded,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Token validation failed",
+    });
+  }
+};
+
 module.exports = {
   login,
   logout,
+  validate,
 };

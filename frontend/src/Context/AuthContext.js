@@ -34,7 +34,12 @@ export const AuthProvider = ({ children }) => {
           setIsLoggedIn(true);
           // Refresh the token or validate with backend
           try {
-            await axiosInstance.get("/api/v1/auth/validate");
+            const validationResponse = await axiosInstance.get(
+              "/api/v1/auth/validate"
+            );
+            if (!validationResponse.data.success) {
+              throw new Error("Token validation failed");
+            }
           } catch (err) {
             console.log("Token validation failed:", err);
             logout();
