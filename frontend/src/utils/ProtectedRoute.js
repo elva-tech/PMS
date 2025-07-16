@@ -1,29 +1,39 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
-const ProtectedRoute = ({ element }) => {
+const ProtectedRoute = ({ children }) => {
   const { user, isLoggedIn, loading } = useAuth();
+  const location = useLocation();
 
-  if (loading) return null;
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
-  // Check if user exists, is logged in, and has a valid token
   const isTokenValid = (token) => {
     if (!token) return false;
     try {
       const tokenData = JSON.parse(atob(token.split(".")[1]));
       const expirationTime = tokenData.exp * 1000;
-      console.log("Token expiration time:", expirationTime);
       return Date.now() < expirationTime;
     } catch {
       return false;
     }
   };
-  // Uncomment the line below if you want to check token validity in production level
+
   const isAuthenticated =
     user?.success && isLoggedIn && isTokenValid(user.token);
-  // const isAuthenticated = user?.success && isLoggedIn;
-  return isAuthenticated ? element : <Navigate to="/home" replace />;
+
+  if (!isAuthenticated) {
+    // Redirect them to the /home page, but save the current location they were
+    // trying to go to when they were redirected. This allows us to send them
+    // along to that page after they login, which is a nicer user experience
+    // than dropping them off on the home page.
+    return <Navigate to="/home" state={{ from: location }} replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

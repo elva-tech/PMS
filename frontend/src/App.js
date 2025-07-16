@@ -1,15 +1,20 @@
-import React from "react";
-import Landingpage from "./Pages/Landingpage";
-
-// Uncomment the line below if you want to use HashRouter instead of BrowserRouter before uploading to GitHub for GitHub Pages
-// import { HashRouter as Router } from "react-router-dom";
+import React, { Suspense } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Layout from "./containers/Layout";
+import LoadingSpinner from "./Components/LoadingSpinner";
+import { AuthProvider } from "./Context/AuthContext";
+import { ProjectProvider } from "./Context/ProjectContext";
 
 function App() {
   return (
     <Router>
-      <Layout />
+      <AuthProvider>
+        <ProjectProvider>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Layout />
+          </Suspense>
+        </ProjectProvider>
+      </AuthProvider>
     </Router>
   );
 }
