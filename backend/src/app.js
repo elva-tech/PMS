@@ -29,11 +29,28 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// Root route for API information
+app.get("/", (req, res) => {
+  res.json({
+    status: "success",
+    message: "Welcome to Real Estate Management System API",
+    version: "1.0.0",
+    endpoints: {
+      auth: "/api/v1/auth",
+      contact: "/api/v1/contact",
+    },
+  });
+});
+
+// API routes
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/auth", authRoutes);
 
+// Handle 404 - Route not found
 app.use((req, res, next) => {
-  next(new Error("Not found"));
+  const error = new Error("Not found");
+  error.status = 404;
+  next(error);
 });
 
 app.use(errorConverter);

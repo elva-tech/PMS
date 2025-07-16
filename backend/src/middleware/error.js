@@ -8,11 +8,16 @@ const errorConverter = (err, req, res, next) => {
 
 const errorHandler = (err, req, res, next) => {
   console.error("Error:", err.message);
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-  res.json({
-    message: err.message,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+
+  // Use error.status, or res.statusCode, or default to 500
+  const statusCode =
+    err.status || res.statusCode === 200 ? 500 : res.statusCode;
+
+  res.status(statusCode).json({
+    status: "error",
+    statusCode,
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 };
 
