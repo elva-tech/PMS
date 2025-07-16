@@ -25,17 +25,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      if (userData.success && isTokenValid(userData.token)) {
-        setUser(userData);
-        setIsLoggedIn(true);
-      } else {
-        logout();
+    const checkAuth = async () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        if (userData.success && isTokenValid(userData.token)) {
+          setUser(userData);
+          setIsLoggedIn(true);
+          // Refresh the token or validate with backend
+          try {
+            await axiosInstance.get("/api/v1/auth/validate");
+          } catch (err) {
+            console.log("Token validation failed:", err);
+            logout();
+          }
+        } else {
+          logout();
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (username, password) => {

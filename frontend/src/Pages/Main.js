@@ -14,12 +14,35 @@ import GeneralInfoPage from "./GeneralInfoPage";
 import Sidebar from "../Components/Sidebar";
 
 const PropertyDetailsPage = () => {
+  // Add loading state
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
   const { user } = useAuth();
   const { id, plot } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId, setProjectId, plotId, setPlotId } = useProject();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isLoggedIn, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !isLoggedIn) {
+      navigate("/home");
+      return;
+    }
+
+    if (id && plot) {
+      setProjectId(id);
+      setPlotId(plot);
+    }
+  }, [id, plot, isLoggedIn, loading, navigate, setProjectId, setPlotId]);
 
   const getActiveMenu = () => {
     const path = location.pathname;
