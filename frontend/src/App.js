@@ -7,7 +7,7 @@ import { ProjectProvider } from "./Context/ProjectContext";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/">
       <AuthProvider>
         <ProjectProvider>
           <Suspense fallback={<LoadingSpinner />}>
