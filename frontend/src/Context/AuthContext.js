@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const userData = JSON.parse(storedUser);
-      if (userData.success && isTokenValid(userData.data)) {
+      if (userData.success && isTokenValid(userData.token)) {
         setUser(userData);
         setIsLoggedIn(true);
       } else {
@@ -42,40 +42,22 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.post("/auth/login", {
+      const response = await axiosInstance.post("/api/v1/auth/login", {
         username,
         password,
       });
-
-      if (response.data.success && isTokenValid(response.data.data)) {
+      if (response.data.success && isTokenValid(response.data.token)) {
         setIsLoggedIn(true);
         setUser(response.data);
         localStorage.setItem("user", JSON.stringify(response.data));
+        return true;
       } else {
         throw new Error("Invalid token received");
       }
     } catch (err) {
-      // Fallback credentials for development purposes TO BE REMOVED IN PRODUCTION
-      if (
-        username === FALLBACK_CREDENTIALS.username &&
-        password === FALLBACK_CREDENTIALS.password
-      ) {
-        const mockUserData = {
-          success: true,
-          data: "mockToken",
-          user: {
-            id: 1,
-            username: "admin",
-            role: "admin",
-          },
-        };
-        setIsLoggedIn(true);
-        setUser(mockUserData);
-        localStorage.setItem("user", JSON.stringify(mockUserData));
-      } else {
-        setIsLoggedIn(false);
-        setError("Invalid credentials");
-      }
+      setIsLoggedIn(false);
+      setError("Invalid credentials");
+      return false;
     } finally {
       setLoading(false);
     }

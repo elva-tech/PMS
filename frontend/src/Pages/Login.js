@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import sjdlogo1 from "../Images/sjd-logo1.png";
 import { User, Lock, Eye, EyeOff, X } from "lucide-react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -9,7 +9,22 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
   const { login, user, error, loading } = useAuth();
   const navigate = useNavigate();
   const [showpassword, setShowPassword] = useState(false);
+  const modalRef = useRef();
+
   const togglePassword = () => setShowPassword(!showpassword);
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      setIsLoginOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const validationSchema = yup.object().shape({
     email: yup.string().required("Username is required"),
@@ -18,14 +33,11 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-cover bg-center p-4">
-      <div className="relative flex flex-col items-center justify-center w-full max-w-md bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/50">
+      <div
+        ref={modalRef}
+        className="relative flex flex-col items-center justify-center w-full max-w-md bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/50"
+      >
         <div className="flex items-center space-x-2">
-          <button
-            className="absolute top-2 right-2 text-gray-600"
-            onClick={() => setIsLoginOpen(false)}
-          >
-            <X size={28} />
-          </button>
           <img src={sjdlogo1} alt="SJD Logo" className="h-8" />
           <h1 className="text-lg font-bold text-white">Abhi Developers</h1>
         </div>
@@ -34,11 +46,15 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
           initialValues={{ email: "", password: "" }}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
-            await login(values.email, values.password);
-            setSubmitting(false);
-            if (localStorage.getItem("user")) {
-              // navigate("/main");
-              navigate("/project");
+            try {
+              const loginSuccess = await login(values.email, values.password);
+              if (loginSuccess) {
+                navigate("/project");
+              }
+            } catch (err) {
+              console.error("Login error:", err);
+            } finally {
+              setSubmitting(false);
             }
           }}
         >

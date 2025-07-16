@@ -1,15 +1,49 @@
-# dependencies
-/node_modules
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# environment variables
+# Logs
+logs/
+*.log
+
+# Environment
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# misc
+# Build
+/dist
+/build
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Misc
+*.swp
+*.swo
+
+# VSCode
+.vscode/
+
+# Coverage
+coverage/
+
+# Database
+*.sqlite
+*.db
+
+# Others
+*.tgz
+
+# Ignore backend specific files
+backend/node_modules/
+backend/.env
+backend/logs/
+backend/coverage/
+backend/dist/
+backend/build/

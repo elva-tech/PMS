@@ -1,76 +1,100 @@
-import React, { useState } from "react";
-import { Search } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Search, X } from "lucide-react";
 const InterestedBuyersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTooltip, setActiveTooltip] = useState(null);
+  const tooltipRef = useRef(null);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // For desktop tooltip
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+        // Check if click is inside modal for mobile view
+        if (modalRef.current && modalRef.current.contains(event.target)) {
+          return;
+        }
+        setActiveTooltip(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const buyersData = [
     {
       name: "Jane Cooper",
       phone: "(225) 555-0118",
       email: "jane@microsoft.com",
-      city: "Tumkur",
+      description:
+        "When you hover over a truncated description, you'll see the full text appear in a tooltip below the cell.",
       status: "Interested",
     },
     {
       name: "Floyd Miles",
       phone: "(205) 555-0100",
       email: "floyd@yahoo.com",
-      city: "Bengaluru",
+      description: "Bengaluru",
       status: "Not Interested",
     },
     {
       name: "Ronald Richards",
       phone: "(302) 555-0107",
       email: "ronald@adobe.com",
-      city: "Tumkur",
+      description:
+        "Now the description cell will work differently on mobile and desktop:",
       status: "Not Interested",
     },
     {
       name: "Marvin McKinney",
       phone: "(252) 555-0126",
       email: "marvin@tesla.com",
-      city: "Tumkur",
+      description: "Tumkur",
       status: "Interested",
     },
     {
       name: "Jerome Bell",
       phone: "(629) 555-0129",
       email: "jerome@google.com",
-      city: "Mysuru",
+      description: "Mysuru",
       status: "Interested",
     },
     {
       name: "Jane Cooper",
       phone: "(225) 555-0118",
       email: "jane@microsoft.com",
-      city: "Tumkur",
+      description: "Tumkur",
       status: "Interested",
     },
     {
       name: "Floyd Miles",
       phone: "(205) 555-0100",
       email: "floyd@yahoo.com",
-      city: "Bengaluru",
+      description: "Bengaluru",
       status: "Not Interested",
     },
     {
       name: "Ronald Richards",
       phone: "(302) 555-0107",
       email: "ronald@adobe.com",
-      city: "Tumkur",
+      description: "Tumkur",
       status: "Not Interested",
     },
     {
       name: "Marvin McKinney",
       phone: "(252) 555-0126",
       email: "marvin@tesla.com",
-      city: "Tumkur",
+      description: "Tumkur",
       status: "Interested",
     },
     {
       name: "Jerome Bell",
       phone: "(629) 555-0129",
       email: "jerome@google.com",
-      city: "Mysuru",
+      description: "Mysuru",
       status: "Interested",
     },
   ];
@@ -111,7 +135,7 @@ const InterestedBuyersPage = () => {
               <th className="py-3 px-6">Users Name</th>
               <th className="py-3 px-6">Phone Number</th>
               <th className="py-3 px-6">Email</th>
-              <th className="py-3 px-6">City</th>
+              <th className="py-3 px-6">Description</th>
               <th className="py-3 px-6">Status</th>
             </tr>
           </thead>
@@ -124,7 +148,51 @@ const InterestedBuyersPage = () => {
                 <td className="py-3 px-6">{buyer.name}</td>
                 <td className="py-3 px-6">{buyer.phone}</td>
                 <td className="py-3 px-6">{buyer.email}</td>
-                <td className="py-3 px-6">{buyer.city}</td>
+                <td
+                  ref={tooltipRef}
+                  className="py-3 px-6 relative cursor-pointer"
+                  onClick={() => {
+                    if (buyer.description.length > 20) {
+                      setActiveTooltip(activeTooltip === index ? null : index);
+                    }
+                  }}
+                >
+                  <div className="flex items-center">
+                    <span>
+                      {buyer.description.length > 20
+                        ? `${buyer.description.substring(0, 20)}...`
+                        : buyer.description}
+                    </span>
+                  </div>
+                  {buyer.description.length > 20 && activeTooltip === index && (
+                    <>
+                      {/* Mobile View Modal */}
+                      <div className="md:hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+                        <div
+                          ref={modalRef}
+                          className="bg-white rounded-lg p-4 max-w-sm w-full relative"
+                        >
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTooltip(null);
+                            }}
+                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                          >
+                            <X size={16} />
+                          </button>
+                          <p className="text-sm text-gray-600 mt-2">
+                            {buyer.description}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Desktop View Tooltip */}
+                      <div className="hidden md:block absolute left-0 top-full mt-1 z-50 bg-gray-800 text-white text-sm rounded-md py-2 px-3 shadow-lg min-w-[200px] max-w-[300px]">
+                        <p>{buyer.description}</p>
+                      </div>
+                    </>
+                  )}
+                </td>
                 <td className="py-3 px-6 cursor-pointer">
                   <span
                     className={`py-1 px-3 rounded-full text-xs ${

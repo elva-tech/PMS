@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Upload } from "lucide-react";
-const UploadDocument = ({ setDocumentUploadModal }) => {
+const UploadDocument = ({ setDocumentUploadModal, sendFiles }) => {
   const [files, setFiles] = useState([]);
 
   const handleDrop = (event) => {
@@ -12,6 +12,11 @@ const UploadDocument = ({ setDocumentUploadModal }) => {
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files);
     setFiles(selectedFiles);
+  };
+
+  const handleSendFiles = () => {
+    sendFiles(files);
+    setDocumentUploadModal(false);
   };
 
   return (
@@ -68,7 +73,10 @@ const UploadDocument = ({ setDocumentUploadModal }) => {
           >
             Cancel
           </button>
-          <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center">
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center"
+            onClick={handleSendFiles}
+          >
             <Upload size={18} />
             <span className="ml-2">Upload</span>
           </button>

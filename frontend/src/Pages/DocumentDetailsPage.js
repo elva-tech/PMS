@@ -29,7 +29,7 @@ const DocumentDetailsPage = () => {
     { name: "NOC", size: "28.50 KB", date: "16/11/2022" },
     { name: "Payment Receipts", size: "28.50 KB", date: "16/11/2022" },
   ];
-
+  const [files, setFiles] = useState([]);
   const handleFileUploadModal = () => {
     startTransition(() => {
       setDocumentUploadModal(true);
@@ -43,6 +43,11 @@ const DocumentDetailsPage = () => {
       </div>
     );
   }
+
+  const handleFiles = (newFiles) => {
+    setFiles(newFiles);
+  };
+  console.log("FILES:-", files);
   return (
     <div className="mt-4">
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
@@ -118,6 +123,7 @@ const DocumentDetailsPage = () => {
               setDocumentUploadModal(value);
             });
           }}
+          sendFiles={handleFiles}
         />
       )}
     </div>

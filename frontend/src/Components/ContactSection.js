@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import house1 from "../Images/house1.png";
+import axiosInstance from "../utils/axiosInstance";
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -8,10 +9,32 @@ const ContactSection = () => {
     phone: "",
     description: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await axiosInstance.post("/api/v1/contact", formData);
+      setSuccess("Thank you for your interest! We will contact you soon.");
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        description: "",
+      });
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -31,6 +54,16 @@ const ContactSection = () => {
           Schedule a consultation with our agent
         </p>
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              {success}
+            </div>
+          )}
           <input
             type="text"
             name="fullName"
@@ -38,6 +71,7 @@ const ContactSection = () => {
             onChange={handleChange}
             placeholder="Full Name"
             className="w-full p-3 border rounded-md"
+            required
           />
           <input
             type="email"
@@ -46,6 +80,7 @@ const ContactSection = () => {
             onChange={handleChange}
             placeholder="Email address"
             className="w-full p-3 border rounded-md"
+            required
           />
           <input
             type="text"
@@ -54,6 +89,7 @@ const ContactSection = () => {
             onChange={handleChange}
             placeholder="Phone Number"
             className="w-full p-3 border rounded-md"
+            required
           />
           <textarea
             name="description"
@@ -61,12 +97,16 @@ const ContactSection = () => {
             onChange={handleChange}
             placeholder="Description"
             className="w-full p-3 border rounded-md"
+            required
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-3 rounded-md w-full md:w-auto"
+            disabled={loading}
+            className={`${
+              loading ? "bg-blue-400" : "bg-blue-600"
+            } text-white px-6 py-3 rounded-md w-full md:w-auto flex items-center justify-center`}
           >
-            Request Information
+            {loading ? "Sending..." : "Request Information"}
           </button>
         </form>
       </div>
