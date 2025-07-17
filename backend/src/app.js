@@ -13,8 +13,18 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors());
-app.options("*", cors());
+// CORS configuration
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? process.env.CORS_ORIGIN // Replace with your actual frontend URL
+      : "http://localhost:3000",
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Development logging
 if (config.env !== "test") {
