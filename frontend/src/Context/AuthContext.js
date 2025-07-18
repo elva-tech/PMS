@@ -41,8 +41,19 @@ export const AuthProvider = ({ children }) => {
               throw new Error("Token validation failed");
             }
           } catch (err) {
-            console.log("Token validation failed:", err);
-            logout();
+            console.error("Token validation failed:", {
+              message: err.message,
+              response: err.response?.data,
+              status: err.response?.status,
+              headers: err.response?.headers,
+            });
+            // Only logout if it's an auth error (401) or token is invalid
+            if (
+              err.response?.status === 401 ||
+              err.message === "Token validation failed"
+            ) {
+              logout();
+            }
           }
         } else {
           logout();
