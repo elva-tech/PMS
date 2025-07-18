@@ -80,11 +80,7 @@ const logout = (req, res) => {
 };
 
 const validate = async (req, res) => {
-  // Set CORS headers explicitly for this endpoint
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.set("Access-Control-Max-Age", "86400"); // 24 hours
+  // Remove individual CORS headers as they're now handled globally in app.js
 
   try {
     const authHeader = req.headers.authorization;
