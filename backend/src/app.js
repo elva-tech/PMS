@@ -15,11 +15,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "production"
-      ? process.env.CORS_ORIGIN // Replace with your actual frontend URL
-      : "http://localhost:3000",
+  origin: true, // Allow all origins
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "x-access-token"],
   optionsSuccessStatus: 200,
 };
 
