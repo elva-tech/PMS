@@ -9,13 +9,29 @@ const validateToken = (token) => {
       throw new Error("No token provided");
     }
     if (!JWT_SECRET) {
-      throw new Error("JWT_SECRET is not configured");
+      console.error("JWT_SECRET is missing in environment variables");
+      throw new Error("Server configuration error");
     }
+
+    // Verify and decode the token
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Check if token is expired
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    if (decoded.exp && decoded.exp < currentTimestamp) {
+      throw new Error("Token has expired");
+    }
+
     return decoded;
   } catch (error) {
     console.error("Token validation error:", error.message);
-    return false;
+    if (error.name === "JsonWebTokenError") {
+      throw new Error("Invalid token");
+    }
+    if (error.name === "TokenExpiredError") {
+      throw new Error("Token has expired");
+    }
+    throw error;
   }
 };
 
@@ -63,54 +79,58 @@ const logout = (req, res) => {
   });
 };
 
-const validate = (req, res) => {
+const validate = async (req, res) => {
+  // Set CORS headers explicitly for this endpoint
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.set("Access-Control-Max-Age", "86400"); // 24 hours
+
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      console.log("No authorization header");
       return res.status(httpStatus.UNAUTHORIZED).json({
         success: false,
-        message: "No token provided",
+        message: "No authorization header provided",
       });
     }
 
     // Extract token from Bearer token
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.replace("Bearer ", "").trim();
 
     if (!token) {
-      console.log("No token in authorization header");
       return res.status(httpStatus.UNAUTHORIZED).json({
         success: false,
-        message: "No token provided",
+        message: "No token provided in authorization header",
       });
     }
 
-    const decoded = validateToken(token);
+    try {
+      const decoded = validateToken(token);
 
-    if (!decoded) {
-      console.log("Token validation failed");
+      // Add cache control headers to prevent caching
+      res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
+
+      return res.json({
+        success: true,
+        user: decoded,
+      });
+    } catch (tokenError) {
+      console.error("Token validation failed:", tokenError.message);
       return res.status(httpStatus.UNAUTHORIZED).json({
         success: false,
-        message: "Invalid or expired token",
+        message: tokenError.message || "Token validation failed",
       });
     }
-
-    // Add cache control headers to prevent caching
-    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    res.set("Pragma", "no-cache");
-    res.set("Expires", "0");
-
-    res.json({
-      success: true,
-      user: decoded,
-    });
   } catch (error) {
-    console.error("Validation error:", error);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+    console.error("Validation endpoint error:", error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal server error",
-      error: error.message,
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
