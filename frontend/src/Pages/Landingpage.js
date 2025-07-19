@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import herobg from "../Images/hero-bg.png";
+import Spline from "@splinetool/react-spline";
 import herobg1 from "../Images/hero-bg1.jpg";
 import sjdlogo from "../Images/sjd-logo.png";
 import sjdlogo1 from "../Images/sjd-logo1.png";
@@ -91,7 +91,18 @@ const Landingpage = () => {
         </div>
 
         <div className="mt-6 flex justify-center">
-          <img src={herobg} alt="Real Estate" className="w-fit md:w-1/2" />
+          <div className="w-full md:w-1/2 h-[400px] md:h-[500px] relative">
+            <Spline
+              scene="https://prod.spline.design/zVsGaUxvH5vT76UB/scene.splinecode"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            />
+          </div>
         </div>
       </div>
 
