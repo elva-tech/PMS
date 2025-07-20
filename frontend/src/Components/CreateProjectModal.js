@@ -1,77 +1,101 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { HousePlus } from "lucide-react";
+import { HousePlus, Edit } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
-import axios from "axios";
-import { useState } from "react";
-import axiosInstance from "../utils/axiosInstance";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCreateProject, useUpdateProject } from "../hooks/useProjectHooks";
+
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
-  locationId: Yup.string().required("Location ID is required"),
-  developerId: Yup.string().required("Developer ID is required"),
+  location: Yup.string().required("Location is required"),
   status: Yup.string()
-    .oneOf(["NOT_STARTED", "IN_PROGRESS", "ACTIVE"], "Invalid status")
+    .oneOf(["Not Started", "In Progress", "Completed"], "Invalid status")
     .required("Status is required"),
   description: Yup.string().required("Description is required"),
 });
 
-export const useCreateProject = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (newProject) =>
-      axiosInstance.post("/plat/management/land-project", newProject),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-    },
-  });
-};
+export default function CreateProject({
+  setAddProjectModal,
+  projectToEdit = null,
+}) {
+  const createProjectMutation = useCreateProject();
+  const updateProjectMutation = useUpdateProject();
+  const isEditMode = !!projectToEdit;
 
-export default function CreateProject({ setAddProjectModal }) {
-  const { user } = useAuth();
-  const { mutateAsync, isPending, error } = useCreateProject();
+  const handleSubmit = async (values) => {
+    if (isEditMode) {
+      const payload = {
+        name: values.name,
+        location: values.location,
+        status: values.status,
+        description: values.description,
+      };
 
-  const createProject = async (values) => {
-    const payload = {
-      name: values.name,
-      locationId: Number(values.locationId),
-      developerId: Number(values.developerId),
-      status: values.status,
-      description: values.description,
-    };
-    const response = await mutateAsync(payload);
-    return response.data;
+      const projectId = projectToEdit._id || projectToEdit.id;
+
+      return await updateProjectMutation.mutateAsync({
+        id: projectId,
+        data: payload,
+      });
+    } else {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("location", values.location);
+      formData.append("status", values.status);
+      formData.append("description", values.description);
+
+      if (values.attachments && values.attachments.length > 0) {
+        const imageFile = values.attachments[0];
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+      }
+      return await createProjectMutation.mutateAsync(formData);
+    }
   };
+
   return (
-    <div className="fixed flex inset-0 items-center justify-center min-h-screen bg-black bg-opacity-50  p-4 z-50">
+    <div className="fixed flex inset-0 items-center justify-center min-h-screen bg-black bg-opacity-50 p-4 z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-80 max-w-lg max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="flex items-center mb-4">
-          <HousePlus className=" text-black text-2xl mr-3" size={30} />
+          {isEditMode ? (
+            <Edit className="text-black text-2xl mr-3" size={30} />
+          ) : (
+            <HousePlus className="text-black text-2xl mr-3" size={30} />
+          )}
           <div>
-            <h2 className="text-xl font-semibold text-left">Create Project</h2>
+            <h2 className="text-xl font-semibold text-left">
+              {isEditMode ? "Edit Project" : "Create Project"}
+            </h2>
             <p className="text-gray-500">
-              Create a new layout by filling out the form below.
+              {isEditMode
+                ? "Update project details by editing the form below."
+                : "Create a new layout by filling out the form below."}
             </p>
           </div>
         </div>
 
         <Formik
           initialValues={{
-            name: "",
-            locationId: "",
-            developerId: "",
-            status: "",
-            description: "",
+            name: projectToEdit?.name || "",
+            location: projectToEdit?.location || "",
+            status: projectToEdit?.status || "",
+            description: projectToEdit?.description || "",
+            attachments: [],
           }}
           validationSchema={validationSchema}
+          enableReinitialize={true}
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             try {
-              const response = await createProject(values);
-              console.log("Project created successfully:", response);
+              const response = await handleSubmit(values);
               resetForm();
               setAddProjectModal(false);
             } catch (error) {
-              console.error("Error creating project:", error);
+              console.error(
+                isEditMode
+                  ? "Error updating project:"
+                  : "Error creating project:",
+                error
+              );
             } finally {
               setSubmitting(false);
             }
@@ -99,58 +123,40 @@ export default function CreateProject({ setAddProjectModal }) {
               <div className="flex gap-4">
                 <div className="w-1/2">
                   <label className="block text-gray-700 text-left text-xs">
-                    Location ID
+                    Location
                   </label>
                   <Field
                     type="text"
-                    name="locationId"
+                    name="location"
                     className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
-                    placeholder="Enter Location ID"
+                    placeholder="Enter Location"
                   />
                   <ErrorMessage
-                    name="locationId"
+                    name="location"
                     component="div"
                     className="text-red-500 text-xs text-left"
                   />
                 </div>
-
-                <div className="w-1/2">
+                <div>
                   <label className="block text-gray-700 text-left text-xs">
-                    Developer ID
+                    Status
                   </label>
                   <Field
-                    type="text"
-                    name="developerId"
+                    as="select"
+                    name="status"
                     className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
-                    placeholder="Enter Developer ID"
-                  />
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Not Started">Not Started</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                  </Field>
                   <ErrorMessage
-                    name="developerId"
+                    name="status"
                     component="div"
                     className="text-red-500 text-xs text-left"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-left text-xs">
-                  Status
-                </label>
-                <Field
-                  as="select"
-                  name="status"
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
-                >
-                  <option value="">Select Status</option>
-                  <option value="NOT_STARTED">Not Started</option>
-                  <option value="IN_PROGRESS">In Progress</option>
-                  <option value="ACTIVE">Completed</option>
-                </Field>
-                <ErrorMessage
-                  name="status"
-                  component="div"
-                  className="text-red-500 text-xs text-left"
-                />
               </div>
 
               <div>
@@ -162,29 +168,27 @@ export default function CreateProject({ setAddProjectModal }) {
                     <input
                       type="file"
                       accept="image/png, image/jpg, image/jpeg"
-                      multiple
+                      multiple={false}
                       onChange={(event) => {
                         const files = event.currentTarget.files;
                         const validFiles = [];
                         let error = "";
-                        for (let i = 0; i < files.length; i++) {
-                          const file = files[i];
 
-                          if (
-                            file.type === "image/png" ||
-                            file.type === "image/jpg" ||
-                            file.type === "image/jpeg"
-                          ) {
-                            validFiles.push(file);
-                          } else {
-                            // form.setFieldError(
-                            //   "attachments",
-                            //   `${file.name} is not a valid file type`
-                            // );
-                            error = `"${files.name}" is not a supported image file. Only .png, .jpg, .jpeg allowed.`;
+                        if (files && files.length > 0) {
+                          for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            if (
+                              file.type === "image/png" ||
+                              file.type === "image/jpg" ||
+                              file.type === "image/jpeg"
+                            ) {
+                              validFiles.push(file);
+                            } else {
+                              error = `"${file.name}" is not a supported image file. Only .png, .jpg, .jpeg allowed.`;
+                            }
                           }
                         }
-                        // form.setFieldValue("attachments", validFiles);
+
                         if (error) {
                           form.setFieldError("attachments", error);
                         } else {
@@ -225,8 +229,18 @@ export default function CreateProject({ setAddProjectModal }) {
                 <button
                   type="submit"
                   className="px-4 py-2 bg-black text-white rounded-md text-xs"
+                  disabled={
+                    createProjectMutation.isPending ||
+                    updateProjectMutation.isPending
+                  }
                 >
-                  Create
+                  {isEditMode
+                    ? updateProjectMutation.isPending
+                      ? "Updating..."
+                      : "Update"
+                    : createProjectMutation.isPending
+                    ? "Creating..."
+                    : "Create"}
                 </button>
                 <button
                   type="button"

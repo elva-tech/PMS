@@ -8,6 +8,7 @@ const ContactSection = () => {
     email: "",
     phone: "",
     description: "",
+    interested: 1,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +28,7 @@ const ContactSection = () => {
         email: "",
         phone: "",
         description: "",
+        interested: 1,
       });
     } catch (err) {
       setError(

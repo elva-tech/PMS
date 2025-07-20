@@ -35,7 +35,6 @@ const validateToken = (token) => {
   }
 };
 
-// Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
   username: "admin",
   password: "1234",
@@ -44,19 +43,15 @@ const ADMIN_CREDENTIALS = {
 const login = (req, res) => {
   const { username, password } = req.body;
 
-  // Check if credentials match
   if (
     username === ADMIN_CREDENTIALS.username &&
     password === ADMIN_CREDENTIALS.password
   ) {
-    // Generate JWT token
     const token = jwt.sign(
       { username: ADMIN_CREDENTIALS.username },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "1h" }
     );
-
-    // Send token in response
     res.json({
       success: true,
       token,
@@ -71,8 +66,6 @@ const login = (req, res) => {
 };
 
 const logout = (req, res) => {
-  // Since we're using JWT, we don't need to do anything server-side
-  // The client should remove the token from their storage
   res.json({
     success: true,
     message: "Logged out successfully",
@@ -80,8 +73,6 @@ const logout = (req, res) => {
 };
 
 const validate = async (req, res) => {
-  // Remove individual CORS headers as they're now handled globally in app.js
-
   try {
     const authHeader = req.headers.authorization;
 
@@ -92,7 +83,6 @@ const validate = async (req, res) => {
       });
     }
 
-    // Extract token from Bearer token
     const token = authHeader.replace("Bearer ", "").trim();
 
     if (!token) {
