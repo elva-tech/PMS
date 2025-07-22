@@ -3,30 +3,85 @@ import slnlayout from "../Images/sln-layout.jpg";
 import Navbar from "../Components/Navbar";
 import { LandPlot, House } from "lucide-react";
 import CreatePlot from "../Components/CreatePlotModal";
-import { useState } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axiosInstance from "../utils/axiosInstance";
+import { EyeIcon, Trash2, Edit2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  usePlots,
+  usePlot,
+  useCreatePlot,
+  useUpdatePlot,
+  useDeletePlot,
+} from "../hooks/usePlotHooks";
 
-const fetchPlots = async () => {
-  const res = await axiosInstance.get("/plat/management/plot/filter");
-  return res?.data?.data;
-};
-export const usePlots = () => {
-  return useQuery({
-    queryKey: ["plots"],
-    queryFn: fetchPlots,
-  });
-};
 const ProjectDetailsPage = () => {
   const [addProjectModal, setAddProjectModal] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
 
-  const { data: plots = [], isLoading, isError, error } = usePlots();
+  const {
+    data: plotData = {},
+    isLoading,
+    isError,
+    error,
+  } = usePlot(id, currentPage, itemsPerPage, sortBy, sortOrder);
+  const updatePlotMutation = useUpdatePlot();
+  const deletePlotMutation = useDeletePlot();
+
+  const plots = useMemo(() => {
+    if (!plotData) return [];
+    if (
+      plotData.data &&
+      plotData.data.plots &&
+      Array.isArray(plotData.data.plots)
+    ) {
+      return plotData.data.plots;
+    }
+    if (Array.isArray(plotData)) return plotData;
+    if (
+      typeof plotData === "object" &&
+      !Array.isArray(plotData) &&
+      !plotData.data
+    )
+      return [plotData];
+    return [];
+  }, [plotData]);
+
+  const pagination = useMemo(() => {
+    return plotData && plotData.pagination
+      ? plotData.pagination
+      : {
+          currentPage: 1,
+          totalPages: 1,
+          totalRecords: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        };
+  }, [plotData]);
+
+  const [editPlotData, setEditPlotData] = useState(null);
+  const handleEditPlot = (plot) => {
+    const plotEdit = {
+      projectId: id,
+      plotId: plot._id,
+      plotData: { ...plot },
+    };
+    setEditPlotData(plotEdit);
+    setAddProjectModal(true);
+  };
+  const handleCloseModal = () => {
+    setAddProjectModal(false);
+    setEditPlotData(null);
+  };
 
   return (
     <>
@@ -114,145 +169,263 @@ const ProjectDetailsPage = () => {
 
           {/* Plots Table */}
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              Available Plots
-            </h2>
-
             <div className="overflow-x-auto rounded-xl border">
-              <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
-                <thead className="bg-blue-600 text-white">
-                  <tr>
-                    <th className="text-center px-6 py-4 md:p-4">Plot No</th>
-                    <th className="text-center px-10 py-4 md:p-4">Plot Size</th>
-                    <th className="text-center px-4 py-4">Plot Price</th>
-                    <th className="text-center px-10 py-4 md:p-4">Direction</th>
-                    <th className="text-center px-10 py-4 md:p-4">Status</th>
-                    <th className="text-center px-4 py-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white">
-                  {[
-                    [
-                      "A-101",
-                      "1,200 sq ft",
-                      "₹250,000",
-                      "North-East",
-                      "Available",
-                    ],
-                    [
-                      "A-102",
-                      "1,500 sq ft",
-                      "₹320,000",
-                      "South-East",
-                      "Not Available",
-                    ],
-                    [
-                      "A-103",
-                      "1,800 sq ft",
-                      "₹380,000",
-                      "North-West",
-                      "Available",
-                    ],
-                    ["B-201", "2,200 sq ft", "₹450,000", "East", "Available"],
-                    [
-                      "B-202",
-                      "1,350 sq ft",
-                      "₹290,000",
-                      "South-East",
-                      "Not Available",
-                    ],
-                    [
-                      "B-203",
-                      "1,650 sq ft",
-                      "₹340,000",
-                      "West",
-                      "Not Available",
-                    ],
-                    [
-                      "C-301",
-                      "2,500 sq ft",
-                      "₹520,000",
-                      "North",
-                      "Not Available",
-                    ],
-                    [
-                      "C-302",
-                      "1,900 sq ft",
-                      "₹400,000",
-                      "South-West",
-                      "Available",
-                    ],
-                    [
-                      "C-303",
-                      "2,100 sq ft",
-                      "₹430,000",
-                      "East",
-                      "Not Available",
-                    ],
-                    [
-                      "D-401",
-                      "3,000 sq ft",
-                      "₹650,000",
-                      "North-East",
-                      "Available",
-                    ],
-                  ].map(([no, size, price, dir, status]) => (
-                    <tr key={no} className="border-t">
-                      <td className="text-center p-4 font-medium text-gray-900">
-                        {no}
-                      </td>
-                      <td className="text-center p-4">{size}</td>
-                      <td className="text-center p-4">{price}</td>
-                      <td className="text-center p-4">{dir}</td>
-                      <td className="text-center p-4">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            status === "Available"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {status}
-                        </span>
-                      </td>
-                      <td
-                        className="text-center p-3 sm:p-4 text-blue-600 hover:underline cursor-pointer"
+              {!isLoading && !isError && plots.length === 0 ? (
+                <div className="text-center p-6 bg-gray-100 rounded-lg">
+                  <p className="text-lg text-gray-700">
+                    No plots found. Click "Add Plot" to create your first plot.
+                  </p>
+                </div>
+              ) : <h2 className="text-lg sm:text-xl font-semibold mb-4">
+                  Available Plots
+                </h2> ? (
+                <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
+                  <thead className="bg-blue-600 text-white">
+                    <tr>
+                      <th
+                        className="text-center px-6 py-4 md:p-4 cursor-pointer"
                         onClick={() => {
-                          navigate(`/project/${id}/${no}`);
+                          if (sortBy === "plotnumber") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("plotnumber");
+                            setSortOrder("asc");
+                          }
                         }}
                       >
-                        View
-                      </td>
+                        Plot No{" "}
+                        {sortBy === "plotnumber" &&
+                          (sortOrder === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th
+                        className="text-center px-10 py-4 md:p-4 cursor-pointer"
+                        onClick={() => {
+                          if (sortBy === "plotsize") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("plotsize");
+                            setSortOrder("asc");
+                          }
+                        }}
+                      >
+                        Plot Size{" "}
+                        {sortBy === "plotsize" &&
+                          (sortOrder === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th
+                        className="text-center px-4 py-4 cursor-pointer"
+                        onClick={() => {
+                          if (sortBy === "plotprice") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("plotprice");
+                            setSortOrder("asc");
+                          }
+                        }}
+                      >
+                        Plot Price{" "}
+                        {sortBy === "plotprice" &&
+                          (sortOrder === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th
+                        className="text-center px-10 py-4 md:p-4 cursor-pointer"
+                        onClick={() => {
+                          if (sortBy === "plotdirection") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("plotdirection");
+                            setSortOrder("asc");
+                          }
+                        }}
+                      >
+                        Direction{" "}
+                        {sortBy === "plotdirection" &&
+                          (sortOrder === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th
+                        className="text-center px-10 py-4 md:p-4 cursor-pointer"
+                        onClick={() => {
+                          if (sortBy === "plotstatus") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("plotstatus");
+                            setSortOrder("asc");
+                          }
+                        }}
+                      >
+                        Status{" "}
+                        {sortBy === "plotstatus" &&
+                          (sortOrder === "asc" ? "↑" : "↓")}
+                      </th>
+                      <th className="text-center px-4 py-4">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white">
+                    {plots.map((plot) => (
+                      <tr key={plot.plotnumber} className="border-t">
+                        <td className="text-center p-4 font-medium text-gray-900">
+                          {plot.plotnumber}
+                        </td>
+                        <td className="text-center p-4">{plot.plotsize}</td>
+                        <td className="text-center p-4">{plot.plotprice}</td>
+                        <td className="text-center p-4">
+                          {plot.plotdirection}
+                        </td>
+                        <td className="text-center p-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              plot.plotstatus === "Available"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {plot.plotstatus}
+                          </span>
+                        </td>
+                        <td className="text-center p-4">
+                          <div className="flex items-center justify-center space-x-3">
+                            <button
+                              className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
+                              onClick={() => {
+                                navigate(`/project/${id}/${plot.plotnumber}`);
+                              }}
+                              title="View Details"
+                            >
+                              <EyeIcon size={18} />
+                            </button>
+                            <button
+                              className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
+                              onClick={() => {
+                                deletePlotMutation.mutate({
+                                  projectId: id,
+                                  plotId: plot._id,
+                                });
+                              }}
+                              title="Delete Plot"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                            <button
+                              className="p-2 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 transition-colors"
+                              onClick={() => {
+                                handleEditPlot(plot);
+                              }}
+                              title="Update Plot"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : null}
+              {/* Pagination Controls */}
+              {!isLoading && !isError && plots.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 py-3 border-t">
+                  <div className="flex items-center mb-3 sm:mb-0">
+                    <span className="text-sm text-gray-700 mr-3">
+                      Showing{" "}
+                      <span className="font-medium">{plots.length}</span> of{" "}
+                      <span className="font-medium">
+                        {pagination.totalRecords}
+                      </span>{" "}
+                      plots
+                    </span>
+                  </div>
 
-            <div className="flex justify-center items-center mt-4 text-sm text-gray-600">
-              <div className="flex flex-wrap gap-2">
-                <button className="px-3 py-1 border rounded hover:bg-gray-100">
-                  &lt; Previous
-                </button>
-                <button className="px-3 py-1 bg-blue-600 text-white rounded">
-                  1
-                </button>
-                <button className="px-3 py-1 border rounded hover:bg-gray-100">
-                  2
-                </button>
-                <button className="px-3 py-1 border rounded hover:bg-gray-100">
-                  3
-                </button>
-                <button className="px-3 py-1 border rounded hover:bg-gray-100">
-                  Next &gt;
-                </button>
-              </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={!pagination.hasPrevPage}
+                    >
+                      Previous
+                    </button>
+
+                    <div className="flex space-x-1">
+                      {pagination.currentPage > 2 && (
+                        <button
+                          className="px-3 py-1 bg-white border rounded-md text-sm"
+                          onClick={() => setCurrentPage(1)}
+                        >
+                          1
+                        </button>
+                      )}
+
+                      {pagination.currentPage > 3 && (
+                        <span className="px-2 py-1 text-sm">...</span>
+                      )}
+
+                      {pagination.currentPage > 1 && (
+                        <button
+                          className="px-3 py-1 bg-white border rounded-md text-sm"
+                          onClick={() =>
+                            setCurrentPage(pagination.currentPage - 1)
+                          }
+                        >
+                          {pagination.currentPage - 1}
+                        </button>
+                      )}
+
+                      <button className="px-3 py-1 bg-blue-600 text-white border rounded-md text-sm">
+                        {pagination.currentPage}
+                      </button>
+
+                      {pagination.currentPage < pagination.totalPages && (
+                        <button
+                          className="px-3 py-1 bg-white border rounded-md text-sm"
+                          onClick={() =>
+                            setCurrentPage(pagination.currentPage + 1)
+                          }
+                        >
+                          {pagination.currentPage + 1}
+                        </button>
+                      )}
+
+                      {pagination.currentPage < pagination.totalPages - 2 && (
+                        <span className="px-2 py-1 text-sm">...</span>
+                      )}
+
+                      {pagination.currentPage < pagination.totalPages - 1 &&
+                        pagination.totalPages > 1 && (
+                          <button
+                            className="px-3 py-1 bg-white border rounded-md text-sm"
+                            onClick={() =>
+                              setCurrentPage(pagination.totalPages)
+                            }
+                          >
+                            {pagination.totalPages}
+                          </button>
+                        )}
+                    </div>
+
+                    <button
+                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(prev + 1, pagination.totalPages)
+                        )
+                      }
+                      disabled={!pagination.hasNextPage}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
       {addProjectModal && (
-        <CreatePlot setAddProjectModal={setAddProjectModal} />
+        <CreatePlot
+          setAddProjectModal={handleCloseModal}
+          editPlotData={editPlotData}
+        />
       )}
     </>
   );

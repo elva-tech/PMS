@@ -11,8 +11,44 @@ const verifyProjectExists = async (projectId) => {
   return true;
 };
 
-const getPlots = async (projectId) => {
-  return Plot.find({ projectid: projectId });
+const getPlots = async (
+  projectId,
+  { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = {}
+) => {
+  try {
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Create sort object
+    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    // Get total count of plots for the project
+    const total = await Plot.countDocuments({ projectid: projectId });
+
+    // Get paginated and sorted plots
+    const plots = await Plot.find({ projectid: projectId })
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Calculate total pages
+    const totalPages = Math.ceil(total / limit);
+
+    // Return paginated result with metadata
+    return {
+      plots,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalRecords: total,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  } catch (error) {
+    throw error;
+  }
 };
 
 const createPlot = async (plotData) => {
@@ -30,8 +66,42 @@ const deletePlot = async (projectId, plotId) => {
   return Plot.findByIdAndDelete(plotId);
 };
 
-const getAllPlots = async () => {
-  return Plot.find();
+const getAllPlots = async ({
+  page = 1,
+  limit = 10,
+  sortBy = "createdAt",
+  sortOrder = "desc",
+} = {}) => {
+  try {
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Create sort object
+    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    // Get total count of plots
+    const total = await Plot.countDocuments();
+
+    // Get paginated and sorted plots
+    const plots = await Plot.find().sort(sort).skip(skip).limit(limit).lean();
+
+    // Calculate total pages
+    const totalPages = Math.ceil(total / limit);
+
+    // Return paginated result with metadata
+    return {
+      plots,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalRecords: total,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  } catch (error) {
+    throw error;
+  }
 };
 
 module.exports = {

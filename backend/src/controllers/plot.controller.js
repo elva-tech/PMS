@@ -5,14 +5,28 @@ const { formatDate } = require("../utils/dateUtils");
 
 const getPlots = catchAsync(async (req, res) => {
   const { projectId } = req.params;
-  const plots = await plotService.getPlots(projectId);
+  const { page, limit, sortBy, sortOrder } = req.query;
+
+  // Convert page and limit to numbers if they exist
+  const paginationOptions = {
+    page: page ? parseInt(page, 10) : 1,
+    limit: limit ? parseInt(limit, 10) : 10,
+    sortBy: sortBy || "createdAt",
+    sortOrder: sortOrder || "desc",
+  };
+
+  const { plots, pagination } = await plotService.getPlots(
+    projectId,
+    paginationOptions
+  );
+
   res.status(httpStatus.OK).json({
     status: "success",
-    results: plots.length,
+    pagination,
     data: {
       plots: plots.map((plot) => ({
         _id: plot._id,
-        projectId: plot.projectId,
+        projectId: plot.projectid,
         plotnumber: plot.plotnumber,
         plotsize: plot.plotsize,
         plotprice: plot.plotprice,
@@ -84,10 +98,23 @@ const deletePlot = catchAsync(async (req, res) => {
 });
 
 const getAllPlots = catchAsync(async (req, res) => {
-  const plots = await plotService.getAllPlots();
+  const { page, limit, sortBy, sortOrder } = req.query;
+
+  // Convert page and limit to numbers if they exist
+  const paginationOptions = {
+    page: page ? parseInt(page, 10) : 1,
+    limit: limit ? parseInt(limit, 10) : 10,
+    sortBy: sortBy || "createdAt",
+    sortOrder: sortOrder || "desc",
+  };
+
+  const { plots, pagination } = await plotService.getAllPlots(
+    paginationOptions
+  );
+
   res.status(httpStatus.OK).json({
     status: "success",
-    results: plots.length,
+    pagination,
     data: {
       plots: plots.map((plot) => ({
         _id: plot._id,
