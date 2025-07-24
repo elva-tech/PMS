@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 
+const generateCustomId = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 const projectSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    default: generateCustomId,
+  },
   name: {
     type: String,
     required: true,

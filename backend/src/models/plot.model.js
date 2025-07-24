@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const plotSchema = new mongoose.Schema({
   projectid: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "Project",
     required: true,
   },
