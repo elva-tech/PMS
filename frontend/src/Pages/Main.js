@@ -11,14 +11,15 @@ import InterestedBuyersPage from "./InterestedBuyersPage";
 import PaymentsPage from "./PaymentsPage";
 import LayoutPageDetails from "./LayoutPageDetails";
 import GeneralInfoPage from "./GeneralInfoPage";
+import ProjectsDashboard from "./ProjectDashboard";
+import Plot from "./Plot";
 import Sidebar from "../Components/Sidebar";
+import axiosInstance from "../utils/axiosInstance";
 
 const PropertyDetailsPage = () => {
-  // Add loading state
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading delay
     const timer = setTimeout(() => {
       setPageLoading(false);
     }, 1000);
@@ -31,6 +32,7 @@ const PropertyDetailsPage = () => {
   const { projectId, setProjectId, plotId, setPlotId } = useProject();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isLoggedIn, loading } = useAuth();
+  const [projectName, setProjectName] = useState("");
 
   useEffect(() => {
     if (!loading && !isLoggedIn) {
@@ -43,47 +45,89 @@ const PropertyDetailsPage = () => {
       setPlotId(plot);
     }
   }, [id, plot, isLoggedIn, loading, navigate, setProjectId, setPlotId]);
-
+  console.log("Current Location:", location.pathname);
   const getActiveMenu = () => {
     const path = location.pathname;
-    if (path.includes("/layout")) return "layout";
+    // Check the most specific routes first
+    if (path.includes("/users")) return "users";
     if (path.includes("/documents")) return "documents";
-    if (path.includes("/generalinfo")) return "generalinfo";
+    if (path.includes("/plotallotment")) return "plotallotment";
     if (path.includes("/interestedbuyers")) return "interestedbuyers";
     if (path.includes("/payments")) return "payments";
+
+    // Check for plots last (least specific condition)
+    if (
+      path.includes("/project") &&
+      path.split("/").length > 2 &&
+      id &&
+      !path.includes("/users") &&
+      !path.includes("/documents") &&
+      !path.includes("/plotallotment") &&
+      !path.includes("/interestedbuyers") &&
+      !path.includes("/payments")
+    )
+      return "plots";
+    // if (path.includes("/project")) return "project";
     return "layout";
   };
 
   const [activeMenu, setActiveMenu] = useState(getActiveMenu());
-
+  console.log("Active Menu:", activeMenu);
   useEffect(() => {
     if (id) setProjectId(id);
     if (plot) setPlotId(plot);
     setActiveMenu(getActiveMenu());
   }, [id, plot, setProjectId, setPlotId, location]);
 
+  useEffect(() => {
+    if (id && activeMenu === "plots") {
+      // Fetch project name based on ID
+      const fetchProjectName = async () => {
+        try {
+          const response = await axiosInstance.get(`/api/v1/projects/${id}`);
+          console.log("Project Name:", response?.data?.data?.project?.name);
+          setProjectName(
+            response?.data?.data?.project?.name || "Unknown Project"
+          );
+        } catch (error) {
+          console.error("Failed to fetch project name", error);
+          setProjectName("Unknown Project");
+        }
+      };
+      fetchProjectName();
+    }
+  }, [id, activeMenu]);
+
   const getCurrentPageTitle = () => {
     switch (activeMenu) {
+      case "project":
+        return "Project Dashboard";
+      case "plots":
+        return `${projectName} > Plots`;
       case "documents":
         return "Documents";
-      case "generalinfo":
-        return "General Information";
+      case "plotallotment":
+        return "Plot Allotment";
       case "interestedbuyers":
         return "Interested Buyers";
       case "payments":
         return "Payments Made";
-      case "layout":
-        return "Layout";
+      case "users":
+        return "Users";
       default:
-        return "Layout";
+        return "Users";
     }
   };
 
   const getCurrentPageComponent = () => {
     switch (activeMenu) {
+      case "project":
+        return <ProjectsDashboard />;
+      case "plots":
+        return <Plot />;
       case "documents":
         return <DocumentDetailsPage />;
-      case "generalinfo":
+      case "plotallotment":
         return <GeneralInfoPage />;
       case "interestedbuyers":
         return <InterestedBuyersPage />;
@@ -136,15 +180,16 @@ const PropertyDetailsPage = () => {
         )}
 
         <div className="flex-1 overflow-y-auto p-4">
-          <div className="bg-white rounded-lg shadow-2xl p-6 min-h-full">
-            <h2 className="flex flex-row text-xl font-semibold text-gray-800 pb-2 border-b items-center gap-2">
-              {getCurrentPageTitle()}
-              <ChevronRight size={25} />
-              Balaji Layout - Plot 51
-            </h2>
-
-            {getCurrentPageComponent()}
-          </div>
+          {activeMenu !== "plots" ? (
+            <div className="bg-white rounded-lg shadow-2xl p-6 min-h-full">
+              <h2 className="flex flex-row text-xl font-semibold text-gray-800 pb-2 border-b items-center gap-2">
+                {getCurrentPageTitle()}
+              </h2>
+              {getCurrentPageComponent()}
+            </div>
+          ) : (
+            <div>{getCurrentPageComponent()}</div>
+          )}
         </div>
       </div>
     </div>

@@ -18,30 +18,30 @@ const pageroutes = [
   },
   {
     path: "/project/:id",
-    component: Plot,
-  },
-  {
-    path: "/project/:id/:plot",
     component: main,
   },
   {
-    path: "/project/:id/:plot/documents",
+    path: "/project/:id/plots",
     component: main,
   },
   {
-    path: "/project/:id/:plot/generalinfo",
+    path: "/project/:id/documents",
     component: main,
   },
   {
-    path: "/project/:id/:plot/interestedbuyers",
+    path: "/project/:id/plotallotment",
     component: main,
   },
   {
-    path: "/project/:id/:plot/payments",
+    path: "/project/:id/interestedbuyers",
     component: main,
   },
   {
-    path: "/project/:id/:plot/layout",
+    path: "/project/:id/payments",
+    component: main,
+  },
+  {
+    path: "/project/:id/users",
     component: main,
   },
 ];

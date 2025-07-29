@@ -8,45 +8,83 @@ import {
   CircleUserRound,
   Map,
   Power,
+  FolderKanban,
+  LandPlot,
+  CornerDownRight,
+  HousePlus,
 } from "lucide-react";
+import { FaUsers } from "react-icons/fa";
+import { PiUsersFour } from "react-icons/pi";
 import { useAuth } from "../Context/AuthContext";
 
 const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { id, plot } = useParams();
-  const menuItems = [
-    {
-      icon: <Map size={20} className="text-white" />,
-      label: "Layout",
-      id: "layout",
-      path: `/project/${id}/${plot}/layout`,
-    },
-    {
-      icon: <FileSpreadsheet size={20} className="text-white" />,
-      label: "Documents",
-      id: "documents",
-      path: `/project/${id}/${plot}/documents`,
-    },
-    {
-      icon: <Info size={20} className="text-white" />,
-      label: "General Info",
-      id: "generalinfo",
-      path: `/project/${id}/${plot}/generalinfo`,
-    },
-    {
-      icon: <Users size={20} className="text-white" />,
-      label: "Interested Buyers",
-      id: "interestedbuyers",
-      path: `/project/${id}/${plot}/interestedbuyers`,
-    },
-    {
-      icon: <BadgeIndianRupee size={20} className="text-white" />,
-      label: "Payments",
-      id: "payments",
-      path: `/project/${id}/${plot}/payments`,
-    },
-  ];
+
+  const getMenuItems = () => {
+    const baseMenuItems = [
+      {
+        icon: <FolderKanban size={20} className="text-white" />,
+        label: "Project",
+        id: "project",
+        path: `/project`,
+      },
+    ];
+
+    // If we're viewing a specific project, add plots option
+    if (id) {
+      baseMenuItems.push({
+        icon: (
+          <div className="flex items-center gap-4">
+            <CornerDownRight size={16} className="text-white mr-1" />
+            <LandPlot size={20} className="text-white" />
+          </div>
+        ),
+        label: "Plots",
+        id: "plots",
+        path: `/project/${id}`,
+      });
+    }
+
+    // Add other menu items
+    baseMenuItems.push(
+      {
+        icon: <FaUsers size={20} className="text-white" />,
+        label: "Users",
+        id: "users",
+        path: `/project/${id}/users`,
+      },
+      {
+        icon: <FileSpreadsheet size={20} className="text-white" />,
+        label: "Documents",
+        id: "documents",
+        path: `/project/${id}/documents`,
+      },
+      {
+        icon: <HousePlus size={20} className="text-white" />,
+        label: "Plot Allotment",
+        id: "plotallotment",
+        path: `/project/${id}/plotallotment`,
+      },
+      {
+        icon: <PiUsersFour size={20} className="text-white" />,
+        label: "Interested Buyers",
+        id: "interestedbuyers",
+        path: `/project/${id}/interestedbuyers`,
+      },
+      {
+        icon: <BadgeIndianRupee size={20} className="text-white" />,
+        label: "Payments",
+        id: "payments",
+        path: `/project/${id}/payments`,
+      }
+    );
+
+    return baseMenuItems;
+  };
+
+  const menuItems = getMenuItems();
 
   const handleNavClick = (path) => {
     setIsSidebarOpen(false);
@@ -62,12 +100,12 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
   return (
     <div className="flex flex-col h-full p-4">
       <nav className="flex-grow">
-        <ul className="space-y-2 font-medium">
+        <ul className="space-y-2 font-medium text-sm">
           {menuItems.map((item) => (
             <li
               key={item.id}
               onClick={() => handleNavClick(item.path)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer
               transition-colors duration-200
               hover:bg-white/30 hover:text-white
               ${

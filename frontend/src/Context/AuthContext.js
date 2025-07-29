@@ -9,10 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const FALLBACK_CREDENTIALS = {
-    username: "admin",
-    password: "1234",
-  };
   const isTokenValid = (token) => {
     if (!token) return false;
     try {

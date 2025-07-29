@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const httpStatus = require("http-status");
-
+const { logger } = require("../utils/logger");
+process.env.USERNAME =
+  require("dotenv").config().parsed.USERNAME || process.env.USERNAME;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const validateToken = (token) => {
@@ -36,13 +38,12 @@ const validateToken = (token) => {
 };
 
 const ADMIN_CREDENTIALS = {
-  username: "admin",
-  password: "1234",
+  username: process.env.USERNAME,
+  password: process.env.PASSWORD,
 };
 
 const login = (req, res) => {
   const { username, password } = req.body;
-
   if (
     username === ADMIN_CREDENTIALS.username &&
     password === ADMIN_CREDENTIALS.password

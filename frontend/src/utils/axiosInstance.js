@@ -1,5 +1,8 @@
 import axios from "axios";
 import { BASE_URL } from "./constant.js";
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // in milliseconds
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -36,7 +39,21 @@ axiosInstance.interceptors.request.use(
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const { config, response } = error;
+
+    config.__retryCount = config.__retryCount || 0;
+
+    const shouldRetry =
+      (!response || response.status >= 500) &&
+      config.__retryCount < MAX_RETRIES;
+
+    if (shouldRetry) {
+      config.__retryCount += 1;
+      await delay(RETRY_DELAY * config.__retryCount);
+      return axiosInstance(config);
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem("user"); // Remove token on auth error
       window.location.href = "/login"; // Redirect to login

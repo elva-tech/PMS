@@ -1,6 +1,6 @@
 import React from "react";
 import slnlayout from "../Images/sln-layout.jpg";
-import Navbar from "../Components/Navbar";
+import BalajiLayoutMap from "../Images/BalajilayoutMap.png";
 import { LandPlot, House } from "lucide-react";
 import CreatePlot from "../Components/CreatePlotModal";
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -9,7 +9,7 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axiosInstance from "../utils/axiosInstance";
-import { EyeIcon, Trash2, Edit2 } from "lucide-react";
+import { EyeIcon, Trash2, Edit2, Filter, ZoomIn } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   usePlots,
@@ -18,6 +18,8 @@ import {
   useUpdatePlot,
   useDeletePlot,
 } from "../hooks/usePlotHooks";
+import QuoteModal from "../Components/QuoteModal";
+import ImageModal from "../Components/ImageModal";
 
 const ProjectDetailsPage = () => {
   const [addProjectModal, setAddProjectModal] = useState(false);
@@ -27,6 +29,9 @@ const ProjectDetailsPage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [plotNo, setPlotNo] = useState("");
 
   const {
     data: plotData = {},
@@ -85,10 +90,9 @@ const ProjectDetailsPage = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="bg-gradient-to-b from-blue-700 to-white pt-4 text-center pb-12 mt-10 px-4">
+      <div className="bg-gradient-to-b from-blue-700 to-white pt-4 text-center pb-12 px-4 rounded-lg border">
         <div className="container mx-auto">
-          <div className=" text-white p-4  md:px-4 md:pt-4 mt-4 md:mt-4">
+          <div className=" text-white p-4 md:px-4 md:pt-4">
             {/* Project Header */}
             <div className="flex flex-col md:flex-row items-center justify-between mb-2">
               <div className="flex items-center gap-3 sm:gap-4">
@@ -166,6 +170,33 @@ const ProjectDetailsPage = () => {
               </div>
             </div>
           </div>
+
+          <>
+            <div className="flex flex-col md:flex-row justify-between items-center px-6 space-y-4 md:space-y-0 mt-4">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white text-center md:text-left ">
+                Balaji Layout Site Map
+              </h2>
+            </div>
+            <div className="relative w-full p-4 md:p-6">
+              <div className="max-w-4xl mx-auto">
+                <div className="relative group cursor-pointer rounded-lg overflow-hidden border-gray-400 border-2">
+                  <img
+                    src={BalajiLayoutMap}
+                    alt="Balaji Layout Map"
+                    className="w-full h-auto rounded-lg shadow-lg transition-transform duration-200"
+                  />
+                  <div className="absolute inset-0 md:hidden bg-black/20 flex items-center justify-center">
+                    <div
+                      className="bg-white/20 backdrop-blur-sm p-3 rounded-full active:bg-white/30 transition-all cursor-pointer"
+                      onClick={() => setIsImageModalOpen(true)}
+                    >
+                      <ZoomIn className="text-white" size={24} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
 
           {/* Plots Table */}
           <div>
@@ -261,8 +292,8 @@ const ProjectDetailsPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white">
-                    {plots.map((plot) => (
-                      <tr key={plot.plotnumber} className="border-t">
+                    {plots.map((plot, index) => (
+                      <tr key={index} className="border-t">
                         <td className="text-center p-4 font-medium text-gray-900">
                           {plot.plotnumber}
                         </td>
@@ -284,15 +315,6 @@ const ProjectDetailsPage = () => {
                         </td>
                         <td className="text-center p-4">
                           <div className="flex items-center justify-center space-x-3">
-                            <button
-                              className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
-                              onClick={() => {
-                                navigate(`/project/${id}/${plot.plotnumber}`);
-                              }}
-                              title="View Details"
-                            >
-                              <EyeIcon size={18} />
-                            </button>
                             <button
                               className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
                               onClick={() => {
@@ -425,6 +447,20 @@ const ProjectDetailsPage = () => {
         <CreatePlot
           setAddProjectModal={handleCloseModal}
           editPlotData={editPlotData}
+        />
+      )}
+
+      {isQuoteOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-gray-700 z-50">
+          <QuoteModal onClose={() => setIsQuoteOpen(false)} plotNo={plotNo} />
+        </div>
+      )}
+
+      {isImageModalOpen && (
+        <ImageModal
+          imageUrl={BalajiLayoutMap}
+          altText="Balaji Layout Map"
+          onClose={() => setIsImageModalOpen(false)}
         />
       )}
     </>
