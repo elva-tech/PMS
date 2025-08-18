@@ -18,6 +18,46 @@ const createProject = catchAsync(async (req, res) => {
     contentType = req.file.mimetype;
     originalName = req.file.originalname;
   }
+  console.log("Body received:", req.body);
+
+  // Handle coordinates properly
+  if (req.body.coordinates) {
+    if (typeof req.body.coordinates === "string") {
+      try {
+        req.body.coordinates = JSON.parse(req.body.coordinates);
+        console.log("Parsed coordinates:", req.body.coordinates);
+      } catch (error) {
+        console.error("Error parsing coordinates:", error);
+        return res.status(httpStatus.BAD_REQUEST).json({
+          status: "error",
+          message:
+            "Invalid coordinates format. Must be a valid JSON object with latitude and longitude.",
+        });
+      }
+    }
+
+    // Validate the structure of coordinates
+    if (!req.body.coordinates.latitude || !req.body.coordinates.longitude) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        status: "error",
+        message: "Coordinates must include both latitude and longitude values.",
+      });
+    }
+  } else {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      status: "error",
+      message: "Coordinates are required.",
+    });
+  }
+
+  // Parse dates if they are strings
+  if (req.body.startDate && typeof req.body.startDate === "string") {
+    req.body.startDate = new Date(req.body.startDate);
+  }
+
+  if (req.body.endDate && typeof req.body.endDate === "string") {
+    req.body.endDate = new Date(req.body.endDate);
+  }
 
   const project = await projectService.createProject(
     req.body,
@@ -35,6 +75,11 @@ const createProject = catchAsync(async (req, res) => {
         location: project.location,
         status: project.status,
         description: project.description,
+        projectManager: project.projectManager,
+        contactNumber: project.contactNumber,
+        coordinates: project.coordinates,
+        startDate: formatDate(project.startDate),
+        endDate: formatDate(project.endDate),
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,
@@ -52,6 +97,11 @@ const getProjects = catchAsync(async (req, res) => {
     location: project.location,
     status: project.status,
     description: project.description,
+    projectManager: project.projectManager,
+    contactNumber: project.contactNumber,
+    coordinates: project.coordinates,
+    startDate: formatDate(project.startDate),
+    endDate: formatDate(project.endDate),
     createdAt: formatDate(project.createdAt),
     updatedAt: formatDate(project.updatedAt),
     hasImage: project.image && project.image.data ? true : false,
@@ -93,6 +143,11 @@ const getProject = catchAsync(async (req, res) => {
         location: project.location,
         status: project.status,
         description: project.description,
+        projectManager: project.projectManager,
+        contactNumber: project.contactNumber,
+        coordinates: project.coordinates,
+        startDate: formatDate(project.startDate),
+        endDate: formatDate(project.endDate),
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,

@@ -34,6 +34,34 @@ const projectSchema = new mongoose.Schema({
     contentType: String,
     originalName: String,
   },
+  projectManager: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  contactNumber: {
+    type: Number,
+    required: true,
+    trim: true,
+  },
+  coordinates: {
+    latitude: {
+      type: Number,
+      required: true,
+    },
+    longitude: {
+      type: Number,
+      required: true,
+    },
+  },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
