@@ -126,12 +126,36 @@ export default function ProjectsDashboard() {
   const [addProjectModal, setAddProjectModal] = useState(false);
 
   const handleEditProject = (project) => {
+    // Convert startDate and endDate to yyyy-mm-dd if possible
+    const formatDateForInput = (dateStr) => {
+      if (!dateStr) return "";
+      // Try to parse as Date
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().slice(0, 10);
+      }
+      // Try to parse dd/mm/yyyy or dd-mm-yyyy
+      const match = dateStr.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+      if (match) {
+        // yyyy-mm-dd
+        return `${match[3]}-${match[2]}-${match[1]}`;
+      }
+      return "";
+    };
     const projectToEdit = {
       _id: project._id || project.id,
       name: project.name || project.title,
       description: project.description || "",
       location: project.location || "",
       status: project.status || "Not Started",
+      projectManager: project.projectManager || "",
+      contactNumber: project.contactNumber || "",
+      coordinates: {
+        latitude: project.coordinates?.latitude || "",
+        longitude: project.coordinates?.longitude || "",
+      },
+      startDate: formatDateForInput(project.startDate),
+      endDate: formatDateForInput(project.endDate),
     };
 
     setEditProjectData(projectToEdit);

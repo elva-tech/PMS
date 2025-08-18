@@ -10,7 +10,21 @@ const validationSchema = Yup.object({
   status: Yup.string()
     .oneOf(["Not Started", "In Progress", "Completed"], "Invalid status")
     .required("Status is required"),
-  description: Yup.string().required("Description is required"),
+  description: Yup.string()
+    .required("Description is required")
+    .max(200, "Description cannot exceed 200 characters"),
+  projectManager: Yup.string().required("Project Manager is required"),
+  contactNumber: Yup.string().required("Contact Number is required"),
+  coordinates: Yup.object({
+    latitude: Yup.number()
+      .typeError("Latitude must be a number")
+      .required("Latitude is required"),
+    longitude: Yup.number()
+      .typeError("Longitude must be a number")
+      .required("Longitude is required"),
+  }),
+  startDate: Yup.string().required("Start Date is required"),
+  endDate: Yup.string().required("End Date is required"),
 });
 
 export default function CreateProject({
@@ -20,7 +34,7 @@ export default function CreateProject({
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
   const isEditMode = !!projectToEdit;
-
+  console.log("Project to edit:", projectToEdit);
   const handleSubmit = async (values) => {
     if (isEditMode) {
       const payload = {
@@ -28,6 +42,14 @@ export default function CreateProject({
         location: values.location,
         status: values.status,
         description: values.description,
+        projectManager: values.projectManager,
+        contactNumber: values.contactNumber,
+        coordinates: {
+          latitude: values.coordinates.latitude,
+          longitude: values.coordinates.longitude,
+        },
+        startDate: values.startDate,
+        endDate: values.endDate,
       };
 
       const projectId = projectToEdit._id || projectToEdit.id;
@@ -42,6 +64,17 @@ export default function CreateProject({
       formData.append("location", values.location);
       formData.append("status", values.status);
       formData.append("description", values.description);
+      formData.append("projectManager", values.projectManager);
+      formData.append("contactNumber", values.contactNumber);
+      formData.append(
+        "coordinates",
+        JSON.stringify({
+          latitude: values.coordinates.latitude,
+          longitude: values.coordinates.longitude,
+        })
+      );
+      formData.append("startDate", values.startDate);
+      formData.append("endDate", values.endDate);
 
       if (values.attachments && values.attachments.length > 0) {
         const imageFile = values.attachments[0];
@@ -80,6 +113,14 @@ export default function CreateProject({
             location: projectToEdit?.location || "",
             status: projectToEdit?.status || "",
             description: projectToEdit?.description || "",
+            projectManager: projectToEdit?.projectManager || "",
+            contactNumber: projectToEdit?.contactNumber || "",
+            coordinates: {
+              latitude: projectToEdit?.coordinates?.latitude || "",
+              longitude: projectToEdit?.coordinates?.longitude || "",
+            },
+            startDate: projectToEdit?.startDate || "",
+            endDate: projectToEdit?.endDate || "",
             attachments: [],
           }}
           validationSchema={validationSchema}
@@ -205,6 +246,108 @@ export default function CreateProject({
                   component="div"
                   className="text-red-500 text-xs text-left"
                 />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-left text-xs">
+                  Project Manager
+                </label>
+                <Field
+                  type="text"
+                  name="projectManager"
+                  className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
+                  placeholder="Enter Project Manager Name"
+                />
+                <ErrorMessage
+                  name="projectManager"
+                  component="div"
+                  className="text-red-500 text-xs text-left"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-left text-xs">
+                  Contact Number
+                </label>
+                <Field
+                  type="text"
+                  name="contactNumber"
+                  className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
+                  placeholder="Enter Contact Number"
+                />
+                <ErrorMessage
+                  name="contactNumber"
+                  component="div"
+                  className="text-red-500 text-xs text-left"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-left text-xs">
+                    Latitude
+                  </label>
+                  <Field
+                    type="text"
+                    name="coordinates.latitude"
+                    className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
+                    placeholder="Latitude"
+                  />
+                  <ErrorMessage
+                    name="coordinates.latitude"
+                    component="div"
+                    className="text-red-500 text-xs text-left"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-left text-xs">
+                    Longitude
+                  </label>
+                  <Field
+                    type="text"
+                    name="coordinates.longitude"
+                    className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
+                    placeholder="Longitude"
+                  />
+                  <ErrorMessage
+                    name="coordinates.longitude"
+                    component="div"
+                    className="text-red-500 text-xs text-left"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-left text-xs">
+                    Start Date
+                  </label>
+                  <Field
+                    type="date"
+                    name="startDate"
+                    className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
+                  />
+                  <ErrorMessage
+                    name="startDate"
+                    component="div"
+                    className="text-red-500 text-xs text-left"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-gray-700 text-left text-xs">
+                    End Date
+                  </label>
+                  <Field
+                    type="date"
+                    name="endDate"
+                    className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
+                  />
+                  <ErrorMessage
+                    name="endDate"
+                    component="div"
+                    className="text-red-500 text-xs text-left"
+                  />
+                </div>
               </div>
 
               <div>
