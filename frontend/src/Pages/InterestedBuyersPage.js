@@ -116,7 +116,7 @@ const InterestedBuyersPage = () => {
         </div>
       ) : (
         <div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto shoadow-lg">
             <table className="w-full border-collapse rounded-lg overflow-hidden shadow-lg">
               <thead>
                 <tr className="w-full bg-blue-600 text-left text-white uppercase text-xs md:text-sm">
@@ -214,7 +214,7 @@ const InterestedBuyersPage = () => {
             </table>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center mt-4 text-xs md:text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-between bg-white  px-4 py-3 border-t text-xs md:text-sm rounded-lg shadow-lg">
             <div className="text-gray-600 mb-2 md:mb-0">
               Showing {contacts.length} of {pagination.totalRecords} contacts
             </div>

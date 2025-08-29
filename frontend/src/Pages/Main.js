@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import sjdlogo1 from "../Images/sjd-logo1.png";
 import { Menu, ChevronRight } from "lucide-react";
@@ -33,6 +33,14 @@ const PropertyDetailsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isLoggedIn, loading } = useAuth();
   const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectStatus, setProjectStatus] = useState("");
+  const [projectLocation, setProjectLocation] = useState("");
+  const [projectImageData, setProjectImageData] = useState(null);
+  const [projectManager, setProjectManager] = useState("");
+  const [projectStartDate, setProjectStartDate] = useState("");
+  const [projectEndDate, setProjectEndDate] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
 
   useEffect(() => {
     if (!loading && !isLoggedIn) {
@@ -45,7 +53,7 @@ const PropertyDetailsPage = () => {
       setPlotId(plot);
     }
   }, [id, plot, isLoggedIn, loading, navigate, setProjectId, setPlotId]);
-  console.log("Current Location:", location.pathname);
+
   const getActiveMenu = () => {
     const path = location.pathname;
     // Check the most specific routes first
@@ -72,30 +80,62 @@ const PropertyDetailsPage = () => {
   };
 
   const [activeMenu, setActiveMenu] = useState(getActiveMenu());
-  console.log("Active Menu:", activeMenu);
   useEffect(() => {
     if (id) setProjectId(id);
     if (plot) setPlotId(plot);
     setActiveMenu(getActiveMenu());
   }, [id, plot, setProjectId, setPlotId, location]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (id && activeMenu === "plots") {
       // Fetch project name based on ID
-      const fetchProjectName = async () => {
+      const fetchProjectDetails = async () => {
         try {
           const response = await axiosInstance.get(`/api/v1/projects/${id}`);
-          console.log("Project Name:", response?.data?.data?.project?.name);
+          console.log("Project Name:", response?.data?.data);
           setProjectName(
             response?.data?.data?.project?.name || "Unknown Project"
           );
+          setProjectDescription(
+            response?.data?.data?.project?.description || "No Description"
+          );
+          setProjectStatus(
+            response?.data?.data?.project?.status || "Unknown Status"
+          );
+          setProjectLocation(
+            response?.data?.data?.project?.location || "Unknown Location"
+          );
+          setProjectManager(
+            response?.data?.data?.project?.projectManager || "Unknown Manager"
+          );
+          setProjectStartDate(
+            response?.data?.data?.project?.startDate || "Unknown Start Date"
+          );
+          setProjectEndDate(
+            response?.data?.data?.project?.endDate || "Unknown End Date"
+          );
+          setContactNumber(
+            response?.data?.data?.project?.contactNumber || "Unknown Contact"
+          );
+          if (
+            response?.data?.data?.project?.image?.data &&
+            response?.data?.data?.project?.image?.contentType
+          ) {
+            setProjectImageData({
+              data: response?.data?.data?.project?.image?.data,
+              contentType: response?.data?.data?.project?.image?.contentType,
+            });
+          } else {
+            setProjectImageData(null);
+          }
         } catch (error) {
           console.error("Failed to fetch project name", error);
           setProjectName("Unknown Project");
         }
       };
-      fetchProjectName();
+      fetchProjectDetails();
     }
+    // We only want to re-run this when id or activeMenu changes
   }, [id, activeMenu]);
 
   const getCurrentPageTitle = () => {
@@ -124,7 +164,20 @@ const PropertyDetailsPage = () => {
       case "project":
         return <ProjectsDashboard />;
       case "plots":
-        return <Plot />;
+        return (
+          <Plot
+            projectName={projectName}
+            projectDescription={projectDescription}
+            projectStatus={projectStatus}
+            projectLocation={projectLocation}
+            projectManager={projectManager}
+            projectStartDate={projectStartDate}
+            projectEndDate={projectEndDate}
+            projectId={id}
+            contactNumber={contactNumber}
+            projectImageData={projectImageData}
+          />
+        );
       case "documents":
         return <DocumentDetailsPage />;
       case "plotallotment":

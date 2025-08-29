@@ -151,6 +151,14 @@ const getProject = catchAsync(async (req, res) => {
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,
+        image:
+          project.image && project.image.data
+            ? {
+                data: project.image.data.toString("base64"),
+                contentType: project.image.contentType,
+                originalName: project.image.originalName,
+              }
+            : null,
       },
     },
   });

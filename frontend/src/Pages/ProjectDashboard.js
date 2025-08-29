@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../Components/Navbar";
+import sjdlogo1 from "../Images/sjd-logo1.png";
 import { HousePlus, LandPlot, Pencil, Trash2, FolderOpen } from "lucide-react";
 import slnlayout from "../Images/sln-layout.jpg";
 import nrlayout from "../Images/nr-layout.jpg";
@@ -178,7 +178,14 @@ export default function ProjectsDashboard() {
 
   return (
     <>
-      <Navbar />
+      <nav className="bg-blue-700 border-b border-white shadow-md fixed top-0 left-0 w-full z-10">
+        <div className="container mx-auto flex justify-between items-center p-4">
+          <div className="flex items-center space-x-2">
+            <img src={sjdlogo1} alt="SJD Logo" className="h-8" />
+            <h1 className="text-lg font-bold text-white">Abhi Developers</h1>
+          </div>
+        </div>
+      </nav>
       <div className="bg-gradient-to-b from-blue-700 to-white pt-4 text-center pb-12 mt-10">
         <div className="container mx-auto p-6 mt-2">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">

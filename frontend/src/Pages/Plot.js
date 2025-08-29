@@ -21,7 +21,18 @@ import {
 import QuoteModal from "../Components/QuoteModal";
 import ImageModal from "../Components/ImageModal";
 
-const ProjectDetailsPage = () => {
+const ProjectDetailsPage = ({
+  projectName,
+  projectDescription,
+  projectStatus,
+  projectLocation,
+  projectManager,
+  projectStartDate,
+  projectEndDate,
+  projectId,
+  contactNumber,
+  projectImageData,
+}) => {
   const [addProjectModal, setAddProjectModal] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -101,7 +112,7 @@ const ProjectDetailsPage = () => {
                 </div>
                 <div className="flex flex-col items-center md:items-start">
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
-                    Modern Residential Complex
+                    {projectName}
                   </h1>
                 </div>
               </div>
@@ -121,7 +132,14 @@ const ProjectDetailsPage = () => {
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-4">
               <div className="flex-1 h-64 lg:h-auto bg-white flex items-center justify-center">
                 <img
-                  src={slnlayout}
+                  src={
+                    projectImageData &&
+                    typeof projectImageData === "object" &&
+                    projectImageData.data &&
+                    projectImageData.contentType
+                      ? `data:${projectImageData.contentType};base64,${projectImageData.data}`
+                      : projectImageData || ""
+                  }
                   alt="Project"
                   className="rounded-lg w-full h-full object-cover"
                 />
@@ -130,21 +148,16 @@ const ProjectDetailsPage = () => {
               <div className="flex-1 px-0 lg:px-6 pt-4 lg:pt-0">
                 <div className="flex flex-wrap items-center gap-2 mb-4">
                   <span className="text-md bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                    In Progress
+                    {projectStatus}
                   </span>
                   <span className="text-md text-gray-500">
-                    Location: <span className="text-black">Sira, Tumkur</span>
+                    Location:{" "}
+                    <span className="text-black">{projectLocation}</span>
                   </span>
                 </div>
 
                 <p className="text-sm sm:text-md text-gray-700 mb-6 text-left">
-                  A luxury residential complex featuring 200 premium apartments
-                  designed with sustainable architecture and cutting-edge
-                  technology. The project emphasizes energy efficiency, smart
-                  home integration, and connection to nature. The complex
-                  includes comprehensive amenities such as a resort-style
-                  swimming pool, state-of-the-art fitness center, landscaped
-                  community gardens, and dedicated children's playground areas.
+                  {projectDescription}
                 </p>
 
                 <div className="text-sm sm:text-md text-left space-y-3">
@@ -152,19 +165,24 @@ const ProjectDetailsPage = () => {
                     Project Details
                   </h2>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <span className="font-medium">Project ID:</span> 1
+                    <span className="font-medium">Project ID:</span>
+                    {projectId}
                   </p>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <span className="font-medium">Start Date:</span> January 15,
-                    2023
+                    <span className="font-medium">Start Date:</span>{" "}
+                    {projectStartDate.split(",")[0]}
                   </p>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
                     <span className="font-medium">Expected Completion:</span>
-                    December 30, 2024
+                    {projectEndDate.split(",")[0]}
                   </p>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <span className="font-medium">Project Manager:</span> Sarah
-                    Johnson
+                    <span className="font-medium">Project Manager:</span>{" "}
+                    {projectManager}
+                  </p>
+                  <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <span className="font-medium">Contact Number:</span>{" "}
+                    {contactNumber}
                   </p>
                 </div>
               </div>
@@ -200,7 +218,7 @@ const ProjectDetailsPage = () => {
 
           {/* Plots Table */}
           <div>
-            <div className="overflow-x-auto rounded-xl border">
+            <div className="overflow-x-auto rounded-xl border shadow-lg">
               {!isLoading && !isError && plots.length === 0 ? (
                 <div className="text-center p-6 bg-gray-100 rounded-lg">
                   <p className="text-lg text-gray-700">
@@ -293,7 +311,10 @@ const ProjectDetailsPage = () => {
                   </thead>
                   <tbody className="bg-white">
                     {plots.map((plot, index) => (
-                      <tr key={index} className="border-t">
+                      <tr
+                        key={index}
+                        className="border-b border-gray-200 hover:bg-gray-100"
+                      >
                         <td className="text-center p-4 font-medium text-gray-900">
                           {plot.plotnumber}
                         </td>
@@ -343,103 +364,101 @@ const ProjectDetailsPage = () => {
                   </tbody>
                 </table>
               ) : null}
-              {/* Pagination Controls */}
-              {!isLoading && !isError && plots.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 py-3 border-t">
-                  <div className="flex items-center mb-3 sm:mb-0">
-                    <span className="text-sm text-gray-700 mr-3">
-                      Showing{" "}
-                      <span className="font-medium">{plots.length}</span> of{" "}
-                      <span className="font-medium">
-                        {pagination.totalRecords}
-                      </span>{" "}
-                      plots
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <button
-                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(prev - 1, 1))
-                      }
-                      disabled={!pagination.hasPrevPage}
-                    >
-                      Previous
-                    </button>
-
-                    <div className="flex space-x-1">
-                      {pagination.currentPage > 2 && (
-                        <button
-                          className="px-3 py-1 bg-white border rounded-md text-sm"
-                          onClick={() => setCurrentPage(1)}
-                        >
-                          1
-                        </button>
-                      )}
-
-                      {pagination.currentPage > 3 && (
-                        <span className="px-2 py-1 text-sm">...</span>
-                      )}
-
-                      {pagination.currentPage > 1 && (
-                        <button
-                          className="px-3 py-1 bg-white border rounded-md text-sm"
-                          onClick={() =>
-                            setCurrentPage(pagination.currentPage - 1)
-                          }
-                        >
-                          {pagination.currentPage - 1}
-                        </button>
-                      )}
-
-                      <button className="px-3 py-1 bg-blue-600 text-white border rounded-md text-sm">
-                        {pagination.currentPage}
-                      </button>
-
-                      {pagination.currentPage < pagination.totalPages && (
-                        <button
-                          className="px-3 py-1 bg-white border rounded-md text-sm"
-                          onClick={() =>
-                            setCurrentPage(pagination.currentPage + 1)
-                          }
-                        >
-                          {pagination.currentPage + 1}
-                        </button>
-                      )}
-
-                      {pagination.currentPage < pagination.totalPages - 2 && (
-                        <span className="px-2 py-1 text-sm">...</span>
-                      )}
-
-                      {pagination.currentPage < pagination.totalPages - 1 &&
-                        pagination.totalPages > 1 && (
-                          <button
-                            className="px-3 py-1 bg-white border rounded-md text-sm"
-                            onClick={() =>
-                              setCurrentPage(pagination.totalPages)
-                            }
-                          >
-                            {pagination.totalPages}
-                          </button>
-                        )}
-                    </div>
-
-                    <button
-                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                      onClick={() =>
-                        setCurrentPage((prev) =>
-                          Math.min(prev + 1, pagination.totalPages)
-                        )
-                      }
-                      disabled={!pagination.hasNextPage}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
+            {/* Pagination Controls */}
+            {!isLoading && !isError && plots.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 py-3 border-t rounded-lg shadow-lg text-xs md:text-sm">
+                <div className="flex items-center mb-3 sm:mb-0">
+                  <span className="text-sm text-gray-700 mr-3">
+                    Showing <span className="font-medium">{plots.length}</span>{" "}
+                    of{" "}
+                    <span className="font-medium">
+                      {pagination.totalRecords}
+                    </span>{" "}
+                    plots
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={!pagination.hasPrevPage}
+                  >
+                    &lt;
+                  </button>
+
+                  <div className="flex space-x-1">
+                    {pagination.currentPage > 2 && (
+                      <button
+                        className="px-3 py-1 bg-white border rounded-md text-sm"
+                        onClick={() => setCurrentPage(1)}
+                      >
+                        1
+                      </button>
+                    )}
+
+                    {pagination.currentPage > 3 && (
+                      <span className="px-2 py-1 text-sm">...</span>
+                    )}
+
+                    {pagination.currentPage > 1 && (
+                      <button
+                        className="px-3 py-1 bg-white border rounded-md text-sm"
+                        onClick={() =>
+                          setCurrentPage(pagination.currentPage - 1)
+                        }
+                      >
+                        {pagination.currentPage - 1}
+                      </button>
+                    )}
+
+                    <button className="px-3 py-1 bg-blue-600 text-white border rounded-md text-sm">
+                      {pagination.currentPage}
+                    </button>
+
+                    {pagination.currentPage < pagination.totalPages && (
+                      <button
+                        className="px-3 py-1 bg-white border rounded-md text-sm"
+                        onClick={() =>
+                          setCurrentPage(pagination.currentPage + 1)
+                        }
+                      >
+                        {pagination.currentPage + 1}
+                      </button>
+                    )}
+
+                    {pagination.currentPage < pagination.totalPages - 2 && (
+                      <span className="px-2 py-1 text-sm">...</span>
+                    )}
+
+                    {pagination.currentPage < pagination.totalPages - 1 &&
+                      pagination.totalPages > 1 && (
+                        <button
+                          className="px-3 py-1 bg-white border rounded-md text-sm"
+                          onClick={() => setCurrentPage(pagination.totalPages)}
+                        >
+                          {pagination.totalPages}
+                        </button>
+                      )}
+                  </div>
+
+                  <button
+                    className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    onClick={() =>
+                      setCurrentPage((prev) =>
+                        Math.min(prev + 1, pagination.totalPages)
+                      )
+                    }
+                    disabled={!pagination.hasNextPage}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
