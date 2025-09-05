@@ -8,6 +8,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { useProject } from "../Context/ProjectContext";
 import { useParams } from "react-router-dom";
 import { useCreatePlot, useUpdatePlot } from "../hooks/usePlotHooks";
+import { useToast } from "../Context/ToastContext";
 
 const validationSchema = Yup.object({
   plotsize: Yup.string().required("Plot size is required"),
@@ -23,6 +24,7 @@ export default function CreatePlot({
   setAddProjectModal,
   editPlotData = null,
 }) {
+  const { addToast } = useToast();
   const createPlotMutation = useCreatePlot();
   const updatePlotMutation = useUpdatePlot();
   const isEditMode = !!editPlotData;
@@ -40,7 +42,18 @@ export default function CreatePlot({
           plotstatus: values.status,
         },
       };
-      const response = await updatePlotMutation.mutateAsync(payload);
+      const response = await updatePlotMutation.mutateAsync(payload, {
+        onSuccess: () => {
+          addToast("success", "Plot Updated", "Plot updated successfully");
+        },
+        onError: (error) => {
+          addToast(
+            "error",
+            "Update Failed",
+            error?.message || "Failed to update plot"
+          );
+        },
+      });
       return response.data;
     } else {
       const payload = {
@@ -53,7 +66,19 @@ export default function CreatePlot({
           plotstatus: values.status,
         },
       };
-      const response = await createPlotMutation.mutateAsync(payload);
+      const response = await createPlotMutation.mutateAsync(payload, {
+        onSuccess: () => {
+          addToast("success", "Plot Created", "Plot created successfully");
+        },
+        onError: (error) => {
+          addToast(
+            "error",
+            "Creation Failed",
+            error?.message || "Failed to create plot"
+          );
+        },
+      });
+
       return response.data;
     }
   };
@@ -80,13 +105,26 @@ export default function CreatePlot({
             plotno: editPlotData?.plotData?.plotnumber || "",
           }}
           validationSchema={validationSchema}
-          validateOnChange={false}
-          validateOnBlur={false}
-          onSubmit={async (values, { setSubmitting, resetForm }) => {
+          validateOnChange={true}
+          validateOnBlur={true}
+          onSubmit={async (
+            values,
+            { setSubmitting, resetForm, validateForm }
+          ) => {
             try {
-              console.log("Submitting values:", values);
+              const emptyFields = Object.keys(values).filter(
+                (key) => !values[key]
+              );
+
+              if (emptyFields.length > 0) {
+                addToast(
+                  "warning",
+                  "Incomplete Form",
+                  "Please fill in all required fields"
+                );
+                return;
+              }
               const response = await handleSubmit(values);
-              console.log("Project created successfully:", response);
               resetForm();
               setAddProjectModal(false);
             } catch (error) {
@@ -96,7 +134,7 @@ export default function CreatePlot({
             }
           }}
         >
-          {({ resetForm }) => (
+          {({ resetForm, values, errors, touched }) => (
             <Form className="space-y-4">
               <div>
                 <label className="block text-gray-700 text-left text-xs">
@@ -200,11 +238,26 @@ export default function CreatePlot({
 
               <div className="flex justify-end gap-2 flex-wrap mt-6">
                 <button
-                  type="submit"
+                  type="button"
                   className="px-4 py-2 bg-black text-white rounded-md text-xs"
                   disabled={
                     createPlotMutation.isLoading || updatePlotMutation.isLoading
                   }
+                  onClick={() => {
+                    const emptyFields = Object.keys(values).filter(
+                      (key) => !values[key]
+                    );
+
+                    if (emptyFields.length > 0) {
+                      addToast(
+                        "warning",
+                        "Incomplete Form",
+                        "Please fill in all required fields"
+                      );
+                      return;
+                    }
+                    document.querySelector("form").requestSubmit();
+                  }}
                 >
                   {isEditMode
                     ? updatePlotMutation.isLoading

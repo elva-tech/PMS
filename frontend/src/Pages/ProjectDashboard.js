@@ -5,7 +5,7 @@ import slnlayout from "../Images/sln-layout.jpg";
 import nrlayout from "../Images/nr-layout.jpg";
 import balajilayout from "../Images/balaji-layout.jpg";
 import dollarcolonylayout from "../Images/dollars-colony.jpg";
-import CreateProject from "../Components/CreateProjectModal";
+import CreateProjectPage from "./CreateProjectPage";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axiosInstance from "../utils/axiosInstance";
@@ -15,7 +15,8 @@ import {
   useUpdateProject,
   useDeleteProject,
 } from "../hooks/useProjectHooks";
-
+import { LoadingSpinner } from "../Components/LoadingSpinner";
+import { useToast } from "../Context/ToastContext";
 const defaultImages = {
   "In Progress": slnlayout,
   Completed: balajilayout,
@@ -61,7 +62,10 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
         <div className="absolute top-2 right-2 flex space-x-2">
           <button
             className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
-            onClick={() => onEdit(project)}
+            onClick={() => {
+              navigate(`/project/edit/${projectId}`, { state: { project } });
+              onEdit(project);
+            }}
             disabled={isDeleting}
           >
             <Pencil size={20} />
@@ -112,6 +116,8 @@ export default function ProjectsDashboard() {
   const { data: projectsData = [], isLoading, isError, error } = useProjects();
   const deleteProjectMutation = useDeleteProject();
   const updateProjectMutation = useUpdateProject();
+  const navigate = useNavigate();
+  const { addToast } = useToast();
 
   const projects = React.useMemo(() => {
     if (!projectsData) return [];
@@ -164,11 +170,25 @@ export default function ProjectsDashboard() {
 
   const handleDeleteProject = (projectId) => {
     if (!projectId) {
-      console.error("Cannot delete project: No project ID provided");
+      addToast("error", "Delete Failed", "No project ID provided");
       return;
     }
-    console.log("Attempting to delete project with ID:", projectId);
-    deleteProjectMutation.mutate(projectId);
+    deleteProjectMutation.mutate(projectId, {
+      onSuccess: () => {
+        addToast(
+          "success",
+          "Project Deleted",
+          "Project has been successfully deleted"
+        );
+      },
+      onError: (error) => {
+        addToast(
+          "error",
+          "Delete Failed",
+          error?.message || "Failed to delete project"
+        );
+      },
+    });
   };
 
   const handleCloseModal = () => {
@@ -186,71 +206,77 @@ export default function ProjectsDashboard() {
           </div>
         </div>
       </nav>
+
       <div className="bg-gradient-to-b from-blue-700 to-white pt-4 text-center pb-12 mt-10">
-        <div className="container mx-auto p-6 mt-2">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold mb-4 md:mb-0 text-white">
-              Projects Dashboard
-            </h1>
-            <div className="flex gap-3">
-              <button
-                className="bg-white border border-gray-300 text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 hover:text-white"
-                onClick={() => setAddProjectModal(true)}
-              >
-                <HousePlus size={25} />
-                Add Project
-              </button>
-            </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <LoadingSpinner />
           </div>
-
-          {isLoading && (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        ) : (
+          <div className="container mx-auto p-6 mt-2">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold mb-4 md:mb-0 text-white">
+                Projects Dashboard
+              </h1>
+              <div className="flex gap-3">
+                <button
+                  className="bg-white border border-gray-300 text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 hover:text-white"
+                  // onClick={() => setAddProjectModal(true)}
+                  onClick={() => {
+                    navigate("/project/create");
+                  }}
+                >
+                  <HousePlus size={25} />
+                  Add Project
+                </button>
+              </div>
             </div>
-          )}
 
-          {isError && (
-            <div className="text-center p-6 bg-red-100 rounded-lg text-red-700">
-              <p>Error loading projects: {error?.message || "Unknown error"}</p>
-              <button
-                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                onClick={() => window.location.reload()}
-              >
-                Retry
-              </button>
-            </div>
-          )}
+            {isError && (
+              <div className="text-center p-6 bg-red-100 rounded-lg text-red-700">
+                <p>
+                  Error loading projects: {error?.message || "Unknown error"}
+                </p>
+                <button
+                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
 
-          {!isLoading && !isError && projects.length === 0 && (
-            <div className="text-center p-6 bg-gray-100 rounded-lg">
-              <p className="text-lg text-gray-700">
-                No projects found. Click "Add Project" to create your first
-                project.
-              </p>
-            </div>
-          )}
+            {!isLoading && !isError && projects.length === 0 && (
+              <div className="text-center p-6 bg-gray-100 rounded-lg">
+                <p className="text-lg text-gray-700">
+                  No projects found. Click "Add Project" to create your first
+                  project.
+                </p>
+              </div>
+            )}
 
-          {!isLoading && !isError && projects.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <ProjectCard
-                  key={
-                    project._id ||
-                    project.id ||
-                    Math.random().toString(36).substring(7)
-                  }
-                  project={project}
-                  onEdit={handleEditProject}
-                  onDelete={handleDeleteProject}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+            {!isLoading && !isError && projects.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {projects.map((project) => (
+                  <ProjectCard
+                    key={
+                      project._id ||
+                      project.id ||
+                      Math.random().toString(36).substring(7)
+                    }
+                    project={project}
+                    onEdit={handleEditProject}
+                    onDelete={handleDeleteProject}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {addProjectModal && (
-          <CreateProject
-            setAddProjectModal={handleCloseModal}
+          <CreateProjectPage
+            // setAddProjectModal={handleCloseModal}
             projectToEdit={editProjectData}
           />
         )}

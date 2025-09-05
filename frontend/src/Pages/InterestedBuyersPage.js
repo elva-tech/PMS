@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, X } from "lucide-react";
 import axiosInstance from "../utils/axiosInstance";
+import { LoadingSpinner } from "../Components/LoadingSpinner";
 
 const InterestedBuyersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -111,8 +112,8 @@ const InterestedBuyersPage = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-48">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex justify-center items-center h-64">
+          <LoadingSpinner />
         </div>
       ) : (
         <div>

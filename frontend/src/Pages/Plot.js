@@ -20,6 +20,7 @@ import {
 } from "../hooks/usePlotHooks";
 import QuoteModal from "../Components/QuoteModal";
 import ImageModal from "../Components/ImageModal";
+import { useToast } from "../Context/ToastContext";
 
 const ProjectDetailsPage = ({
   projectName,
@@ -33,6 +34,7 @@ const ProjectDetailsPage = ({
   contactNumber,
   projectImageData,
 }) => {
+  const { addToast } = useToast();
   const [addProjectModal, setAddProjectModal] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -339,10 +341,27 @@ const ProjectDetailsPage = ({
                             <button
                               className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
                               onClick={() => {
-                                deletePlotMutation.mutate({
-                                  projectId: id,
-                                  plotId: plot._id,
-                                });
+                                deletePlotMutation.mutate(
+                                  {
+                                    projectId: id,
+                                    plotId: plot._id,
+                                  },
+                                  {
+                                    onSuccess: () => {
+                                      addToast(
+                                        "success",
+                                        "Plot Deleted",
+                                        "The plot has been deleted successfully."
+                                      );
+                                    },
+                                    onError: (error) => {
+                                      const errorMessage =
+                                        error?.response?.data?.message ||
+                                        "Failed to delete the plot.";
+                                      addToast("error", "Error", errorMessage);
+                                    },
+                                  }
+                                );
                               }}
                               title="Delete Plot"
                             >

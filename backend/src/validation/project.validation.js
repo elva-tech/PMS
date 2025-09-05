@@ -38,6 +38,7 @@ const createProject = {
       .required(),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
+    amenities: Joi.array().items(Joi.string()),
     image: Joi.object().keys({
       data: Joi.binary(),
       contentType: Joi.string(),
@@ -83,6 +84,7 @@ const updateProject = {
     ),
     startDate: Joi.date(),
     endDate: Joi.date(),
+    amenities: Joi.array().items(Joi.string()),
     image: Joi.object().keys({
       data: Joi.binary(),
       contentType: Joi.string(),

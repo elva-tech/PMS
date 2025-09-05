@@ -6,6 +6,7 @@ const balajilayout = lazy(() => import("../Pages/LayoutPages/BalajiLayout"));
 const main = lazy(() => import("../Pages/Main"));
 const ProjectDashboard = lazy(() => import("../Pages/ProjectDashboard"));
 const Plot = lazy(() => import("../Pages/Plot"));
+const CreateProjectPage = lazy(() => import("../Pages/CreateProjectPage"));
 
 const pageroutes = [
   {
@@ -15,6 +16,14 @@ const pageroutes = [
   {
     path: "/project",
     component: ProjectDashboard,
+  },
+  {
+    path: "/project/create",
+    component: CreateProjectPage,
+  },
+  {
+    path: "/project/edit/:id",
+    component: CreateProjectPage,
   },
   {
     path: "/project/:id",

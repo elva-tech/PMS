@@ -34,6 +34,10 @@ const projectSchema = new mongoose.Schema({
     contentType: String,
     originalName: String,
   },
+  amenities: {
+    type: [String],
+    default: [],
+  },
   projectManager: {
     type: String,
     required: true,

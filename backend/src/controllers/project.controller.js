@@ -18,9 +18,7 @@ const createProject = catchAsync(async (req, res) => {
     contentType = req.file.mimetype;
     originalName = req.file.originalname;
   }
-  console.log("Body received:", req.body);
 
-  // Handle coordinates properly
   if (req.body.coordinates) {
     if (typeof req.body.coordinates === "string") {
       try {
@@ -78,6 +76,7 @@ const createProject = catchAsync(async (req, res) => {
         projectManager: project.projectManager,
         contactNumber: project.contactNumber,
         coordinates: project.coordinates,
+        amenities: project.amenities,
         startDate: formatDate(project.startDate),
         endDate: formatDate(project.endDate),
         createdAt: formatDate(project.createdAt),
@@ -100,6 +99,7 @@ const getProjects = catchAsync(async (req, res) => {
     projectManager: project.projectManager,
     contactNumber: project.contactNumber,
     coordinates: project.coordinates,
+    amenities: project.amenities,
     startDate: formatDate(project.startDate),
     endDate: formatDate(project.endDate),
     createdAt: formatDate(project.createdAt),
@@ -146,6 +146,7 @@ const getProject = catchAsync(async (req, res) => {
         projectManager: project.projectManager,
         contactNumber: project.contactNumber,
         coordinates: project.coordinates,
+        amenities: project.amenities,
         startDate: formatDate(project.startDate),
         endDate: formatDate(project.endDate),
         createdAt: formatDate(project.createdAt),
@@ -200,6 +201,7 @@ const updateProject = catchAsync(async (req, res) => {
         location: project.location,
         status: project.status,
         description: project.description,
+        amenities: project.amenities,
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,
