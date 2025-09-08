@@ -19,7 +19,17 @@ const getContacts = {
   }),
 };
 
+const updateContactStatus = {
+  params: Joi.object().keys({
+    contactId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    interested: Joi.number().integer().valid(0, 1).required(),
+  }),
+};
+
 module.exports = {
   createContact,
   getContacts,
+  updateContactStatus,
 };

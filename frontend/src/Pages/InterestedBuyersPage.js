@@ -9,6 +9,7 @@ const InterestedBuyersPage = () => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -42,6 +43,34 @@ const InterestedBuyersPage = () => {
       setError(err.response?.data?.message || "Failed to fetch contacts");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleContactStatus = async (contactId, currentStatus) => {
+    setStatusUpdateLoading(contactId);
+    try {
+      // Toggle status (1 to 0 or 0 to 1)
+      const newStatus = currentStatus === 1 ? 0 : 1;
+
+      // Update status via API
+      await axiosInstance.patch(`/api/v1/contact/${contactId}/status`, {
+        interested: newStatus,
+      });
+
+      // Update local state
+      setContacts(
+        contacts.map((contact) =>
+          contact.id === contactId
+            ? { ...contact, interested: newStatus }
+            : contact
+        )
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to update contact status"
+      );
+    } finally {
+      setStatusUpdateLoading(null);
     }
   };
 
@@ -196,18 +225,30 @@ const InterestedBuyersPage = () => {
                             </>
                           )}
                       </td>
-                      <td className="py-3 px-6 cursor-pointer">
-                        <span
+                      <td className="py-3 px-6">
+                        <button
+                          onClick={() =>
+                            toggleContactStatus(contact.id, contact.interested)
+                          }
+                          disabled={statusUpdateLoading === contact.id}
                           className={`py-1 px-3 rounded-full text-xs ${
                             contact.interested === 1
-                              ? "bg-green-100 text-green-500"
-                              : "bg-red-100 text-red-500"
+                              ? "bg-green-100 text-green-500 hover:bg-green-200"
+                              : "bg-red-100 text-red-500 hover:bg-red-200"
+                          } transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                            contact.interested === 1
+                              ? "focus:ring-green-500"
+                              : "focus:ring-red-500"
                           }`}
                         >
-                          {contact.interested === 1
-                            ? "Interested"
-                            : "Not Interested"}
-                        </span>
+                          {statusUpdateLoading === contact.id ? (
+                            <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                          ) : contact.interested === 1 ? (
+                            "Interested"
+                          ) : (
+                            "Not Interested"
+                          )}
+                        </button>
                       </td>
                     </tr>
                   ))}

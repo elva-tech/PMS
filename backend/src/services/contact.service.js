@@ -62,7 +62,7 @@ class ContactService {
           second: "2-digit",
           hour12: true,
         });
-        return { ...rest, createdAt: istDate };
+        return { id: _id, ...rest, createdAt: istDate };
       });
 
       // Calculate total pages
@@ -79,6 +79,36 @@ class ContactService {
           hasPrevPage: page > 1,
         },
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateContactStatus(contactId, interestedStatus) {
+    try {
+      const contact = await Contact.findByIdAndUpdate(
+        contactId,
+        { interested: interestedStatus },
+        { new: true }
+      ).lean();
+
+      if (!contact) {
+        throw new Error("Contact not found");
+      }
+
+      const { _id, __v, createdAt, ...rest } = contact;
+      const istDate = new Date(createdAt).toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+
+      return { id: _id, ...rest, createdAt: istDate };
     } catch (error) {
       throw error;
     }

@@ -18,7 +18,18 @@ const getContacts = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(contacts);
 });
 
+const updateContactStatus = catchAsync(async (req, res) => {
+  const { contactId } = req.params;
+  const { interested } = req.body;
+  const updatedContact = await contactService.updateContactStatus(
+    contactId,
+    interested
+  );
+  res.status(httpStatus.OK).send(updatedContact);
+});
+
 module.exports = {
   createContact,
   getContacts,
+  updateContactStatus,
 };

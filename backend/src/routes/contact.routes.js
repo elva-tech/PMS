@@ -19,4 +19,11 @@ router.get(
   contactController.getContacts
 );
 
+router.patch(
+  "/:contactId/status",
+  auth,
+  validate(contactValidation.updateContactStatus),
+  contactController.updateContactStatus
+);
+
 module.exports = router;
