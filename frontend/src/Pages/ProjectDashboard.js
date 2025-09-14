@@ -16,6 +16,7 @@ import {
   useDeleteProject,
 } from "../hooks/useProjectHooks";
 import { LoadingSpinner } from "../Components/LoadingSpinner";
+import DeleteModal from "../Components/DeleteModal";
 import { useToast } from "../Context/ToastContext";
 const defaultImages = {
   "In Progress": slnlayout,
@@ -45,10 +46,7 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
   const projectImage = getProjectImageSource();
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${projectName}"?`)) {
-      setIsDeleting(true);
-      onDelete(projectId);
-    }
+    onDelete(project);
   };
 
   return (
@@ -130,6 +128,8 @@ export default function ProjectsDashboard() {
 
   const [editProjectData, setEditProjectData] = useState(null);
   const [addProjectModal, setAddProjectModal] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
 
   const handleEditProject = (project) => {
     // Convert startDate and endDate to yyyy-mm-dd if possible
@@ -180,6 +180,8 @@ export default function ProjectsDashboard() {
           "Project Deleted",
           "Project has been successfully deleted"
         );
+        setIsDeleteModalOpen(false);
+        setProjectToDelete(null);
       },
       onError: (error) => {
         addToast(
@@ -187,8 +189,26 @@ export default function ProjectsDashboard() {
           "Delete Failed",
           error?.message || "Failed to delete project"
         );
+        setIsDeleteModalOpen(false);
+        setProjectToDelete(null);
       },
     });
+  };
+
+  const handleDeleteClick = (project) => {
+    setProjectToDelete(project);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (projectToDelete) {
+      handleDeleteProject(projectToDelete._id || projectToDelete.id);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setProjectToDelete(null);
   };
 
   const handleCloseModal = () => {
@@ -266,7 +286,7 @@ export default function ProjectsDashboard() {
                     }
                     project={project}
                     onEdit={handleEditProject}
-                    onDelete={handleDeleteProject}
+                    onDelete={handleDeleteClick}
                   />
                 ))}
               </div>
@@ -278,6 +298,20 @@ export default function ProjectsDashboard() {
           <CreateProjectPage
             // setAddProjectModal={handleCloseModal}
             projectToEdit={editProjectData}
+          />
+        )}
+
+        {isDeleteModalOpen && (
+          <DeleteModal
+            onConfirm={handleConfirmDelete}
+            onCancel={handleCancelDelete}
+            title="Delete Project"
+            message={`Are you sure you want to delete "${
+              projectToDelete?.name || projectToDelete?.title || "this project"
+            }"? This action cannot be undone and will remove all associated plots and data.`}
+            confirmText="Delete Project"
+            cancelText="Cancel"
+            isLoading={deleteProjectMutation.isLoading}
           />
         )}
       </div>

@@ -20,6 +20,7 @@ import {
 } from "../hooks/usePlotHooks";
 import QuoteModal from "../Components/QuoteModal";
 import ImageModal from "../Components/ImageModal";
+import DeleteModal from "../Components/DeleteModal";
 import { useToast } from "../Context/ToastContext";
 
 const ProjectDetailsPage = ({
@@ -44,6 +45,8 @@ const ProjectDetailsPage = ({
   const [sortOrder, setSortOrder] = useState("desc");
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [plotToDelete, setPlotToDelete] = useState(null);
   const [plotNo, setPlotNo] = useState("");
 
   const {
@@ -99,6 +102,45 @@ const ProjectDetailsPage = ({
   const handleCloseModal = () => {
     setAddProjectModal(false);
     setEditPlotData(null);
+  };
+
+  const handleDeleteClick = (plot) => {
+    setPlotToDelete(plot);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (plotToDelete) {
+      deletePlotMutation.mutate(
+        {
+          projectId: id,
+          plotId: plotToDelete._id,
+        },
+        {
+          onSuccess: () => {
+            addToast(
+              "success",
+              "Plot Deleted",
+              "The plot has been deleted successfully."
+            );
+            setIsDeleteModalOpen(false);
+            setPlotToDelete(null);
+          },
+          onError: (error) => {
+            const errorMessage =
+              error?.response?.data?.message || "Failed to delete the plot.";
+            addToast("error", "Error", errorMessage);
+            setIsDeleteModalOpen(false);
+            setPlotToDelete(null);
+          },
+        }
+      );
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setPlotToDelete(null);
   };
 
   return (
@@ -340,29 +382,7 @@ const ProjectDetailsPage = ({
                           <div className="flex items-center justify-center space-x-3">
                             <button
                               className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                              onClick={() => {
-                                deletePlotMutation.mutate(
-                                  {
-                                    projectId: id,
-                                    plotId: plot._id,
-                                  },
-                                  {
-                                    onSuccess: () => {
-                                      addToast(
-                                        "success",
-                                        "Plot Deleted",
-                                        "The plot has been deleted successfully."
-                                      );
-                                    },
-                                    onError: (error) => {
-                                      const errorMessage =
-                                        error?.response?.data?.message ||
-                                        "Failed to delete the plot.";
-                                      addToast("error", "Error", errorMessage);
-                                    },
-                                  }
-                                );
-                              }}
+                              onClick={() => handleDeleteClick(plot)}
                               title="Delete Plot"
                             >
                               <Trash2 size={18} />
@@ -499,6 +519,18 @@ const ProjectDetailsPage = ({
           imageUrl={BalajiLayoutMap}
           altText="Balaji Layout Map"
           onClose={() => setIsImageModalOpen(false)}
+        />
+      )}
+
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          title="Delete Plot"
+          message={`Are you sure you want to delete Plot ${plotToDelete?.plotnumber}?`}
+          confirmText="Delete Plot"
+          cancelText="Cancel"
+          isLoading={deletePlotMutation.isLoading}
         />
       )}
     </>

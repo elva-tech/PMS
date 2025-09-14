@@ -1,19 +1,34 @@
 import { createContext, useContext, useState, useCallback } from "react";
-import { X, CheckCircle, XCircle, Info, AlertCircle } from "lucide-react";
+import { X, CheckCircle, XCircle, Info, AlertTriangle } from "lucide-react";
 
-// Toast styles
 const typeStyles = {
-  success: "bg-green-500 text-white",
-  error: "bg-red-500 text-white",
-  info: "bg-blue-500 text-white",
-  warning: "bg-yellow-400 text-white",
+  success: {
+    bg: "bg-green-100",
+    border: "border-green-400",
+    text: "text-green-700",
+  },
+  error: {
+    bg: "bg-red-100",
+    border: "border-red-400",
+    text: "text-red-700",
+  },
+  info: {
+    bg: "bg-blue-100",
+    border: "border-blue-400",
+    text: "text-blue-700",
+  },
+  warning: {
+    bg: "bg-yellow-100",
+    border: "border-yellow-400",
+    text: "text-yellow-700",
+  },
 };
 
 const icons = {
-  success: <CheckCircle className="w-6 h-6" />,
-  error: <XCircle className="w-6 h-6" />,
-  info: <Info className="w-6 h-6" />,
-  warning: <AlertCircle className="w-6 h-6" />,
+  success: <CheckCircle className="w-5 h-5 text-green-600" />,
+  error: <XCircle className="w-5 h-5 text-red-600" />,
+  info: <Info className="w-5 h-5 text-blue-600" />,
+  warning: <AlertTriangle className="w-5 h-5 text-yellow-600" />,
 };
 
 const ToastContext = createContext();
@@ -41,30 +56,40 @@ export const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={{ addToast }}>
       {children}
 
-      <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-50 max-w-full sm:max-w-sm md:max-w-md">
+      <div className="fixed bottom-4 right-4 flex flex-col gap-4 z-50 max-w-full sm:max-w-sm md:max-w-md">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-start p-3 sm:p-4 rounded-md shadow-lg w-auto mx-2 sm:mx-0 sm:w-full ${
-              typeStyles[toast.type]
-            }`}
+            className={`flex items-start justify-between ${
+              typeStyles[toast.type].bg
+            } border ${
+              typeStyles[toast.type].border
+            } rounded-xl shadow-sm p-2 mx-2 sm:mx-0`}
           >
-            <div className="mr-2 sm:mr-3 mt-1 flex-shrink-0">
-              {icons[toast.type]}
+            <div className="flex gap-3 items-center flex-1">
+              <div className="flex-shrink-0">{icons[toast.type]}</div>
+              <div className="flex flex-col min-w-0">
+                <span
+                  className={`font-semibold ${
+                    typeStyles[toast.type].text
+                  } text-sm sm:text-base truncate`}
+                >
+                  {toast.title}
+                </span>
+                <span
+                  className={`text-sm ${
+                    typeStyles[toast.type].text
+                  } break-words`}
+                >
+                  {toast.message}
+                </span>
+              </div>
             </div>
-
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm sm:text-base truncate">
-                {toast.title}
-              </p>
-              <p className="text-xs sm:text-sm break-words">{toast.message}</p>
-            </div>
-
             <button
               onClick={() => removeToast(toast.id)}
-              className="ml-2 sm:ml-3 flex-shrink-0"
+              className="flex-shrink-0 ml-2"
             >
-              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
             </button>
           </div>
         ))}
