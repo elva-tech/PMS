@@ -7,6 +7,7 @@ const contactRoutes = require("./routes/contact.routes");
 const authRoutes = require("./routes/auth.routes");
 const projectRoutes = require("./routes/project.routes");
 const plotRoutes = require("./routes/plot.routes");
+const userRoutes = require("./routes/user.routes");
 const { errorConverter, errorHandler } = require("./middleware/error");
 
 const app = express();
@@ -109,6 +110,7 @@ app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/plots", plotRoutes);
+app.use("/api/v1/users", userRoutes);
 
 // Handle undefined routes
 app.all("*", (req, res, next) => {
