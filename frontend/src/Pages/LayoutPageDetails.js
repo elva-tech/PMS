@@ -4,6 +4,8 @@ import { Search, X, Edit, Trash2 } from "lucide-react";
 import { RiUserAddLine } from "react-icons/ri";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import AddUserModal from "../Components/AddUserModal";
+import { useUsers, useDeleteUser, useUpdateUser } from "../hooks/useUserHooks";
+import DeleteModal from "../Components/DeleteModal";
 
 const LayoutPageDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,6 +15,11 @@ const LayoutPageDetails = () => {
     sortOrder: "desc",
   });
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
+
+  const getStatusText = (status) => {
+    return status === 1 ? "Active" : "Inactive";
+  };
   const [users, setUsers] = useState([
     {
       id: 1,
@@ -36,17 +43,71 @@ const LayoutPageDetails = () => {
       createdAt: "2024-01-10",
     },
   ]);
+  const deleteUserMutation = useDeleteUser();
+  const updateUserMutation = useUpdateUser();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const { data: usersData = [], isLoading, isError, error } = useUsers();
+  console.log("Users data from hook:", usersData);
   const handleAddUser = (user) => {
     setUsers([
       ...users,
       { ...user, createdAt: new Date().toISOString().split("T")[0] },
     ]);
   };
+
+  const handleEditUser = (user) => {
+    setUserToEdit(user);
+    setIsAddUserModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsAddUserModalOpen(false);
+    setUserToEdit(null);
+  };
+
+  const handleToggleUserStatus = async (user) => {
+    try {
+      const newStatus = user.userstatus === 1 ? 0 : 1;
+      await updateUserMutation.mutateAsync({
+        id: user.userid,
+        userData: {
+          username: user.username,
+          useremail: user.useremail,
+          userstatus: newStatus,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+    }
+  };
+
+  const handleDeleteUser = (userId) => {
+    setUserToDelete(userId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (userToDelete) {
+      deleteUserMutation.mutate(userToDelete, {
+        onSuccess: () => {
+          setIsDeleteModalOpen(false);
+          setUserToDelete(null);
+        },
+      });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setUserToDelete(null);
+  };
+
   return (
     <div className="mt-4">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center px-4 sm:px-6 space-y-4 lg:space-y-0">
         <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 text-center sm:text-left w-full lg:w-auto">
-          Users [{users.length}]
+          Users [{usersData.length}]
         </h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full lg:w-auto">
           <div className="relative w-full sm:w-auto sm:min-w-[250px]">
@@ -82,6 +143,7 @@ const LayoutPageDetails = () => {
             </button>
             <button
               onClick={() => {
+                setUserToEdit(null);
                 setIsAddUserModalOpen(true);
               }}
               className="flex-1 sm:flex-none bg-blue-600 text-white rounded-lg py-2.5 px-4 text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center transition-all duration-200 shadow-sm h-[42px]"
@@ -112,57 +174,50 @@ const LayoutPageDetails = () => {
                 </tr>
               </thead>
               <tbody className="text-gray-600 text-xs md:text-sm font-semibold">
-                {users.map((user) => (
+                {usersData.map((user) => (
                   <tr
                     key={user.id}
                     className="border-b border-gray-200 hover:bg-gray-100"
                   >
-                    <td className="py-3 px-4">{user.name}</td>
-                    <td className="py-3 px-4">{user.email}</td>
+                    <td className="py-3 px-4">{user.username}</td>
+                    <td className="py-3 px-4">{user.useremail}</td>
                     <td className="py-3 px-4">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
-                          user.status === "Active"
+                          user.userstatus === 1
                             ? "bg-green-100 text-green-700"
                             : "bg-gray-200 text-gray-700"
                         }`}
                       >
-                        {user.status}
+                        {getStatusText(user.userstatus)}
                       </span>
                     </td>
-                    <td className="py-3 px-4">{user.createdAt}</td>
+                    <td className="py-3 px-4">
+                      {user.createdAt.split(",")[0]}
+                    </td>
                     <td className="py-3 px-4">
                       <label className="inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           className="sr-only"
-                          checked={user.status === "Active"}
-                          onChange={() =>
-                            setUsers((prev) =>
-                              prev.map((u) =>
-                                u.id === user.id
-                                  ? {
-                                      ...u,
-                                      status:
-                                        u.status === "Active"
-                                          ? "Inactive"
-                                          : "Active",
-                                    }
-                                  : u
-                              )
-                            )
-                          }
+                          checked={user.userstatus === 1}
+                          onChange={() => handleToggleUserStatus(user)}
+                          disabled={updateUserMutation.isPending}
                         />
                         <div
                           className={`w-10 h-5 rounded-full transition relative ${
-                            user.status === "Active"
+                            user.userstatus === 1
                               ? "bg-green-500"
                               : "bg-gray-300"
+                          } ${
+                            updateUserMutation.isPending
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
                           }`}
                         >
                           <div
                             className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transform transition ${
-                              user.status === "Active"
+                              user.userstatus === 1
                                 ? "translate-x-5"
                                 : "translate-x-0"
                             }`}
@@ -172,10 +227,16 @@ const LayoutPageDetails = () => {
                     </td>
                     <td className="py-3 px-4 flex gap-2">
                       <button className="flex items-center gap-1 px-2 py-1  text-gray-700 hover:bg-gray-100 text-sm">
-                        <Edit className="w-4 h-4" />
+                        <Edit
+                          className="w-4 h-4"
+                          onClick={() => handleEditUser(user)}
+                        />
                       </button>
                       <button className="flex items-center gap-1 px-2 py-1  text-red-600 hover:bg-red-50 text-sm">
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2
+                          className="w-4 h-4"
+                          onClick={() => handleDeleteUser(user.userid)}
+                        />
                       </button>
                     </td>
                   </tr>
@@ -188,8 +249,20 @@ const LayoutPageDetails = () => {
       {isAddUserModalOpen && (
         <AddUserModal
           isOpen={isAddUserModalOpen}
-          onClose={() => setIsAddUserModalOpen(false)}
+          onClose={handleCloseModal}
           onSave={handleAddUser}
+          userToEdit={userToEdit}
+        />
+      )}
+
+      {isDeleteModalOpen && (
+        <DeleteModal
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          title="Delete User"
+          message={`Are you sure you want to delete this ${userToDelete?.username} user?`}
+          confirmText="Delete User"
+          cancelText="Cancel"
         />
       )}
     </div>
