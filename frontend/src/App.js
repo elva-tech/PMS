@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import Layout from "./containers/Layout";
 import LoadingSpinner from "./Components/LoadingSpinner";
 import { AuthProvider } from "./Context/AuthContext";
@@ -18,6 +19,7 @@ function App() {
           </ProjectProvider>
         </ToastProvider>
       </AuthProvider>
+      <Analytics />
     </Router>
   );
 }
