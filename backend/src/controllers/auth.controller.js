@@ -1,10 +1,14 @@
 const jwt = require("jsonwebtoken");
 const httpStatus = require("http-status");
 const { logger } = require("../utils/logger");
+const {
+  getUserByEmail,
+  validatePassword,
+  getUsersWithPasswords,
+} = require("../services/user.service");
 process.env.USERNAME =
   require("dotenv").config().parsed.USERNAME || process.env.USERNAME;
 const JWT_SECRET = process.env.JWT_SECRET;
-
 const validateToken = (token) => {
   try {
     if (!token) {
@@ -42,26 +46,89 @@ const ADMIN_CREDENTIALS = {
   password: process.env.PASSWORD,
 };
 
-const login = (req, res) => {
-  const { username, password } = req.body;
-  if (
-    username === ADMIN_CREDENTIALS.username &&
-    password === ADMIN_CREDENTIALS.password
-  ) {
-    const token = jwt.sign(
-      { username: ADMIN_CREDENTIALS.username },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.json({
-      success: true,
-      token,
-      message: "Login successful",
-    });
-  } else {
-    res.status(401).json({
+const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Check if credentials match admin
+    if (
+      username === ADMIN_CREDENTIALS.username &&
+      password === ADMIN_CREDENTIALS.password
+    ) {
+      const token = jwt.sign(
+        {
+          username: ADMIN_CREDENTIALS.username,
+          role: "admin",
+          type: "admin",
+        },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      return res.json({
+        success: true,
+        token,
+        message: "Admin login successful",
+        user: {
+          username: ADMIN_CREDENTIALS.username,
+          role: "admin",
+          type: "admin",
+        },
+      });
+    }
+
+    // Check if credentials match by email
+    let user;
+    user = await getUserByEmail(username);
+    // Check if credentials match by email
+    if (!user) {
+      const allUsers = await getUsersWithPasswords();
+      user = allUsers.find((u) => u.username === username);
+    }
+    if (user && user.userstatus === 1) {
+      // Check if user is active
+      const isPasswordValid = await validatePassword(
+        password,
+        user.userpassword
+      );
+
+      if (isPasswordValid) {
+        const token = jwt.sign(
+          {
+            userid: user.userid,
+            username: user.username,
+            useremail: user.useremail,
+            role: "user",
+            type: "user",
+          },
+          JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+
+        return res.json({
+          success: true,
+          token,
+          message: "User login successful",
+          user: {
+            userid: user.userid,
+            username: user.username,
+            useremail: user.useremail,
+            role: "user",
+            type: "user",
+          },
+        });
+      }
+    }
+
+    // If neither admin nor user credentials match
+    return res.status(401).json({
       success: false,
       message: "Invalid credentials",
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error during login",
     });
   }
 };

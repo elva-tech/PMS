@@ -23,6 +23,18 @@ const auth = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, config.jwt.secret);
       req.user = decoded;
+
+      // Check if user is active (only for user type, not admin)
+      if (
+        decoded.type === "user" &&
+        decoded.userstatus !== undefined &&
+        decoded.userstatus !== 1
+      ) {
+        return res.status(httpStatus.UNAUTHORIZED).json({
+          message: "User account is inactive",
+        });
+      }
+
       next();
     } catch (error) {
       return res.status(httpStatus.UNAUTHORIZED).json({

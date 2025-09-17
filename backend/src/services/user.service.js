@@ -37,6 +37,10 @@ const getUsers = async () => {
   return User.find().select("-userpassword"); // Exclude password from response
 };
 
+const getUsersWithPasswords = async () => {
+  return User.find(); // Include password for authentication purposes
+};
+
 const getUserById = async (userId) => {
   return User.findOne(buildUserQuery(userId)).select("-userpassword"); // Exclude password from response
 };
@@ -74,6 +78,7 @@ const validatePassword = async (plainPassword, hashedPassword) => {
 module.exports = {
   createUser,
   getUsers,
+  getUsersWithPasswords,
   getUserById,
   updateUser,
   deleteUser,
