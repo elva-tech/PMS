@@ -122,7 +122,9 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
       <div className="border-t border-white mt-auto">
         <div className="flex items-center gap-3 px-4 py-2 text-white">
           <CircleUserRound size={24} />
-          <span className="font-medium">{user?.name || "Abhishek"}</span>
+          <span className="font-medium">
+            {user?.user?.username || "Abhishek"}
+          </span>
         </div>
         <button
           onClick={handleLogout}
