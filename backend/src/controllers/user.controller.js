@@ -22,9 +22,16 @@ const createUser = catchAsync(async (req, res) => {
 });
 
 const getUsers = catchAsync(async (req, res) => {
-  const users = await userService.getUsers();
+  const { page, limit, sortBy, sortOrder } = req.query;
 
-  const formattedUsers = users.map((user) => ({
+  const result = await userService.getUsers({
+    page: parseInt(page, 10) || 1,
+    limit: parseInt(limit, 10) || 10,
+    sortBy: sortBy || "createdAt",
+    sortOrder: sortOrder || "desc",
+  });
+
+  const formattedUsers = result.users.map((user) => ({
     userid: user.userid,
     username: user.username,
     useremail: user.useremail,
@@ -37,7 +44,7 @@ const getUsers = catchAsync(async (req, res) => {
     status: "success",
     message: "Users retrieved successfully",
     data: formattedUsers,
-    count: formattedUsers.length,
+    pagination: result.pagination,
   });
 });
 

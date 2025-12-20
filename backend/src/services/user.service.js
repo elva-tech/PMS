@@ -33,8 +33,47 @@ const createUser = async (userData) => {
   return user.save();
 };
 
-const getUsers = async () => {
-  return User.find().select("-userpassword"); // Exclude password from response
+const getUsers = async ({
+  page = 1,
+  limit = 10,
+  sortBy = "createdAt",
+  sortOrder = "desc",
+}) => {
+  try {
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Create sort object
+    const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+
+    // Get total count of users
+    const total = await User.countDocuments();
+
+    // Get paginated and sorted users (excluding password)
+    const users = await User.find({})
+      .select("-userpassword")
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Calculate total pages
+    const totalPages = Math.ceil(total / limit);
+
+    // Return paginated result with metadata
+    return {
+      users,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalRecords: total,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getUsersWithPasswords = async () => {

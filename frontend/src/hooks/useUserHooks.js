@@ -1,12 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../utils/axiosInstance";
 
-export const useUsers = () => {
+export const useUsers = ({
+  page = 1,
+  limit = 10,
+  sortBy = "createdAt",
+  sortOrder = "desc",
+} = {}) => {
   return useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", page, limit, sortBy, sortOrder],
     queryFn: async () => {
-      const res = await axiosInstance.get("/api/v1/users");
-      return res?.data?.data;
+      const res = await axiosInstance.get("/api/v1/users", {
+        params: { page, limit, sortBy, sortOrder },
+      });
+      return {
+        users: res?.data?.data || [],
+        pagination: res?.data?.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalRecords: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
     },
   });
 };

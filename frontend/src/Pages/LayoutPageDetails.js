@@ -14,6 +14,13 @@ const LayoutPageDetails = () => {
     sortBy: "createdAt",
     sortOrder: "desc",
   });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalRecords: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
 
@@ -47,7 +54,26 @@ const LayoutPageDetails = () => {
   const updateUserMutation = useUpdateUser();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
-  const { data: usersData = [], isLoading, isError, error } = useUsers();
+  const {
+    data: usersResponse,
+    isLoading,
+    isError,
+    error,
+  } = useUsers({
+    page: pagination.currentPage,
+    limit: 10,
+    sortBy: sortConfig.sortBy,
+    sortOrder: sortConfig.sortOrder,
+  });
+
+  const usersData = usersResponse?.users || [];
+
+  useEffect(() => {
+    if (usersResponse?.pagination) {
+      setPagination(usersResponse.pagination);
+    }
+  }, [usersResponse?.pagination]);
+
   console.log("Users data from hook:", usersData);
   const handleAddUser = (user) => {
     setUsers([
@@ -107,7 +133,7 @@ const LayoutPageDetails = () => {
     <div className="mt-4">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center px-4 sm:px-6 space-y-4 lg:space-y-0">
         <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 text-center sm:text-left w-full lg:w-auto">
-          Users [{usersData.length}]
+          Users [{pagination.totalRecords}]
         </h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full lg:w-auto">
           <div className="relative w-full sm:w-auto sm:min-w-[250px]">
@@ -125,12 +151,12 @@ const LayoutPageDetails = () => {
           </div>
           <div className="flex flex-row space-x-2 w-full sm:w-auto">
             <button
-              // onClick={() =>
-              //   setSortConfig((prev) => ({
-              //     sortBy: "createdAt",
-              //     sortOrder: prev.sortOrder === "desc" ? "asc" : "desc",
-              //   }))
-              // }
+              onClick={() =>
+                setSortConfig((prev) => ({
+                  sortBy: "createdAt",
+                  sortOrder: prev.sortOrder === "desc" ? "asc" : "desc",
+                }))
+              }
               className="flex-1 sm:flex-none border border-gray-300 rounded-lg py-2.5 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex items-center justify-center transition-all duration-200 h-[42px]"
             >
               <span className="hidden sm:inline">Sort by: </span>
@@ -174,75 +200,144 @@ const LayoutPageDetails = () => {
                 </tr>
               </thead>
               <tbody className="text-gray-600 text-xs md:text-sm font-semibold">
-                {usersData.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-gray-200 hover:bg-gray-100"
-                  >
-                    <td className="py-3 px-4">{user.username}</td>
-                    <td className="py-3 px-4">{user.useremail}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          user.userstatus === 1
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-200 text-gray-700"
-                        }`}
-                      >
-                        {getStatusText(user.userstatus)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {user.createdAt.split(",")[0]}
-                    </td>
-                    <td className="py-3 px-4">
-                      <label className="inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={user.userstatus === 1}
-                          onChange={() => handleToggleUserStatus(user)}
-                          disabled={updateUserMutation.isPending}
-                        />
-                        <div
-                          className={`w-10 h-5 rounded-full transition relative ${
+                {console.log("user Data:-", usersData)}
+                {usersData
+                  .filter(
+                    (user) =>
+                      user.username
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                      user.useremail
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                  )
+                  .map((user, index) => (
+                    <tr
+                      key={user.userid}
+                      className="border-b border-gray-200 hover:bg-gray-100"
+                    >
+                      <td className="py-3 px-4">{user.username}</td>
+                      <td className="py-3 px-4">{user.useremail}</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
                             user.userstatus === 1
-                              ? "bg-green-500"
-                              : "bg-gray-300"
-                          } ${
-                            updateUserMutation.isPending
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-200 text-gray-700"
                           }`}
                         >
+                          {getStatusText(user.userstatus)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {user.createdAt.split(",")[0]}
+                      </td>
+                      <td className="py-3 px-4">
+                        <label className="inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={user.userstatus === 1}
+                            onChange={() => handleToggleUserStatus(user)}
+                            disabled={updateUserMutation.isPending}
+                          />
                           <div
-                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transform transition ${
+                            className={`w-10 h-5 rounded-full transition relative ${
                               user.userstatus === 1
-                                ? "translate-x-5"
-                                : "translate-x-0"
+                                ? "bg-green-500"
+                                : "bg-gray-300"
+                            } ${
+                              updateUserMutation.isPending
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
                             }`}
-                          ></div>
-                        </div>
-                      </label>
-                    </td>
-                    <td className="py-3 px-4 flex gap-2">
-                      <button className="flex items-center gap-1 px-2 py-1  text-gray-700 hover:bg-gray-100 text-sm">
-                        <Edit
-                          className="w-4 h-4"
-                          onClick={() => handleEditUser(user)}
-                        />
-                      </button>
-                      <button className="flex items-center gap-1 px-2 py-1  text-red-600 hover:bg-red-50 text-sm">
-                        <Trash2
-                          className="w-4 h-4"
-                          onClick={() => handleDeleteUser(user.userid)}
-                        />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                          >
+                            <div
+                              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transform transition ${
+                                user.userstatus === 1
+                                  ? "translate-x-5"
+                                  : "translate-x-0"
+                              }`}
+                            ></div>
+                          </div>
+                        </label>
+                      </td>
+                      <td className="py-3 px-4 flex gap-2">
+                        <button className="flex items-center gap-1 px-2 py-1  text-gray-700 hover:bg-gray-100 text-sm">
+                          <Edit
+                            className="w-4 h-4"
+                            onClick={() => handleEditUser(user)}
+                          />
+                        </button>
+                        <button className="flex items-center gap-1 px-2 py-1  text-red-600 hover:bg-red-50 text-sm">
+                          <Trash2
+                            className="w-4 h-4"
+                            onClick={() => handleDeleteUser(user.userid)}
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 py-3 text-xs md:text-sm rounded-lg shadow-lg">
+            <div className="text-gray-600 mb-2 md:mb-0">
+              Showing {usersData.length} of {pagination.totalRecords} users
+            </div>
+            <div className="flex space-x-1">
+              <button
+                onClick={() =>
+                  setPagination((prev) => ({
+                    ...prev,
+                    currentPage: prev.currentPage - 1,
+                  }))
+                }
+                disabled={!pagination.hasPrevPage}
+                className={`py-1 px-3 rounded ${
+                  pagination.hasPrevPage
+                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                &lt;
+              </button>
+              {[...Array(pagination.totalPages)].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() =>
+                    setPagination((prev) => ({
+                      ...prev,
+                      currentPage: index + 1,
+                    }))
+                  }
+                  className={`py-1 px-3 rounded ${
+                    pagination.currentPage === index + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                onClick={() =>
+                  setPagination((prev) => ({
+                    ...prev,
+                    currentPage: prev.currentPage + 1,
+                  }))
+                }
+                disabled={!pagination.hasNextPage}
+                className={`py-1 px-3 rounded ${
+                  pagination.hasNextPage
+                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                &gt;
+              </button>
+            </div>
           </div>
         </div>
       )}

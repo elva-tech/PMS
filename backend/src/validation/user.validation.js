@@ -21,7 +21,19 @@ const updateUser = {
   }),
 };
 
+const getUsers = {
+  query: Joi.object().keys({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sortBy: Joi.string()
+      .valid("createdAt", "updatedAt", "username", "useremail")
+      .default("createdAt"),
+    sortOrder: Joi.string().valid("asc", "desc").default("desc"),
+  }),
+};
+
 module.exports = {
   createUser,
   updateUser,
+  getUsers,
 };
