@@ -1,13 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Spline from "@splinetool/react-spline";
-import herobg1 from "../Images/hero-bg1.jpg";
-import sjdlogo from "../Images/sjd-logo.png";
-import sjdlogo1 from "../Images/sjd-logo1.png";
-import elvalogo from "../Images/elva-logo.jpeg";
-import logo1 from "../Images/logo1.png";
 import LocationsPage from "./LocationsPage";
-import house1 from "../Images/house1.png";
-import house2 from "../Images/house2.png";
 import slnlayout from "../Images/sln-layout.jpg";
 import nrlayout from "../Images/nr-layout.jpg";
 import balajilayout from "../Images/balaji-layout.jpg";
@@ -25,6 +18,7 @@ import ContactSection from "../Components/ContactSection";
 import WhyChooseUs from "../Components/WhyChooseUs";
 import OurStory from "../Components/OurStory";
 import FooterSection from "../Components/FooterSection";
+import axios from "axios";
 
 const Landingpage = () => {
   const projectsRef = useRef(null);
@@ -41,6 +35,29 @@ const Landingpage = () => {
   ];
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch projects from API
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(
+          `${
+            process.env.REACT_APP_API_URL || "http://localhost:5000"
+          }/api/v1/public/projects`
+        );
+        if (response.data?.data?.projects) {
+          setProjects(response.data.data.projects);
+        }
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const scrollToProjects = () => {
     projectsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,31 +126,43 @@ const Landingpage = () => {
       {/* Projects Section */}
       <div ref={projectsRef} className="bg-black text-white p-10">
         <h3 className="text-xl md:text-3xl font-bold mb-6">Our Projects</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {[
-            "N R Layout",
-            "Balaji Layout",
-            "SLN Layout",
-            "TVS Layout",
-            "Dollars Colony",
-          ].map((project, index) => (
-            <div
-              key={index}
-              className="text-center"
-              // onClick={() => navigate(`/${project.replace(/\s+/g, "-")}`)}
-            >
-              <div className="w-full aspect-[4/3] bg-gray-700 border-4 border-gray-200 rounded-lg">
-                <img
-                  src={layoutImages[index]}
-                  alt={project}
-                  className="w-full h-full object-cover rounded-lg"
-                />
+        {loading ? (
+          <div className="flex justify-center items-center py-10">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+          </div>
+        ) : projects.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {projects.map((project, index) => (
+              <div
+                key={project._id || index}
+                className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => navigate(`/home/project/${project._id}`)}
+              >
+                <div className="w-full aspect-[4/3] bg-gray-700 border-4 border-gray-200 rounded-lg overflow-hidden">
+                  {project.image ? (
+                    <img
+                      src={`data:${project.image.contentType};base64,${project.image.data}`}
+                      alt={project.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      No Image
+                    </div>
+                  )}
+                </div>
+                <h4 className="font-semibold mt-2">{project.name}</h4>
+                {project.location && (
+                  <p className="text-gray-400 text-sm">{project.location}</p>
+                )}
               </div>
-              <h4 className="font-semibold">{project}</h4>
-              {/* <p className="text-gray-400">Location</p> */}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 py-10">
+            No projects available
+          </div>
+        )}
       </div>
 
       {/* Our Story Section */}
@@ -143,10 +172,9 @@ const Landingpage = () => {
       >
         <OurStory />
       </div>
-
       {/* Featured Properties Section */}
       <div ref={locationsRef} className="bg-white p-10">
-        <LocationsPage />
+        <LocationsPage projects={projects} />
       </div>
 
       {/* Stats Section */}

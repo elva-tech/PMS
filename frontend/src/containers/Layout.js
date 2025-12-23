@@ -5,6 +5,8 @@ import pageroutes from "../Routes/index";
 import ProtectedRoute from "../utils/ProtectedRoute";
 import Landingpage from "../Pages/Landingpage";
 import ProjectsDashboard from "../Pages/ProjectDashboard";
+import PublicProjectDetails from "../Pages/PublicProjectDetails";
+
 const Layout = () => {
   const location = useLocation();
   const { pathname } = location;
@@ -14,6 +16,9 @@ const Layout = () => {
       <Routes>
         <Route path="/home" element={<Landingpage />} />
         <Route path="/" element={<Navigate to="/home" replace />} />
+
+        {/* Public Project Details Route */}
+        <Route path="/home/project/:id" element={<PublicProjectDetails />} />
 
         {/* Protected Routes */}
         {pageroutes.map((page, index) => (

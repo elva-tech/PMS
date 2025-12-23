@@ -168,15 +168,28 @@ const getProject = catchAsync(async (req, res) => {
 const getProjectImage = catchAsync(async (req, res) => {
   const project = await projectService.getProjectById(req.params.projectId);
 
-  if (!project || !project.image || !project.image.data) {
+  if (!project) {
     return res.status(httpStatus.NOT_FOUND).json({
       status: "error",
-      message: "Project image not found",
+      message: "Project not found",
     });
   }
 
-  res.set("Content-Type", project.image.contentType);
-  res.send(project.image.data);
+  res.status(httpStatus.OK).json({
+    status: "success",
+    data: {
+      name: project.name,
+      description: project.description,
+      image:
+        project.image && project.image.data
+          ? {
+              data: project.image.data.toString("base64"),
+              contentType: project.image.contentType,
+              originalName: project.image.originalName,
+            }
+          : null,
+    },
+  });
 });
 
 const updateProject = catchAsync(async (req, res) => {

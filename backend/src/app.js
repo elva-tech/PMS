@@ -8,6 +8,7 @@ const authRoutes = require("./routes/auth.routes");
 const projectRoutes = require("./routes/project.routes");
 const plotRoutes = require("./routes/plot.routes");
 const userRoutes = require("./routes/user.routes");
+const publicRoutes = require("./routes/public.routes");
 const { errorConverter, errorHandler } = require("./middleware/error");
 
 const app = express();
@@ -106,6 +107,7 @@ app.get(["/", "/api"], (req, res) => {
 });
 
 // API routes
+app.use("/api/v1/public", publicRoutes);
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/projects", projectRoutes);

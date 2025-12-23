@@ -131,7 +131,7 @@ const LayoutPageDetails = () => {
 
   return (
     <div className="mt-4">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center px-4 sm:px-6 space-y-4 lg:space-y-0">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
         <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 text-center sm:text-left w-full lg:w-auto">
           Users [{pagination.totalRecords}]
         </h2>

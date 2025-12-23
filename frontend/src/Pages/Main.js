@@ -181,7 +181,7 @@ const PropertyDetailsPage = () => {
       case "documents":
         return <DocumentDetailsPage />;
       case "plotallotment":
-        return <GeneralInfoPage />;
+        return <GeneralInfoPage projectId={id} />;
       case "interestedbuyers":
         return <InterestedBuyersPage />;
       case "payments":
