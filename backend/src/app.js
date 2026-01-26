@@ -51,11 +51,11 @@ if (config.env === "development" || process.env.NODE_ENV === "development") {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Methods",
-      "GET, PUT, POST, DELETE, OPTIONS"
+      "GET, PUT, POST, DELETE, OPTIONS",
     );
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     );
 
     // Handle preflight OPTIONS request

@@ -44,7 +44,7 @@ const Landingpage = () => {
       try {
         const response = await axios.get(
           `${
-            process.env.REACT_APP_API_URL || "http://localhost:5000"
+            process.env.REACT_APP_BASE_URL || "http://localhost:5000"
           }/api/v1/public/projects`
         );
         if (response.data?.data?.projects) {
