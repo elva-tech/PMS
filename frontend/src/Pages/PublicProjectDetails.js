@@ -17,8 +17,8 @@ const PublicProjectDetails = () => {
       try {
         const response = await axios.get(
           `${
-            process.env.REACT_APP_API_URL || "http://localhost:5000"
-          }/api/v1/public/projects/${id}`
+            process.env.REACT_APP_BASE_URL || "http://localhost:5000"
+          }/api/v1/public/projects/${id}`,
         );
         if (response.data?.data?.project) {
           setProject(response.data.data.project);
@@ -100,8 +100,8 @@ const PublicProjectDetails = () => {
                   project.status === "active"
                     ? "bg-green-100 text-green-800"
                     : project.status === "completed"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-yellow-100 text-yellow-800"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-yellow-100 text-yellow-800"
                 }`}
               >
                 {project.status?.charAt(0).toUpperCase() +
