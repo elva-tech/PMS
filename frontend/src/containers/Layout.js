@@ -4,7 +4,6 @@ import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import pageroutes from "../Routes/index";
 import ProtectedRoute from "../utils/ProtectedRoute";
 import Landingpage from "../Pages/Landingpage";
-import ProjectsDashboard from "../Pages/ProjectDashboard";
 import PublicProjectDetails from "../Pages/PublicProjectDetails";
 
 const Layout = () => {
