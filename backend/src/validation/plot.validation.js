@@ -13,6 +13,7 @@ const createPlot = {
     plotstatus: Joi.string()
       .valid("Available", "Sold", "Reserved")
       .default("Available"),
+    assigneduserid: Joi.string().trim().allow(null, ""),
   }),
 };
 
@@ -29,6 +30,7 @@ const updatePlot = {
     plotstatus: Joi.string()
       .valid("Available", "Sold", "Reserved")
       .default("Available"),
+    assigneduserid: Joi.string().trim().allow(null, ""),
   }),
 };
 

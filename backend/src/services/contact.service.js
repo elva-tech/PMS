@@ -6,11 +6,15 @@ class ContactService {
       const contactWithDefaults = {
         ...contactData,
         interested: contactData.interested || 1,
+        projectId:
+          contactData.projectId && String(contactData.projectId).trim()
+            ? String(contactData.projectId).trim()
+            : null,
       };
       const contact = new Contact(contactWithDefaults);
       const savedContact = await contact.save();
-      const { _id, __v, interested, createdAt, ...rest } =
-        savedContact.toObject();
+      const obj = savedContact.toObject();
+      const { _id, __v, createdAt, ...rest } = obj;
       const istDate = new Date(createdAt).toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         year: "numeric",
@@ -21,7 +25,12 @@ class ContactService {
         second: "2-digit",
         hour12: true,
       });
-      return { ...rest, createdAt: istDate };
+      return {
+        id: _id,
+        ...rest,
+        interested: obj.interested,
+        createdAt: istDate,
+      };
     } catch (error) {
       throw error;
     }
@@ -32,6 +41,7 @@ class ContactService {
     limit = 10,
     sortBy = "createdAt",
     sortOrder = "desc",
+    projectId,
   }) {
     try {
       // Calculate skip value for pagination
@@ -40,11 +50,16 @@ class ContactService {
       // Create sort object
       const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
 
+      const filter =
+        projectId && String(projectId).trim()
+          ? { projectId: String(projectId).trim() }
+          : {};
+
       // Get total count of contacts
-      const total = await Contact.countDocuments();
+      const total = await Contact.countDocuments(filter);
 
       // Get paginated and sorted contacts
-      const contacts = await Contact.find({})
+      const contacts = await Contact.find(filter)
         .sort(sort)
         .skip(skip)
         .limit(limit)

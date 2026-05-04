@@ -26,6 +26,11 @@ const contactSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  projectId: {
+    type: String,
+    default: null,
+    trim: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

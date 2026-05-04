@@ -111,6 +111,10 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
 };
 
 export default function ProjectsDashboard() {
+  const { user } = useAuth();
+  const isEndUser =
+    user?.user?.role === "user" && user?.user?.type === "user";
+
   const { data: projectsData = [], isLoading, isError, error } = useProjects();
   const deleteProjectMutation = useDeleteProject();
   const updateProjectMutation = useUpdateProject();
@@ -125,6 +129,16 @@ export default function ProjectsDashboard() {
     if (typeof projectsData === "object") return [projectsData];
     return [];
   }, [projectsData]);
+
+  useEffect(() => {
+    if (!isEndUser || isLoading) return;
+    if (projects.length > 0) {
+      const firstId = projects[0]._id;
+      if (firstId) {
+        navigate(`/project/${firstId}/documents`, { replace: true });
+      }
+    }
+  }, [isEndUser, isLoading, projects, navigate]);
 
   const [editProjectData, setEditProjectData] = useState(null);
   const [addProjectModal, setAddProjectModal] = useState(false);

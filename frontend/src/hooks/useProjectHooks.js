@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../utils/axiosInstance";
 
-export const useProjects = () => {
+export const useProjects = (queryOptions = {}) => {
   return useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
       const res = await axiosInstance.get("/api/v1/projects");
       return res?.data?.data;
     },
+    ...queryOptions,
   });
 };
 

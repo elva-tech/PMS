@@ -1,5 +1,6 @@
 const Plot = require("../models/plot.model");
 const Project = require("../models/project.model");
+const Payment = require("../models/payment.model");
 const httpStatus = require("http-status");
 const ApiError = require("../utils/ApiError");
 
@@ -32,6 +33,50 @@ const getPlots = async (
       .limit(limit)
       .lean();
 
+    if (plots.length > 0) {
+      const plotIdStrings = plots.map((p) => String(p._id));
+      const paymentAgg = await Payment.aggregate([
+        {
+          $match: {
+            projectid: projectId,
+            plotid: { $in: plotIdStrings },
+          },
+        },
+        {
+          $group: {
+            _id: "$plotid",
+            totalSuccessAmount: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "Success"] }, "$amount", 0],
+              },
+            },
+            totalPendingAmount: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "Pending"] }, "$amount", 0],
+              },
+            },
+            installmentCount: { $sum: 1 },
+          },
+        },
+      ]);
+      const byPlot = {};
+      paymentAgg.forEach((row) => {
+        byPlot[row._id] = {
+          totalSuccessAmount: row.totalSuccessAmount,
+          totalPendingAmount: row.totalPendingAmount,
+          installmentCount: row.installmentCount,
+        };
+      });
+      plots.forEach((plot) => {
+        const key = String(plot._id);
+        plot.paymentSummary = byPlot[key] || {
+          totalSuccessAmount: 0,
+          totalPendingAmount: 0,
+          installmentCount: 0,
+        };
+      });
+    }
+
     // Calculate total pages
     const totalPages = Math.ceil(total / limit);
 
@@ -58,7 +103,38 @@ const createPlot = async (plotData) => {
 
 const updatePlot = async (projectId, plotId, plotData) => {
   await verifyProjectExists(projectId);
-  return Plot.findByIdAndUpdate(plotId, plotData, { new: true });
+
+  const updateOps = {};
+  const setData = { ...plotData };
+
+  if (Object.prototype.hasOwnProperty.call(plotData, "assigneduserid")) {
+    if (
+      plotData.assigneduserid === null ||
+      plotData.assigneduserid === "" ||
+      plotData.assigneduserid === undefined
+    ) {
+      updateOps.$unset = { assigneduserid: "" };
+      delete setData.assigneduserid;
+    }
+  }
+
+  if (Object.keys(setData).length) {
+    updateOps.$set = setData;
+  }
+
+  if (!updateOps.$set && !updateOps.$unset) {
+    return Plot.findOne({ _id: plotId, projectid: projectId });
+  }
+
+  const mongoUpdate = {};
+  if (updateOps.$set) mongoUpdate.$set = updateOps.$set;
+  if (updateOps.$unset) mongoUpdate.$unset = updateOps.$unset;
+
+  return Plot.findOneAndUpdate(
+    { _id: plotId, projectid: projectId },
+    mongoUpdate,
+    { new: true }
+  );
 };
 
 const deletePlot = async (projectId, plotId) => {

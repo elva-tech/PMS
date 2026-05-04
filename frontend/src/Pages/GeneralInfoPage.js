@@ -1,11 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { Search, Edit, Trash2, Plus, UserPlus, FileDiff } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  Search,
+  Trash2,
+  UserPlus,
+  FileDiff,
+  Edit2,
+} from "lucide-react";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import { usePlot, useDeletePlot, useUpdatePlot } from "../hooks/usePlotHooks";
+import { useUsers } from "../hooks/useUserHooks";
 import DeleteModal from "../Components/DeleteModal";
 import CreatePlotModal from "../Components/CreatePlotModal";
+import { useAuth } from "../Context/AuthContext";
 
 const GeneralInfoPage = ({ projectId }) => {
+  const { user } = useAuth();
+  const isAdmin =
+    user?.user?.role === "admin" && user?.user?.type === "admin";
+  const isEndUser =
+    user?.user?.role === "user" && user?.user?.type === "user";
+  const endUserId = user?.user?.userid;
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
     sortBy: "createdAt",
@@ -22,9 +36,32 @@ const GeneralInfoPage = ({ projectId }) => {
   const [plotToEdit, setPlotToEdit] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [plotToDelete, setPlotToDelete] = useState(null);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [plotToAssign, setPlotToAssign] = useState(null);
+  const [assignUserId, setAssignUserId] = useState("");
 
   const deletePlotMutation = useDeletePlot();
   const updatePlotMutation = useUpdatePlot();
+
+  const { data: usersPayload } = useUsers({
+    page: 1,
+    limit: 300,
+    sortBy: "username",
+    sortOrder: "asc",
+    enabled: isAdmin,
+  });
+  const usersList = usersPayload?.users || [];
+
+  const userById = useMemo(() => {
+    const m = {};
+    usersList.forEach((u) => {
+      m[u.userid] = u;
+    });
+    return m;
+  }, [usersList]);
+
+  const plotPage = isEndUser ? 1 : pagination.currentPage;
+  const plotLimit = isEndUser ? 500 : 10;
 
   const {
     data: plotsResponse,
@@ -33,19 +70,25 @@ const GeneralInfoPage = ({ projectId }) => {
     error,
   } = usePlot(
     projectId,
-    pagination.currentPage,
-    10,
+    plotPage,
+    plotLimit,
     sortConfig.sortBy,
     sortConfig.sortOrder
   );
 
-  const plotsData = plotsResponse?.data?.plots || [];
+  const plotsRaw = plotsResponse?.data?.plots || [];
+
+  const plotsScoped = useMemo(() => {
+    if (!isEndUser || !endUserId) return plotsRaw;
+    return plotsRaw.filter((p) => p.assigneduserid === endUserId);
+  }, [plotsRaw, isEndUser, endUserId]);
 
   useEffect(() => {
+    if (isEndUser) return;
     if (plotsResponse?.pagination) {
       setPagination(plotsResponse.pagination);
     }
-  }, [plotsResponse?.pagination]);
+  }, [plotsResponse?.pagination, isEndUser]);
 
   const getStatusText = (status) => {
     const statusLower = status?.toLowerCase();
@@ -109,11 +152,40 @@ const GeneralInfoPage = ({ projectId }) => {
     setPlotToDelete(null);
   };
 
+  const handleOpenAssignUser = (plot) => {
+    setPlotToAssign(plot);
+    setAssignUserId(plot?.assigneduserid || "");
+    setIsAssignModalOpen(true);
+  };
+
+  const handleCloseAssignUser = () => {
+    setIsAssignModalOpen(false);
+    setPlotToAssign(null);
+    setAssignUserId("");
+  };
+
+  const handleSaveAssignUser = () => {
+    if (!plotToAssign) return;
+    updatePlotMutation.mutate(
+      {
+        projectId,
+        plotId: plotToAssign._id,
+        plotData: {
+          assigneduserid: assignUserId || null,
+        },
+      },
+      {
+        onSuccess: () => handleCloseAssignUser(),
+      }
+    );
+  };
+
   return (
     <div className="mt-4">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
         <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 text-center sm:text-left w-full lg:w-auto">
-          Plots [{pagination.totalRecords}]
+          {isEndUser ? "Your allotted plots" : "Plots"} [
+          {isEndUser ? plotsScoped.length : pagination.totalRecords}]
         </h2>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full lg:w-auto">
           <div className="relative w-full sm:w-auto sm:min-w-[250px]">
@@ -170,20 +242,23 @@ const GeneralInfoPage = ({ projectId }) => {
                   <th className="py-3 px-4">Price</th>
                   <th className="py-3 px-4">Direction</th>
                   <th className="py-3 px-4">Status</th>
+                  {!isEndUser && (
+                    <th className="py-3 px-4">Assigned User</th>
+                  )}
                   <th className="py-3 px-4">Created At</th>
-                  <th className="py-3 px-4">Actions</th>
+                  {isAdmin && <th className="py-3 px-4">Actions</th>}
                 </tr>
               </thead>
               <tbody className="text-gray-600 text-xs md:text-sm font-semibold">
-                {plotsData
+                {plotsScoped
                   .filter(
                     (plot) =>
                       plot.plotnumber
                         ?.toString()
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()) ||
-                      plot.plotsize
-                        ?.toLowerCase()
+                      String(plot.plotsize ?? "")
+                        .toLowerCase()
                         .includes(searchTerm.toLowerCase()) ||
                       plot.plotdirection
                         ?.toLowerCase()
@@ -213,23 +288,45 @@ const GeneralInfoPage = ({ projectId }) => {
                           {getStatusText(plot.plotstatus)}
                         </span>
                       </td>
+                      {!isEndUser && (
+                        <td className="py-3 px-4">
+                          {plot.assigneduserid
+                            ? userById[plot.assigneduserid]?.username ||
+                              plot.assigneduserid
+                            : "—"}
+                        </td>
+                      )}
                       <td className="py-3 px-4">
                         {plot.createdAt?.split(",")[0] || "N/A"}
                       </td>
-                      <td className="py-3 px-4 flex gap-2">
-                        <button
-                          className="flex items-center gap-1 px-2 py-1 text-gray-700 hover:bg-gray-100 text-sm"
-                          onClick={() => handleEditPlot(plot)}
-                        >
-                          <UserPlus className="w-4 h-4" />
-                        </button>
-                        <button
-                          className="flex items-center gap-1 px-2 py-1 text-red-600 hover:bg-red-50 text-sm"
-                          onClick={() => handleDeletePlot(plot)}
-                        >
-                          <FileDiff className="w-4 h-4" />
-                        </button>
-                      </td>
+                      {isAdmin && (
+                        <td className="py-3 px-4 flex gap-2">
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 px-2 py-1 text-gray-700 hover:bg-gray-100 text-sm"
+                            onClick={() => handleEditPlot(plot)}
+                            title="Edit plot"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 px-2 py-1 text-gray-700 hover:bg-gray-100 text-sm"
+                            onClick={() => handleOpenAssignUser(plot)}
+                            title="Assign user to plot"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 px-2 py-1 text-red-600 hover:bg-red-50 text-sm"
+                            onClick={() => handleDeletePlot(plot)}
+                            title="Delete plot"
+                          >
+                            <FileDiff className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
               </tbody>
@@ -238,8 +335,23 @@ const GeneralInfoPage = ({ projectId }) => {
 
           <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 py-3 text-xs md:text-sm rounded-lg shadow-lg">
             <div className="text-gray-600 mb-2 md:mb-0">
-              Showing {plotsData.length} of {pagination.totalRecords} plots
+              {isEndUser
+                ? `Showing ${plotsScoped.filter(
+                    (plot) =>
+                      plot.plotnumber
+                        ?.toString()
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                      String(plot.plotsize ?? "")
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                      plot.plotdirection
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                  ).length} of your allotted plot(s)`
+                : `Showing ${plotsScoped.length} of ${pagination.totalRecords} plots`}
             </div>
+            {!isEndUser && (
             <div className="flex space-x-1">
               <button
                 onClick={() =>
@@ -292,6 +404,7 @@ const GeneralInfoPage = ({ projectId }) => {
                 &gt;
               </button>
             </div>
+            )}
           </div>
         </div>
       )}
@@ -314,6 +427,49 @@ const GeneralInfoPage = ({ projectId }) => {
           confirmText="Delete Plot"
           cancelText="Cancel"
         />
+      )}
+
+      {isAssignModalOpen && plotToAssign && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Assign plot #{plotToAssign.plotnumber}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Choose a user for this plot. Link files to users from the
+              Documents section (upload or assign there).
+            </p>
+            <select
+              className="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm mb-4"
+              value={assignUserId}
+              onChange={(e) => setAssignUserId(e.target.value)}
+            >
+              <option value="">— No user —</option>
+              {usersList.map((u) => (
+                <option key={u.userid} value={u.userid}>
+                  {u.username} ({u.useremail})
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                onClick={handleCloseAssignUser}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50"
+                onClick={handleSaveAssignUser}
+                disabled={updatePlotMutation.isPending}
+              >
+                {updatePlotMutation.isPending ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

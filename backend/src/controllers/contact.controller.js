@@ -8,12 +8,13 @@ const createContact = catchAsync(async (req, res) => {
 });
 
 const getContacts = catchAsync(async (req, res) => {
-  const { page, limit, sortBy, sortOrder } = req.query;
+  const { page, limit, sortBy, sortOrder, projectId } = req.query;
   const contacts = await contactService.getContacts({
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
     sortBy,
     sortOrder,
+    projectId: projectId && String(projectId).trim() ? String(projectId).trim() : undefined,
   });
   res.status(httpStatus.OK).send(contacts);
 });

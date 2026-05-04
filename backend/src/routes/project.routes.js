@@ -11,14 +11,27 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 8 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed!"), false);
+    if (file.fieldname === "brochure") {
+      const ok =
+        file.mimetype.startsWith("image/") ||
+        file.mimetype === "application/pdf";
+      if (ok) return cb(null, true);
+      return cb(
+        new Error("Brochure: only image (png, jpg, jpeg) or PDF is allowed."),
+        false
+      );
     }
+    if (file.fieldname === "image") {
+      if (file.mimetype.startsWith("image/")) return cb(null, true);
+      return cb(
+        new Error("Layout image: only image files (png, jpg, jpeg)."),
+        false
+      );
+    }
+    return cb(new Error("Unexpected file field."), false);
   },
 });
 
@@ -27,7 +40,10 @@ router.use(auth);
 router
   .route("/")
   .post(
-    upload.single("image"),
+    upload.fields([
+      { name: "brochure", maxCount: 1 },
+      { name: "image", maxCount: 1 },
+    ]),
     validate(projectValidation.createProject),
     projectController.createProject
   )

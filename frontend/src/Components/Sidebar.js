@@ -2,11 +2,8 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FileSpreadsheet,
-  Info,
-  Users,
   BadgeIndianRupee,
   CircleUserRound,
-  Map,
   Power,
   FolderKanban,
   LandPlot,
@@ -20,21 +17,25 @@ import { useAuth } from "../Context/AuthContext";
 const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { id, plot } = useParams();
+  const { id } = useParams();
 
   const getMenuItems = () => {
-    const baseMenuItems = [
-      {
+    const isEndUser =
+      user?.user?.role === "user" && user?.user?.type === "user";
+
+    const items = [];
+
+    if (!isEndUser) {
+      items.push({
         icon: <FolderKanban size={20} className="text-white" />,
         label: "Project",
         id: "project",
         path: `/project`,
-      },
-    ];
+      });
+    }
 
-    // If we're viewing a specific project, add plots option
-    if (id) {
-      baseMenuItems.push({
+    if (id && !isEndUser) {
+      items.push({
         icon: (
           <div className="flex items-center gap-4">
             <CornerDownRight size={16} className="text-white mr-1" />
@@ -47,8 +48,11 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
       });
     }
 
-    // Add other menu items
-    baseMenuItems.push(
+    if (!id) {
+      return items;
+    }
+
+    const projectItems = [
       {
         icon: <FaUsers size={20} className="text-white" />,
         label: "Users",
@@ -78,10 +82,17 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
         label: "Payments",
         id: "payments",
         path: `/project/${id}/payments`,
-      }
-    );
+      },
+    ];
 
-    return baseMenuItems;
+    const visible = isEndUser
+      ? projectItems.filter((entry) =>
+          ["documents", "plotallotment", "payments"].includes(entry.id)
+        )
+      : projectItems;
+
+    items.push(...visible);
+    return items;
   };
 
   const menuItems = getMenuItems();

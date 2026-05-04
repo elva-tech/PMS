@@ -32,6 +32,11 @@ const plotSchema = new mongoose.Schema({
     enum: ["Available", "Sold", "Reserved"],
     default: "Available",
   },
+  assigneduserid: {
+    type: String,
+    default: null,
+    trim: true,
+  },
 });
 
 const Plot = mongoose.model("Plot", plotSchema);

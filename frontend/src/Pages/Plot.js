@@ -1,5 +1,4 @@
 import React from "react";
-import slnlayout from "../Images/sln-layout.jpg";
 import BalajiLayoutMap from "../Images/BalajilayoutMap.png";
 import { LandPlot, House } from "lucide-react";
 import CreatePlot from "../Components/CreatePlotModal";
@@ -23,6 +22,22 @@ import ImageModal from "../Components/ImageModal";
 import DeleteModal from "../Components/DeleteModal";
 import { useToast } from "../Context/ToastContext";
 
+/** Build a display URL for project layout / hero image from API payload. */
+const resolveProjectImageSrc = (projectImageData) => {
+  if (!projectImageData) return null;
+  if (
+    typeof projectImageData === "object" &&
+    projectImageData.data &&
+    projectImageData.contentType
+  ) {
+    return `data:${projectImageData.contentType};base64,${projectImageData.data}`;
+  }
+  if (typeof projectImageData === "string" && projectImageData) {
+    return projectImageData;
+  }
+  return null;
+};
+
 const ProjectDetailsPage = ({
   projectName,
   projectDescription,
@@ -34,6 +49,7 @@ const ProjectDetailsPage = ({
   projectId,
   contactNumber,
   projectImageData,
+  projectBrochureData,
 }) => {
   const { addToast } = useToast();
   const [addProjectModal, setAddProjectModal] = useState(false);
@@ -143,6 +159,26 @@ const ProjectDetailsPage = ({
     setPlotToDelete(null);
   };
 
+  // API `image` matches project cards (logo / first upload); `brochure` is layout site map (second upload).
+  const logoPayload = projectImageData;
+  const layoutPayload = projectBrochureData;
+
+  const heroIsPdf =
+    logoPayload?.contentType === "application/pdf" && logoPayload?.data;
+  const heroPdfUrl = heroIsPdf
+    ? `data:application/pdf;base64,${logoPayload.data}`
+    : null;
+  const heroImgSrc = !heroIsPdf
+    ? resolveProjectImageSrc(logoPayload)
+    : null;
+
+  const layoutSiteMapSrc =
+    resolveProjectImageSrc(layoutPayload) || BalajiLayoutMap;
+
+  const layoutSiteMapTitle = projectName?.trim()
+    ? `${projectName.trim()} · layout site map`
+    : "Layout site map";
+
   return (
     <>
       <div className="bg-gradient-to-b from-blue-700 to-white pt-4 text-center pb-12 px-4 rounded-lg border">
@@ -174,19 +210,28 @@ const ProjectDetailsPage = ({
 
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 overflow-hidden mb-8">
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-4">
-              <div className="flex-1 h-64 lg:h-auto bg-white flex items-center justify-center">
-                <img
-                  src={
-                    projectImageData &&
-                    typeof projectImageData === "object" &&
-                    projectImageData.data &&
-                    projectImageData.contentType
-                      ? `data:${projectImageData.contentType};base64,${projectImageData.data}`
-                      : projectImageData || ""
-                  }
-                  alt="Project"
-                  className="rounded-lg w-full h-full object-cover"
-                />
+              <div className="flex-1 h-64 lg:h-auto bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden border border-gray-200">
+                {heroIsPdf && heroPdfUrl ? (
+                  <a
+                    href={heroPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline text-sm px-4 text-center font-medium"
+                  >
+                    Open logo / brochure (PDF)
+                  </a>
+                ) : heroImgSrc ? (
+                  <img
+                    src={heroImgSrc}
+                    alt={`${projectName || "Project"} logo / brochure`}
+                    className="rounded-lg w-full h-full object-contain bg-white"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-500 px-4 py-8 text-center">
+                    No logo or brochure yet. Upload the first file when creating
+                    the project (logo / brochure).
+                  </p>
+                )}
               </div>
 
               <div className="flex-1 px-0 lg:px-6 pt-4 lg:pt-0">
@@ -200,7 +245,7 @@ const ProjectDetailsPage = ({
                   </span>
                 </div>
 
-                <p className="text-sm sm:text-md text-gray-700 mb-6 text-left">
+                <p className="text-sm sm:text-md text-gray-700 mb-6 text-left break-words whitespace-pre-wrap max-h-48 overflow-y-auto pr-1 leading-relaxed">
                   {projectDescription}
                 </p>
 
@@ -214,11 +259,15 @@ const ProjectDetailsPage = ({
                   </p>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
                     <span className="font-medium">Start Date:</span>{" "}
-                    {projectStartDate.split(",")[0]}
+                    {projectStartDate?.includes?.(",")
+                      ? projectStartDate.split(",")[0]
+                      : projectStartDate}
                   </p>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
                     <span className="font-medium">Expected Completion:</span>
-                    {projectEndDate.split(",")[0]}
+                    {projectEndDate?.includes?.(",")
+                      ? projectEndDate.split(",")[0]
+                      : projectEndDate}
                   </p>
                   <p className="flex flex-row sm:flex-row sm:items-center gap-1 sm:gap-2">
                     <span className="font-medium">Project Manager:</span>{" "}
@@ -236,26 +285,38 @@ const ProjectDetailsPage = ({
           <>
             <div className="flex flex-col md:flex-row justify-between items-center px-6 space-y-4 md:space-y-0 mt-4">
               <h2 className="text-2xl sm:text-3xl font-semibold text-white text-center md:text-left ">
-                Balaji Layout Site Map
+                {layoutSiteMapTitle}
               </h2>
             </div>
             <div className="relative w-full p-4 md:p-6">
               <div className="max-w-4xl mx-auto">
                 <div className="relative group cursor-pointer rounded-lg overflow-hidden border-gray-400 border-2">
                   <img
-                    src={BalajiLayoutMap}
-                    alt="Balaji Layout Map"
+                    src={layoutSiteMapSrc}
+                    alt={`${projectName || "Project"} layout site map`}
                     className="w-full h-auto rounded-lg shadow-lg transition-transform duration-200"
+                    onClick={() => setIsImageModalOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setIsImageModalOpen(true);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
                   />
-                  <div className="absolute inset-0 md:hidden bg-black/20 flex items-center justify-center">
-                    <div
-                      className="bg-white/20 backdrop-blur-sm p-3 rounded-full active:bg-white/30 transition-all cursor-pointer"
-                      onClick={() => setIsImageModalOpen(true)}
-                    >
+                  <div className="absolute inset-0 md:hidden bg-black/20 flex items-center justify-center pointer-events-none">
+                    <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
                       <ZoomIn className="text-white" size={24} />
                     </div>
                   </div>
                 </div>
+                {!resolveProjectImageSrc(layoutPayload) && (
+                  <p className="text-xs text-white/80 mt-2 text-center">
+                    Showing default sample map until you upload a layout site map
+                    image (second file when creating the project).
+                  </p>
+                )}
               </div>
             </div>
           </>
@@ -269,10 +330,12 @@ const ProjectDetailsPage = ({
                     No plots found. Click "Add Plot" to create your first plot.
                   </p>
                 </div>
-              ) : <h2 className="text-lg sm:text-xl font-semibold mb-4">
-                  Available Plots
-                </h2> ? (
-                <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
+              ) : !isLoading && !isError ? (
+                <>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white px-2">
+                    Available Plots
+                  </h2>
+                  <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
                   <thead className="bg-blue-600 text-white">
                     <tr>
                       <th
@@ -402,6 +465,7 @@ const ProjectDetailsPage = ({
                     ))}
                   </tbody>
                 </table>
+                </>
               ) : null}
             </div>
             {/* Pagination Controls */}
@@ -510,14 +574,18 @@ const ProjectDetailsPage = ({
 
       {isQuoteOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-gray-700 z-50">
-          <QuoteModal onClose={() => setIsQuoteOpen(false)} plotNo={plotNo} />
+          <QuoteModal
+            onClose={() => setIsQuoteOpen(false)}
+            plotNo={plotNo}
+            projectName={projectName}
+          />
         </div>
       )}
 
-      {isImageModalOpen && (
+      {isImageModalOpen && layoutSiteMapSrc && (
         <ImageModal
-          imageUrl={BalajiLayoutMap}
-          altText="Balaji Layout Map"
+          imageUrl={layoutSiteMapSrc}
+          altText={`${projectName || "Project"} layout site map`}
           onClose={() => setIsImageModalOpen(false)}
         />
       )}
@@ -530,7 +598,7 @@ const ProjectDetailsPage = ({
           message={`Are you sure you want to delete Plot ${plotToDelete?.plotnumber}?`}
           confirmText="Delete Plot"
           cancelText="Cancel"
-          isLoading={deletePlotMutation.isLoading}
+          isLoading={deletePlotMutation.isPending}
         />
       )}
     </>

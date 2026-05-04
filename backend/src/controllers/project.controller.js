@@ -4,19 +4,52 @@ const projectService = require("../services/project.service");
 const catchAsync = require("../utils/catchAsync");
 const { formatDate } = require("../utils/dateUtils");
 
-const createProject = catchAsync(async (req, res) => {
-  let imageData = null;
-  let contentType = null;
-  let originalName = null;
+const serializeFileField = (field) =>
+  field && field.data
+    ? {
+        data: field.data.toString("base64"),
+        contentType: field.contentType,
+        originalName: field.originalName,
+      }
+    : null;
 
-  if (req.file) {
-    // Compress the image using Sharp
-    imageData = await sharp(req.file.buffer)
-      .resize({ width: 800 })
+const createProject = catchAsync(async (req, res) => {
+  const files = req.files || {};
+  const brochureFile = files.brochure?.[0];
+  const imageFile = files.image?.[0];
+
+  let imageMeta = null;
+  if (imageFile) {
+    const buf = await sharp(imageFile.buffer)
+      .resize({ width: 1200 })
       .jpeg({ quality: 80 })
       .toBuffer();
-    contentType = req.file.mimetype;
-    originalName = req.file.originalname;
+    imageMeta = {
+      data: buf,
+      contentType: "image/jpeg",
+      originalName: imageFile.originalname,
+    };
+  }
+
+  let brochureMeta = null;
+  if (brochureFile) {
+    if (brochureFile.mimetype === "application/pdf") {
+      brochureMeta = {
+        data: brochureFile.buffer,
+        contentType: brochureFile.mimetype,
+        originalName: brochureFile.originalname,
+      };
+    } else {
+      const buf = await sharp(brochureFile.buffer)
+        .resize({ width: 600 })
+        .jpeg({ quality: 85 })
+        .toBuffer();
+      brochureMeta = {
+        data: buf,
+        contentType: "image/jpeg",
+        originalName: brochureFile.originalname,
+      };
+    }
   }
 
   if (req.body.coordinates) {
@@ -59,9 +92,8 @@ const createProject = catchAsync(async (req, res) => {
 
   const project = await projectService.createProject(
     req.body,
-    imageData,
-    contentType,
-    originalName
+    imageMeta,
+    brochureMeta
   );
 
   res.status(httpStatus.CREATED).json({
@@ -82,6 +114,7 @@ const createProject = catchAsync(async (req, res) => {
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,
+        hasBrochure: project.brochure && project.brochure.data ? true : false,
       },
     },
   });
@@ -105,14 +138,9 @@ const getProjects = catchAsync(async (req, res) => {
     createdAt: formatDate(project.createdAt),
     updatedAt: formatDate(project.updatedAt),
     hasImage: project.image && project.image.data ? true : false,
-    image:
-      project.image && project.image.data
-        ? {
-            data: project.image.data.toString("base64"),
-            contentType: project.image.contentType,
-            originalName: project.image.originalName,
-          }
-        : null,
+    hasBrochure: project.brochure && project.brochure.data ? true : false,
+    image: serializeFileField(project.image),
+    brochure: serializeFileField(project.brochure),
   }));
 
   res.status(httpStatus.OK).json({
@@ -152,14 +180,9 @@ const getProject = catchAsync(async (req, res) => {
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,
-        image:
-          project.image && project.image.data
-            ? {
-                data: project.image.data.toString("base64"),
-                contentType: project.image.contentType,
-                originalName: project.image.originalName,
-              }
-            : null,
+        hasBrochure: project.brochure && project.brochure.data ? true : false,
+        image: serializeFileField(project.image),
+        brochure: serializeFileField(project.brochure),
       },
     },
   });

@@ -49,6 +49,7 @@ const ADMIN_CREDENTIALS = {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    
 
     // Check if credentials match admin
     if (
@@ -84,14 +85,23 @@ const login = async (req, res) => {
       const allUsers = await getUsersWithPasswords();
       user = allUsers.find((u) => u.username === username);
     }
-    if (user && user.userstatus === 1) {
-      // Check if user is active
+
+    if (user) {
       const isPasswordValid = await validatePassword(
         password,
         user.userpassword
       );
 
-      if (isPasswordValid) {
+      if (isPasswordValid && user.userstatus !== 1) {
+        return res.status(httpStatus.FORBIDDEN).json({
+          success: false,
+          code: "ACCOUNT_INACTIVE",
+          message:
+            "Your account is inactive. Please contact the administrator.",
+        });
+      }
+
+      if (isPasswordValid && user.userstatus === 1) {
         const token = jwt.sign(
           {
             userid: user.userid,

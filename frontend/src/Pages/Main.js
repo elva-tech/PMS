@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import sjdlogo1 from "../Images/sjd-logo1.png";
 import { Menu, ChevronRight } from "lucide-react";
@@ -25,18 +25,18 @@ const PropertyDetailsPage = () => {
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
-  const { user } = useAuth();
   const { id, plot } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId, setProjectId, plotId, setPlotId } = useProject();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { isLoggedIn, loading } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [projectStatus, setProjectStatus] = useState("");
   const [projectLocation, setProjectLocation] = useState("");
   const [projectImageData, setProjectImageData] = useState(null);
+  const [projectBrochureData, setProjectBrochureData] = useState(null);
   const [projectManager, setProjectManager] = useState("");
   const [projectStartDate, setProjectStartDate] = useState("");
   const [projectEndDate, setProjectEndDate] = useState("");
@@ -86,57 +86,61 @@ const PropertyDetailsPage = () => {
     setActiveMenu(getActiveMenu());
   }, [id, plot, setProjectId, setPlotId, location]);
 
-  useMemo(() => {
-    if (id && activeMenu === "plots") {
-      // Fetch project name based on ID
-      const fetchProjectDetails = async () => {
-        try {
-          const response = await axiosInstance.get(`/api/v1/projects/${id}`);
-          console.log("Project Name:", response?.data?.data);
-          setProjectName(
-            response?.data?.data?.project?.name || "Unknown Project"
-          );
-          setProjectDescription(
-            response?.data?.data?.project?.description || "No Description"
-          );
-          setProjectStatus(
-            response?.data?.data?.project?.status || "Unknown Status"
-          );
-          setProjectLocation(
-            response?.data?.data?.project?.location || "Unknown Location"
-          );
-          setProjectManager(
-            response?.data?.data?.project?.projectManager || "Unknown Manager"
-          );
-          setProjectStartDate(
-            response?.data?.data?.project?.startDate || "Unknown Start Date"
-          );
-          setProjectEndDate(
-            response?.data?.data?.project?.endDate || "Unknown End Date"
-          );
-          setContactNumber(
-            response?.data?.data?.project?.contactNumber || "Unknown Contact"
-          );
-          if (
-            response?.data?.data?.project?.image?.data &&
-            response?.data?.data?.project?.image?.contentType
-          ) {
-            setProjectImageData({
-              data: response?.data?.data?.project?.image?.data,
-              contentType: response?.data?.data?.project?.image?.contentType,
-            });
-          } else {
-            setProjectImageData(null);
-          }
-        } catch (error) {
-          console.error("Failed to fetch project name", error);
-          setProjectName("Unknown Project");
-        }
-      };
-      fetchProjectDetails();
+  useEffect(() => {
+    if (loading || !id) return;
+    const isEndUser =
+      user?.user?.role === "user" && user?.user?.type === "user";
+    if (!isEndUser) return;
+    const restricted = new Set(["users", "interestedbuyers", "plots"]);
+    if (restricted.has(activeMenu)) {
+      navigate(`/project/${id}/documents`, { replace: true });
     }
-    // We only want to re-run this when id or activeMenu changes
-  }, [id, activeMenu]);
+  }, [loading, user, id, activeMenu, navigate]);
+
+  useEffect(() => {
+    if (!id || loading || !isLoggedIn) return;
+
+    const fetchProjectDetails = async () => {
+      try {
+        const response = await axiosInstance.get(`/api/v1/projects/${id}`);
+        const p = response?.data?.data?.project;
+        setProjectName(p?.name || "Unknown Project");
+        setProjectDescription(p?.description || "No description");
+        setProjectStatus(p?.status || "Unknown Status");
+        setProjectLocation(p?.location || "Unknown Location");
+        setProjectManager(p?.projectManager || "Unknown Manager");
+        setProjectStartDate(p?.startDate || "Unknown Start Date");
+        setProjectEndDate(p?.endDate || "Unknown End Date");
+        setContactNumber(
+          p?.contactNumber != null ? String(p.contactNumber) : "—"
+        );
+        if (p?.image?.data && p?.image?.contentType) {
+          setProjectImageData({
+            data: p.image.data,
+            contentType: p.image.contentType,
+          });
+        } else {
+          setProjectImageData(null);
+        }
+        if (p?.brochure?.data && p?.brochure?.contentType) {
+          setProjectBrochureData({
+            data: p.brochure.data,
+            contentType: p.brochure.contentType,
+            originalName: p.brochure.originalName,
+          });
+        } else {
+          setProjectBrochureData(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch project details", error);
+        setProjectName("Unknown Project");
+        setProjectImageData(null);
+        setProjectBrochureData(null);
+      }
+    };
+
+    fetchProjectDetails();
+  }, [id, loading, isLoggedIn]);
 
   const getCurrentPageTitle = () => {
     switch (activeMenu) {
@@ -176,6 +180,7 @@ const PropertyDetailsPage = () => {
             projectId={id}
             contactNumber={contactNumber}
             projectImageData={projectImageData}
+            projectBrochureData={projectBrochureData}
           />
         );
       case "documents":
@@ -183,9 +188,11 @@ const PropertyDetailsPage = () => {
       case "plotallotment":
         return <GeneralInfoPage projectId={id} />;
       case "interestedbuyers":
-        return <InterestedBuyersPage />;
+        return <InterestedBuyersPage projectId={id} />;
       case "payments":
         return <PaymentsPage />;
+      case "users":
+        return <LayoutPageDetails />;
       case "layout":
         return <LayoutPageDetails />;
       default:

@@ -34,6 +34,12 @@ const projectSchema = new mongoose.Schema({
     contentType: String,
     originalName: String,
   },
+  /** Logo / brochure (png, jpg, jpeg, pdf) — separate from layout site map `image`. */
+  brochure: {
+    data: Buffer,
+    contentType: String,
+    originalName: String,
+  },
   amenities: {
     type: [String],
     default: [],

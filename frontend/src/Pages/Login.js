@@ -5,10 +5,15 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
+import axiosInstance from "../utils/axiosInstance";
 const Login = ({ isLoginOpen, setIsLoginOpen }) => {
   const { login, user, error, loading } = useAuth();
   const navigate = useNavigate();
   const [showpassword, setShowPassword] = useState(false);
+  const [inactiveModal, setInactiveModal] = useState({
+    open: false,
+    message: "",
+  });
   const modalRef = useRef();
 
   const togglePassword = () => setShowPassword(!showpassword);
@@ -33,6 +38,41 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-cover bg-center p-4">
+      {inactiveModal.open && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inactive-account-title"
+        >
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+            <button
+              type="button"
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 p-1"
+              onClick={() => setInactiveModal({ open: false, message: "" })}
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3
+              id="inactive-account-title"
+              className="text-lg font-semibold text-gray-900 pr-8"
+            >
+              Account inactive
+            </h3>
+            <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+              {inactiveModal.message}
+            </p>
+            <button
+              type="button"
+              className="mt-6 w-full rounded-lg bg-blue-600 text-white py-2.5 text-sm font-medium hover:bg-blue-700"
+              onClick={() => setInactiveModal({ open: false, message: "" })}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <div
         ref={modalRef}
         className="relative flex flex-col items-center justify-center w-full max-w-md bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/50"
@@ -47,8 +87,40 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const loginSuccess = await login(values.email, values.password);
-              if (loginSuccess) {
+              const loginResult = await login(values.email, values.password);
+              if (!loginResult.ok && loginResult.code === "ACCOUNT_INACTIVE") {
+                setInactiveModal({
+                  open: true,
+                  message:
+                    loginResult.message ||
+                    "Your account is inactive. Please contact the administrator.",
+                });
+              }
+              if (loginResult.ok) {
+                let stored = null;
+                try {
+                  stored = JSON.parse(localStorage.getItem("user") || "null");
+                } catch {
+                  stored = null;
+                }
+                if (
+                  stored?.user?.role === "user" &&
+                  stored?.user?.type === "user"
+                ) {
+                  try {
+                    const res = await axiosInstance.get("/api/v1/projects");
+                    const projects = res?.data?.data?.projects || [];
+                    const firstId = projects[0]?._id;
+                    if (firstId) {
+                      navigate(`/project/${firstId}/documents`);
+                      return;
+                    }
+                  } catch (err) {
+                    console.error(err);
+                  }
+                  navigate("/project");
+                  return;
+                }
                 navigate("/project");
               }
             } catch (err) {

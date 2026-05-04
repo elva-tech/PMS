@@ -14,7 +14,11 @@ const validationSchema = Yup.object({
     .required("Description is required")
     .max(200, "Description cannot exceed 200 characters"),
   projectManager: Yup.string().required("Project Manager is required"),
-  contactNumber: Yup.string().required("Contact Number is required"),
+  contactNumber: Yup.string()
+    .required("Contact Number is required")
+    .transform((v) => (v == null ? "" : String(v).replace(/\D/g, "")))
+    .length(10, "Enter exactly 10 digits (Indian mobile)")
+    .matches(/^[6-9]\d{9}$/, "Use a valid 10-digit mobile starting with 6–9"),
   coordinates: Yup.object({
     latitude: Yup.number()
       .typeError("Latitude must be a number")
@@ -43,7 +47,7 @@ export default function CreateProject({
         status: values.status,
         description: values.description,
         projectManager: values.projectManager,
-        contactNumber: values.contactNumber,
+        contactNumber: String(values.contactNumber).replace(/\D/g, ""),
         coordinates: {
           latitude: values.coordinates.latitude,
           longitude: values.coordinates.longitude,
@@ -76,6 +80,10 @@ export default function CreateProject({
       formData.append("startDate", values.startDate);
       formData.append("endDate", values.endDate);
 
+      if (values.brochureFiles && values.brochureFiles.length > 0) {
+        const b = values.brochureFiles[0];
+        if (b) formData.append("brochure", b);
+      }
       if (values.attachments && values.attachments.length > 0) {
         const imageFile = values.attachments[0];
         if (imageFile) {
@@ -114,7 +122,10 @@ export default function CreateProject({
             status: projectToEdit?.status || "",
             description: projectToEdit?.description || "",
             projectManager: projectToEdit?.projectManager || "",
-            contactNumber: projectToEdit?.contactNumber || "",
+            contactNumber:
+              projectToEdit?.contactNumber != null
+                ? String(projectToEdit.contactNumber)
+                : "",
             coordinates: {
               latitude: projectToEdit?.coordinates?.latitude || "",
               longitude: projectToEdit?.coordinates?.longitude || "",
@@ -122,6 +133,7 @@ export default function CreateProject({
             startDate: projectToEdit?.startDate || "",
             endDate: projectToEdit?.endDate || "",
             attachments: [],
+            brochureFiles: [],
           }}
           validationSchema={validationSchema}
           enableReinitialize={true}
@@ -202,31 +214,78 @@ export default function CreateProject({
 
               <div>
                 <label className="block text-gray-700 text-left text-xs">
-                  Attachments (png, jpg, jpeg)
+                  1. Logo / brochure (png, jpg, jpeg, pdf)
                 </label>
-                <Field name="attachments">
-                  {({ field, form }) => (
+                <p className="text-[10px] text-gray-500 text-left mb-0.5">
+                  Saved on the project (header card).
+                </p>
+                <Field name="brochureFiles">
+                  {({ form }) => (
                     <input
                       type="file"
-                      accept="image/png, image/jpg, image/jpeg"
-                      multiple={false}
+                      accept="image/png,image/jpeg,image/jpg,application/pdf"
+                      onChange={(event) => {
+                        const files = event.currentTarget.files;
+                        if (!files?.length) {
+                          form.setFieldValue("brochureFiles", []);
+                          form.setFieldError("brochureFiles", "");
+                          return;
+                        }
+                        const file = files[0];
+                        const ok =
+                          file.type === "image/png" ||
+                          file.type === "image/jpeg" ||
+                          file.type === "image/jpg" ||
+                          file.type === "application/pdf";
+                        if (!ok) {
+                          form.setFieldError(
+                            "brochureFiles",
+                            "Use png, jpg, jpeg, or pdf."
+                          );
+                          return;
+                        }
+                        form.setFieldValue("brochureFiles", [file]);
+                        form.setFieldError("brochureFiles", "");
+                      }}
+                      className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs file:text-xs file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700"
+                    />
+                  )}
+                </Field>
+                <ErrorMessage
+                  name="brochureFiles"
+                  component="div"
+                  className="text-red-500 text-xs text-left"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 text-left text-xs">
+                  2. Layout site map image (png, jpg, jpeg)
+                </label>
+                <p className="text-[10px] text-gray-500 text-left mb-0.5">
+                  Site map under the title on the plots page.
+                </p>
+                <Field name="attachments">
+                  {({ form }) => (
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg"
                       onChange={(event) => {
                         const files = event.currentTarget.files;
                         const validFiles = [];
                         let error = "";
 
                         if (files && files.length > 0) {
-                          for (let i = 0; i < files.length; i++) {
-                            const file = files[i];
-                            if (
-                              file.type === "image/png" ||
-                              file.type === "image/jpg" ||
-                              file.type === "image/jpeg"
-                            ) {
-                              validFiles.push(file);
-                            } else {
-                              error = `"${file.name}" is not a supported image file. Only .png, .jpg, .jpeg allowed.`;
-                            }
+                          const file = files[0];
+                          if (
+                            file.type === "image/png" ||
+                            file.type === "image/jpeg" ||
+                            file.type === "image/jpg"
+                          ) {
+                            validFiles.push(file);
+                          } else {
+                            error =
+                              "Use png, jpg, or jpeg for the layout image.";
                           }
                         }
 
@@ -272,8 +331,10 @@ export default function CreateProject({
                 <Field
                   type="text"
                   name="contactNumber"
+                  inputMode="numeric"
+                  maxLength={10}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
-                  placeholder="Enter Contact Number"
+                  placeholder="10-digit mobile (starts with 6–9)"
                 />
                 <ErrorMessage
                   name="contactNumber"

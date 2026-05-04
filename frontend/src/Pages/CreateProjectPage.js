@@ -87,7 +87,11 @@ export default function CreateProjectPage({ projectToEdit = null }) {
       .required("Description is required")
       .max(200, "Description cannot exceed 200 characters"),
     projectManager: Yup.string().required("Project Manager is required"),
-    contactNumber: Yup.string().required("Contact Number is required"),
+    contactNumber: Yup.string()
+      .required("Contact Number is required")
+      .transform((v) => (v == null ? "" : String(v).replace(/\D/g, "")))
+      .length(10, "Enter exactly 10 digits (Indian mobile)")
+      .matches(/^[6-9]\d{9}$/, "Use a valid 10-digit mobile starting with 6–9"),
     coordinates: Yup.object({
       latitude: Yup.number()
         .typeError("Latitude must be a number")
@@ -129,7 +133,7 @@ export default function CreateProjectPage({ projectToEdit = null }) {
         status: values.status,
         description: values.description,
         projectManager: values.projectManager,
-        contactNumber: values.contactNumber,
+        contactNumber: String(values.contactNumber).replace(/\D/g, ""),
         coordinates: {
           latitude: values.coordinates.latitude,
           longitude: values.coordinates.longitude,
@@ -151,7 +155,10 @@ export default function CreateProjectPage({ projectToEdit = null }) {
       formData.append("status", values.status);
       formData.append("description", values.description);
       formData.append("projectManager", values.projectManager);
-      formData.append("contactNumber", values.contactNumber);
+      formData.append(
+        "contactNumber",
+        String(values.contactNumber).replace(/\D/g, "")
+      );
       formData.append(
         "coordinates",
         JSON.stringify({
@@ -164,6 +171,10 @@ export default function CreateProjectPage({ projectToEdit = null }) {
       values.amenities.forEach((amenity) => {
         formData.append("amenities[]", amenity);
       });
+      if (values.brochureFiles && values.brochureFiles.length > 0) {
+        const b = values.brochureFiles[0];
+        if (b) formData.append("brochure", b);
+      }
       if (values.attachments && values.attachments.length > 0) {
         const imageFile = values.attachments[0];
         if (imageFile) {
@@ -220,7 +231,10 @@ export default function CreateProjectPage({ projectToEdit = null }) {
                 status: currentProject?.status || "",
                 description: currentProject?.description || "",
                 projectManager: currentProject?.projectManager || "",
-                contactNumber: currentProject?.contactNumber || "",
+                contactNumber:
+                  currentProject?.contactNumber != null
+                    ? String(currentProject.contactNumber)
+                    : "",
                 coordinates: {
                   latitude: currentProject?.coordinates?.latitude || "",
                   longitude: currentProject?.coordinates?.longitude || "",
@@ -228,6 +242,7 @@ export default function CreateProjectPage({ projectToEdit = null }) {
                 startDate: formatDateToDDMMYYYY(currentProject?.startDate),
                 endDate: formatDateToDDMMYYYY(currentProject?.endDate),
                 attachments: [],
+                brochureFiles: [],
                 amenities: currentProject?.amenities || [],
               }}
               validationSchema={validationSchema}
@@ -246,7 +261,11 @@ export default function CreateProjectPage({ projectToEdit = null }) {
                       ) {
                         emptyFields.push(key);
                       }
-                    } else if (!values[key] && key !== "attachments") {
+                    } else if (
+                      !values[key] &&
+                      key !== "attachments" &&
+                      key !== "brochureFiles"
+                    ) {
                       emptyFields.push(key);
                     }
                   });
@@ -369,8 +388,10 @@ export default function CreateProjectPage({ projectToEdit = null }) {
                     <Field
                       type="text"
                       name="contactNumber"
+                      inputMode="numeric"
+                      maxLength={10}
                       className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs"
-                      placeholder="Enter Contact Number"
+                      placeholder="10-digit mobile (starts with 6–9)"
                     />
                     <ErrorMessage
                       name="contactNumber"
@@ -447,86 +468,87 @@ export default function CreateProjectPage({ projectToEdit = null }) {
                     />
                   </div>
 
-                  {/* Attachments */}
-                  <div>
-                    <label className="block text-gray-700 text-left text-xs">
-                      Attachments (png, jpg, jpeg)
+                  {/* Logo / brochure — optional; not sent to API until server supports it */}
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block text-sm font-semibold">
+                      1. Logo / brochure (png, jpg, jpeg, pdf)
                     </label>
-                    <Field name="attachments">
-                      {({ field, form }) => (
+                    <p className="text-xs text-gray-500 mt-0.5 mb-1">
+                      Shown in the project header card (image or PDF link).
+                    </p>
+                    <Field name="brochureFiles">
+                      {({ form }) => (
                         <input
                           type="file"
-                          accept="image/png, image/jpg, image/jpeg"
-                          multiple={false}
+                          accept="image/png,image/jpeg,image/jpg,application/pdf"
                           onChange={(event) => {
                             const files = event.currentTarget.files;
-                            const validFiles = [];
-                            let error = "";
-
-                            if (files && files.length > 0) {
-                              for (let i = 0; i < files.length; i++) {
-                                const file = files[i];
-                                if (
-                                  file.type === "image/png" ||
-                                  file.type === "image/jpg" ||
-                                  file.type === "image/jpeg"
-                                ) {
-                                  validFiles.push(file);
-                                } else {
-                                  error = `"${file.name}" is not a supported image file. Only .png, .jpg, .jpeg allowed.`;
-                                }
-                              }
+                            if (!files?.length) {
+                              form.setFieldValue("brochureFiles", []);
+                              form.setFieldError("brochureFiles", "");
+                              return;
                             }
-
-                            if (error) {
-                              form.setFieldError("attachments", error);
-                            } else {
-                              form.setFieldValue("attachments", validFiles);
-                              form.setFieldError("attachments", "");
+                            const file = files[0];
+                            const ok =
+                              file.type === "image/png" ||
+                              file.type === "image/jpeg" ||
+                              file.type === "image/jpg" ||
+                              file.type === "application/pdf";
+                            if (!ok) {
+                              form.setFieldError(
+                                "brochureFiles",
+                                "Use png, jpg, jpeg, or pdf."
+                              );
+                              return;
                             }
+                            form.setFieldValue("brochureFiles", [file]);
+                            form.setFieldError("brochureFiles", "");
                           }}
                           className="w-full border border-gray-300 rounded-md p-2 mt-1 text-xs file:text-xs file:mr-4 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700"
                         />
                       )}
                     </Field>
                     <ErrorMessage
-                      name="attachments"
+                      name="brochureFiles"
                       component="div"
                       className="text-red-500 text-xs text-left"
                     />
                   </div>
-                  <div>
-                    <label className="block text-gray-700 text-left text-xs">
-                      Broucher (png, jpg, jpeg, pdf)
+
+                  {/* Layout site map image — saved as project image */}
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block text-sm font-semibold">
+                      2. Layout site map image (png, jpg, jpeg)
                     </label>
+                    <p className="text-xs text-gray-500 mt-0.5 mb-1">
+                      Shown under &quot;… · layout site map&quot; on the plots
+                      page (falls back to a sample map if omitted).
+                    </p>
                     <Field name="attachments">
-                      {({ field, form }) => (
+                      {({ form }) => (
                         <input
                           type="file"
-                          accept="image/png, image/jpg, image/jpeg"
-                          multiple={false}
+                          accept="image/png,image/jpeg,image/jpg"
                           onChange={(event) => {
                             const files = event.currentTarget.files;
                             const validFiles = [];
-                            let error = "";
+                            let errMsg = "";
 
                             if (files && files.length > 0) {
-                              for (let i = 0; i < files.length; i++) {
-                                const file = files[i];
-                                if (
-                                  file.type === "image/png" ||
-                                  file.type === "image/jpg" ||
-                                  file.type === "image/jpeg"
-                                ) {
-                                  validFiles.push(file);
-                                } else {
-                                  error = `"${file.name}" is not a supported image file. Only .png, .jpg, .jpeg allowed.`;
-                                }
+                              const file = files[0];
+                              if (
+                                file.type === "image/png" ||
+                                file.type === "image/jpeg" ||
+                                file.type === "image/jpg"
+                              ) {
+                                validFiles.push(file);
+                              } else {
+                                errMsg = `Use png, jpg, or jpeg for the layout image.`;
                               }
                             }
 
-                            if (error) {
-                              form.setFieldError("attachments", error);
+                            if (errMsg) {
+                              form.setFieldError("attachments", errMsg);
                             } else {
                               form.setFieldValue("attachments", validFiles);
                               form.setFieldError("attachments", "");

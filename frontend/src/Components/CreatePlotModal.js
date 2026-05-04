@@ -22,18 +22,43 @@ const validationSchema = Yup.object({
 
 export default function CreatePlot({
   setAddProjectModal,
+  onClose,
   editPlotData = null,
+  plotToEdit = null,
+  projectId: projectIdProp = null,
 }) {
   const { addToast } = useToast();
   const createPlotMutation = useCreatePlot();
   const updatePlotMutation = useUpdatePlot();
-  const isEditMode = !!editPlotData;
-  const { id } = useParams();
+  const { id: routeProjectId } = useParams();
+  const effectiveProjectId = projectIdProp || routeProjectId;
+
+  const resolvedEditData =
+    editPlotData ||
+    (plotToEdit && effectiveProjectId
+      ? {
+          projectId: effectiveProjectId,
+          plotId: plotToEdit._id,
+          plotData: plotToEdit,
+        }
+      : null);
+
+  const isEditMode = !!resolvedEditData;
+
+  const closeModal = () => {
+    if (typeof onClose === "function") {
+      onClose();
+    }
+    if (typeof setAddProjectModal === "function") {
+      setAddProjectModal(false);
+    }
+  };
+
   const handleSubmit = async (values) => {
     if (isEditMode) {
       const payload = {
-        projectId: editPlotData.projectId,
-        plotId: editPlotData.plotId,
+        projectId: resolvedEditData.projectId,
+        plotId: resolvedEditData.plotId,
         plotData: {
           plotnumber: values.plotno,
           plotsize: values.plotsize,
@@ -57,7 +82,7 @@ export default function CreatePlot({
       return response.data;
     } else {
       const payload = {
-        projectId: id,
+        projectId: effectiveProjectId,
         plotData: {
           plotnumber: values.plotno,
           plotsize: values.plotsize,
@@ -89,20 +114,22 @@ export default function CreatePlot({
         <div className="flex items-center mb-4">
           <HousePlus className=" text-black text-2xl mr-3" size={30} />
           <div>
-            <h2 className="text-xl font-semibold text-left">Create Plot</h2>
+            <h2 className="text-xl font-semibold text-left">Update Plot</h2>
             <p className="text-gray-500">
-              Create a new plot by filling out the form below.
+              Update an plot by filling out the form below.
             </p>
           </div>
         </div>
 
         <Formik
+          key={isEditMode ? resolvedEditData.plotId : "create"}
+          enableReinitialize
           initialValues={{
-            plotsize: editPlotData?.plotData?.plotsize || "",
-            plotprice: editPlotData?.plotData?.plotprice || "",
-            plotdirection: editPlotData?.plotData?.plotdirection || "",
-            status: editPlotData?.plotData?.plotstatus || "",
-            plotno: editPlotData?.plotData?.plotnumber || "",
+            plotsize: resolvedEditData?.plotData?.plotsize ?? "",
+            plotprice: resolvedEditData?.plotData?.plotprice ?? "",
+            plotdirection: resolvedEditData?.plotData?.plotdirection ?? "",
+            status: resolvedEditData?.plotData?.plotstatus ?? "",
+            plotno: resolvedEditData?.plotData?.plotnumber ?? "",
           }}
           validationSchema={validationSchema}
           validateOnChange={true}
@@ -124,9 +151,9 @@ export default function CreatePlot({
                 );
                 return;
               }
-              const response = await handleSubmit(values);
+              await handleSubmit(values);
               resetForm();
-              setAddProjectModal(false);
+              closeModal();
             } catch (error) {
               console.error("Error creating project:", error);
             } finally {
@@ -272,7 +299,7 @@ export default function CreatePlot({
                   className="px-4 py-2 border border-gray-300 rounded-md text-xs"
                   onClick={() => {
                     resetForm();
-                    setAddProjectModal(false);
+                    closeModal();
                   }}
                 >
                   Cancel

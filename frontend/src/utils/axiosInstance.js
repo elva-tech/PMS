@@ -55,8 +55,12 @@ axiosInstance.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      localStorage.removeItem("user"); // Remove token on auth error
-      window.location.href = "/login"; // Redirect to login
+      const reqUrl = config?.url || "";
+      if (reqUrl.includes("/auth/login")) {
+        return Promise.reject(error);
+      }
+      localStorage.removeItem("user");
+      window.location.href = "/home";
     }
     return Promise.reject(error);
   }

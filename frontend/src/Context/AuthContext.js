@@ -73,14 +73,24 @@ export const AuthProvider = ({ children }) => {
         setIsLoggedIn(true);
         setUser(response.data);
         localStorage.setItem("user", JSON.stringify(response.data));
-        return true;
+        return { ok: true };
       } else {
         throw new Error("Invalid token received");
       }
     } catch (err) {
       setIsLoggedIn(false);
-      setError("Invalid credentials");
-      return false;
+      const data = err.response?.data;
+      const message =
+        data?.message ||
+        err.message ||
+        "Invalid credentials";
+      setError(message);
+      return {
+        ok: false,
+        message,
+        code: data?.code,
+        status: err.response?.status,
+      };
     } finally {
       setLoading(false);
     }

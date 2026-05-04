@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../utils/axiosInstance";
 
-export const useUsers = ({
-  page = 1,
-  limit = 10,
-  sortBy = "createdAt",
-  sortOrder = "desc",
-} = {}) => {
+export const useUsers = (options = {}) => {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+    ...queryOptions
+  } = options;
   return useQuery({
     queryKey: ["users", page, limit, sortBy, sortOrder],
     queryFn: async () => {
@@ -24,6 +26,7 @@ export const useUsers = ({
         },
       };
     },
+    ...queryOptions,
   });
 };
 
@@ -57,12 +60,8 @@ export const useUpdateUser = () => {
       const res = await axiosInstance.put(`/api/v1/users/${id}`, userData);
       return res?.data?.data;
     },
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["users"], (oldData) =>
-        oldData.map((user) =>
-          user.userid === updatedUser.userid ? updatedUser : user
-        )
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };

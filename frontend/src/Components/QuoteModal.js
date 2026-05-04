@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Quote } from "lucide-react";
-const QuoteModal = ({ onClose, plotNo }) => {
+const QuoteModal = ({ onClose, plotNo, projectName }) => {
   const [mobileNumber, setMobileNumber] = useState("");
 
   return (
@@ -13,8 +13,12 @@ const QuoteModal = ({ onClose, plotNo }) => {
           </button>
         </div>
         <div className="mb-4">
-          <h2 className="text-lg font-semibold">Project - Balaji Layout</h2>
-          <p className="text-gray-500">Plot Number - {plotNo}</p>
+          <h2 className="text-lg font-semibold">
+            {projectName?.trim()
+              ? `Project — ${projectName.trim()}`
+              : "Project"}
+          </h2>
+          <p className="text-gray-500">Plot number — {plotNo || "—"}</p>
         </div>
         <div className="mb-4">
           <h3 className="text-lg font-semibold">Interested to Buy?</h3>

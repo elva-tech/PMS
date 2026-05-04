@@ -1,8 +1,18 @@
 const httpStatus = require("http-status");
 const plotService = require("../services/plot.service");
+const userService = require("../services/user.service");
+const ApiError = require("../utils/ApiError");
 const catchAsync = require("../utils/catchAsync");
 const { formatDate } = require("../utils/dateUtils");
 const { logger } = require("../utils/logger");
+
+const assertAssignedUserExists = async (assigneduserid) => {
+  if (!assigneduserid) return;
+  const u = await userService.getUserById(assigneduserid);
+  if (!u) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Assigned user not found");
+  }
+};
 
 const getPlots = catchAsync(async (req, res) => {
   const { projectId } = req.params;
@@ -53,6 +63,12 @@ const getPlots = catchAsync(async (req, res) => {
         plotprice: plot.plotprice,
         plotdirection: plot.plotdirection,
         plotstatus: plot.plotstatus,
+        assigneduserid: plot.assigneduserid ?? null,
+        paymentSummary: plot.paymentSummary || {
+          totalSuccessAmount: 0,
+          totalPendingAmount: 0,
+          installmentCount: 0,
+        },
         createdAt: formatDate(plot.createdAt),
         updatedAt: formatDate(plot.updatedAt),
       })),
@@ -80,6 +96,10 @@ const createPlot = catchAsync(async (req, res) => {
 
   logger.debug("Plot creation data processed", { projectId, plotData });
 
+  if (plotData.assigneduserid) {
+    await assertAssignedUserExists(plotData.assigneduserid);
+  }
+
   const newPlot = await plotService.createPlot(plotData);
 
   logger.info("Plot created successfully", {
@@ -99,6 +119,7 @@ const createPlot = catchAsync(async (req, res) => {
         plotprice: newPlot.plotprice,
         plotdirection: newPlot.plotdirection,
         plotstatus: newPlot.plotstatus,
+        assigneduserid: newPlot.assigneduserid ?? null,
         createdAt: formatDate(newPlot.createdAt),
         updatedAt: formatDate(newPlot.updatedAt),
       },
@@ -122,6 +143,13 @@ const updatePlot = catchAsync(async (req, res) => {
 
   logger.debug("Plot update request details", { projectId, plotId, plotData });
 
+  if (
+    Object.prototype.hasOwnProperty.call(plotData, "assigneduserid") &&
+    plotData.assigneduserid
+  ) {
+    await assertAssignedUserExists(plotData.assigneduserid);
+  }
+
   const updatedPlot = await plotService.updatePlot(projectId, plotId, plotData);
 
   logger.info("Plot updated successfully", {
@@ -141,6 +169,7 @@ const updatePlot = catchAsync(async (req, res) => {
         plotprice: updatedPlot.plotprice,
         plotdirection: updatedPlot.plotdirection,
         plotstatus: updatedPlot.plotstatus,
+        assigneduserid: updatedPlot.assigneduserid ?? null,
         createdAt: formatDate(updatedPlot.createdAt),
         updatedAt: formatDate(updatedPlot.updatedAt),
       },
@@ -206,6 +235,12 @@ const getAllPlots = catchAsync(async (req, res) => {
         plotprice: plot.plotprice,
         plotdirection: plot.plotdirection,
         plotstatus: plot.plotstatus,
+        assigneduserid: plot.assigneduserid ?? null,
+        paymentSummary: plot.paymentSummary || {
+          totalSuccessAmount: 0,
+          totalPendingAmount: 0,
+          installmentCount: 0,
+        },
         createdAt: formatDate(plot.createdAt),
         updatedAt: formatDate(plot.updatedAt),
       })),

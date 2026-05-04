@@ -8,6 +8,8 @@ const authRoutes = require("./routes/auth.routes");
 const projectRoutes = require("./routes/project.routes");
 const plotRoutes = require("./routes/plot.routes");
 const userRoutes = require("./routes/user.routes");
+const documentRoutes = require("./routes/document.routes");
+const paymentRoutes = require("./routes/payment.routes");
 const publicRoutes = require("./routes/public.routes");
 const { errorConverter, errorHandler } = require("./middleware/error");
 
@@ -113,6 +115,8 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/projects", projectRoutes);
 app.use("/api/v1/plots", plotRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/documents", documentRoutes);
+app.use("/api/v1/payments", paymentRoutes);
 
 // Handle undefined routes
 app.all("*", (req, res, next) => {

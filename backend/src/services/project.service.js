@@ -1,20 +1,26 @@
 const Project = require("../models/project.model");
 
-const createProject = async (
-  projectData,
-  imageData = null,
-  contentType = null,
-  originalName = null
-) => {
+const createProject = async (projectData, imageMeta = null, brochureMeta = null) => {
   const project = new Project({
     ...projectData,
-    image: imageData
+    ...(imageMeta?.data
       ? {
-          data: imageData,
-          contentType,
-          originalName,
+          image: {
+            data: imageMeta.data,
+            contentType: imageMeta.contentType,
+            originalName: imageMeta.originalName,
+          },
         }
-      : undefined,
+      : {}),
+    ...(brochureMeta?.data
+      ? {
+          brochure: {
+            data: brochureMeta.data,
+            contentType: brochureMeta.contentType,
+            originalName: brochureMeta.originalName,
+          },
+        }
+      : {}),
   });
 
   return project.save();
