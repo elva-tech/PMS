@@ -1,4 +1,5 @@
 const ApiError = require("../utils/ApiError");
+const { applyCorsHeaders } = require("../utils/corsOrigins");
 
 const errorConverter = (err, req, res, next) => {
   let error = err;
@@ -19,6 +20,7 @@ const errorHandler = (err, req, res, next) => {
     console.error(err.stack);
   }
   const statusCode = err.statusCode || 500;
+  applyCorsHeaders(req, res);
 
   res.status(statusCode).json({
     status: "error",

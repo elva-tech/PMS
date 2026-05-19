@@ -1,0 +1,12 @@
+# Render Blueprint — Web Service (backend API)
+# Dashboard: set Root Directory to "backend" if deploying from monorepo root.
+services:
+  - type: web
+    name: pms-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
