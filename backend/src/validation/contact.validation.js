@@ -1,0 +1,42 @@
+const Joi = require("joi");
+
+const createContact = {
+  body: Joi.object().keys({
+    fullName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().required(),
+    description: Joi.string().trim().allow("").optional().default(""),
+    interested: Joi.number().integer().default(1),
+    projectId: Joi.string().trim().allow(null, ""),
+    plotid: Joi.string().trim().allow(null, ""),
+    source: Joi.string().valid("ADMIN", "WEBSITE").default("ADMIN"),
+  }),
+};
+
+const getContacts = {
+  query: Joi.object().keys({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    sortBy: Joi.string().valid("createdAt", "fullName").default("createdAt"),
+    sortOrder: Joi.string().valid("asc", "desc").default("desc"),
+    projectId: Joi.string().trim().allow(null, ""),
+    plotid: Joi.string().trim().allow(null, ""),
+    source: Joi.string().valid("ADMIN", "WEBSITE").allow(null, ""),
+    interested: Joi.number().integer().valid(0, 1).allow(null),
+  }),
+};
+
+const updateContactStatus = {
+  params: Joi.object().keys({
+    contactId: Joi.string().required(),
+  }),
+  body: Joi.object().keys({
+    interested: Joi.number().integer().valid(0, 1).required(),
+  }),
+};
+
+module.exports = {
+  createContact,
+  getContacts,
+  updateContactStatus,
+};

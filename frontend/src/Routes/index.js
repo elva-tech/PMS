@@ -1,0 +1,74 @@
+import { lazy } from "react";
+
+const Landingpage = lazy(() => import("../Pages/Landingpage"));
+const Login = lazy(() => import("../Pages/Login"));
+const balajilayout = lazy(() => import("../Pages/LayoutPages/BalajiLayout"));
+const main = lazy(() => import("../Pages/Main"));
+const ProjectDashboard = lazy(() => import("../Pages/ProjectDashboard"));
+const CreateProjectPage = lazy(() => import("../Pages/CreateProjectPage"));
+const DeveloperAnalyticsPage = lazy(() => import("../Pages/DeveloperAnalyticsPage"));
+
+const pageroutes = [
+  {
+    path: "/Balaji-Layout",
+    component: balajilayout,
+  },
+  {
+    path: "/project",
+    component: ProjectDashboard,
+  },
+  {
+    path: "/project/create",
+    component: CreateProjectPage,
+  },
+  {
+    path: "/project/edit/:id",
+    component: CreateProjectPage,
+  },
+  {
+    path: "/developer-analytics",
+    component: DeveloperAnalyticsPage,
+  },
+  {
+    path: "/project/:id",
+    component: main,
+  },
+  {
+    path: "/project/:id/plots",
+    component: main,
+  },
+  {
+    path: "/project/:id/documents",
+    component: main,
+  },
+  {
+    path: "/project/:id/plotallotment",
+    component: main,
+  },
+  {
+    path: "/project/:id/interestedbuyers",
+    component: main,
+  },
+  {
+    path: "/project/:id/payments",
+    component: main,
+  },
+  {
+    path: "/project/:id/users",
+    component: main,
+  },
+  {
+    path: "/project/:id/analytics",
+    component: main,
+  },
+  {
+    path: "/project/:id/sharequote",
+    component: main,
+  },
+  {
+    path: "/project/:id/addsale",
+    component: main,
+  },
+];
+
+export default pageroutes;

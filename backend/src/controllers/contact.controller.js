@@ -1,0 +1,52 @@
+const httpStatus = require("http-status");
+const catchAsync = require("../utils/catchAsync");
+const contactService = require("../services/contact.service");
+
+const createContact = catchAsync(async (req, res) => {
+  const contact = await contactService.createContact(req.body);
+  res.status(httpStatus.CREATED).send(contact);
+});
+
+const getContacts = catchAsync(async (req, res) => {
+  const { page, limit, sortBy, sortOrder, projectId, plotid, source, interested } = req.query;
+  const contacts = await contactService.getContacts({
+    page: parseInt(page, 10) || 1,
+    limit: parseInt(limit, 10) || 10,
+    sortBy,
+    sortOrder,
+    projectId: projectId && String(projectId).trim() ? String(projectId).trim() : undefined,
+    plotid: plotid && String(plotid).trim() ? String(plotid).trim() : undefined,
+    source: source && String(source).trim() ? String(source).trim() : undefined,
+    interested:
+      interested !== undefined && interested !== null && String(interested) !== ""
+        ? parseInt(interested, 10)
+        : undefined,
+  });
+  res.status(httpStatus.OK).send(contacts);
+});
+
+const updateContactStatus = catchAsync(async (req, res) => {
+  const { contactId } = req.params;
+  const { interested } = req.body;
+  const updatedContact = await contactService.updateContactStatus(
+    contactId,
+    interested
+  );
+  res.status(httpStatus.OK).send(updatedContact);
+});
+
+const createPublicInterestedBuyer = catchAsync(async (req, res) => {
+  const payload = await contactService.createPublicInterestedBuyer(req.body);
+  res.status(httpStatus.CREATED).send({
+    status: "success",
+    message: "Lead submitted successfully",
+    data: payload,
+  });
+});
+
+module.exports = {
+  createContact,
+  getContacts,
+  updateContactStatus,
+  createPublicInterestedBuyer,
+};
