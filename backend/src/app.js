@@ -23,13 +23,10 @@ app.use(express.urlencoded({ extended: true }));
 // CORS configuration
 const corsOptions = {
   // In development, allow all origins
-  origin:
-    process.env.NODE_ENV !== "production"
-      ? true // Allow any origin in development
-      : [
-          "https://real-estate-management-system-xukc.vercel.app",
-          "http://localhost:3000",
-        ],
+  origin: [
+    "https://pms-phi-nine.vercel.app",
+    "http://localhost:3000",
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: [
