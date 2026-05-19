@@ -20,13 +20,39 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration
+// CORS — browser blocks responses without Access-Control-Allow-Origin for cross-origin XHR.
+const defaultAllowedOrigins = [
+  "https://pms-phi-nine.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:2025",
+];
+
+const envAllowedOrigins = (process.env.FRONTEND_URL || process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const allowedOrigins = new Set([...defaultAllowedOrigins, ...envAllowedOrigins]);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.has(origin)) return true;
+  // Vercel production + preview URLs (e.g. pms-phi-nine.vercel.app, pms-xxx-team.vercel.app)
+  if (/^https:\/\/[\w.-]+\.vercel\.app$/i.test(origin)) return true;
+  return false;
+};
+
 const corsOptions = {
-  // In development, allow all origins
-  origin: [
-    "https://pms-phi-nine.vercel.app",
-    "http://localhost:3000",
-  ],
+  origin(origin, callback) {
+    if (config.env === "development" || process.env.NODE_ENV === "development") {
+      return callback(null, true);
+    }
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+    console.warn("CORS rejected origin:", origin);
+    return callback(null, false);
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: [
@@ -38,33 +64,11 @@ const corsOptions = {
   ],
   exposedHeaders: ["Content-Length", "X-Requested-With", "Authorization"],
   preflightContinue: false,
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 204,
 };
 
-// Apply CORS to all routes
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-
-// Special CORS handling for development environment
-if (config.env === "development" || process.env.NODE_ENV === "development") {
-  app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, PUT, POST, DELETE, OPTIONS",
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-    );
-
-    // Handle preflight OPTIONS request
-    if (req.method === "OPTIONS") {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-}
 
 // Development logging
 if (config.env !== "test") {
