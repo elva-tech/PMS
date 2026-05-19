@@ -1,0 +1,11 @@
+# Render Blueprint (repo root). Web service for the API in /backend.
+services:
+  - type: web
+    name: pms-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
