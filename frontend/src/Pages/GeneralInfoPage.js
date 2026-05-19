@@ -20,6 +20,7 @@ const GeneralInfoPage = ({ projectId }) => {
   const isEndUser =
     user?.user?.role === "user" && user?.user?.type === "user";
   const endUserId = user?.user?.userid;
+  const endUserMongoId = user?.user?.usermongoid;
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({
     sortBy: "createdAt",
@@ -56,6 +57,7 @@ const GeneralInfoPage = ({ projectId }) => {
     const m = {};
     usersList.forEach((u) => {
       m[u.userid] = u;
+      if (u._id) m[u._id] = u;
     });
     return m;
   }, [usersList]);
@@ -80,8 +82,10 @@ const GeneralInfoPage = ({ projectId }) => {
 
   const plotsScoped = useMemo(() => {
     if (!isEndUser || !endUserId) return plotsRaw;
-    return plotsRaw.filter((p) => p.assigneduserid === endUserId);
-  }, [plotsRaw, isEndUser, endUserId]);
+    const ids = new Set([String(endUserId)]);
+    if (endUserMongoId) ids.add(String(endUserMongoId));
+    return plotsRaw.filter((p) => ids.has(String(p.assigneduserid || "")));
+  }, [plotsRaw, isEndUser, endUserId, endUserMongoId]);
 
   useEffect(() => {
     if (isEndUser) return;
@@ -292,7 +296,7 @@ const GeneralInfoPage = ({ projectId }) => {
                         <td className="py-3 px-4">
                           {plot.assigneduserid
                             ? userById[plot.assigneduserid]?.username ||
-                              plot.assigneduserid
+                              "Assigned user"
                             : "—"}
                         </td>
                       )}

@@ -7,9 +7,9 @@ const listDocuments = {
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(500).default(10),
-    filterUserId: Joi.string().trim().allow("", null),
+    filterPlotId: Joi.string().trim().allow("", null),
     search: Joi.string().allow("", null),
-    searchBy: Joi.string().valid("document", "user").default("document"),
+    searchBy: Joi.string().valid("document", "user", "plot").default("document"),
     sortBy: Joi.string().valid("createdAt", "originalName").default("createdAt"),
     sortOrder: Joi.string().valid("asc", "desc").default("desc"),
   }),

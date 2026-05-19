@@ -8,7 +8,7 @@ const listPayments = catchAsync(async (req, res) => {
   const { page, limit, status, sortBy, sortOrder, search } = req.query;
 
   const role = req.user?.role || req.user?.type;
-  const requestUserId = req.user?.userid;
+  const requestUserId = req.user?.userid || req.user?.usermongoid;
 
   const { payments, pagination, summary } =
     await paymentService.listPaymentsForProject(projectId, {
@@ -34,9 +34,13 @@ const listPayments = catchAsync(async (req, res) => {
         amount: p.amount,
         status: p.status,
         userid: p.userid,
+        assignedUserName: p.assignedUserName ?? null,
         plotid: p.plotid ?? null,
         plotnumber: p.plotnumber ?? null,
+        documentid: p.documentid ?? null,
+        documentName: p.documentName ?? null,
         createdAt: formatDate(p.createdAt),
+        createdAtISO: p.createdAt ? new Date(p.createdAt).toISOString() : null,
         updatedAt: formatDate(p.updatedAt),
       })),
     },
@@ -45,7 +49,7 @@ const listPayments = catchAsync(async (req, res) => {
 
 const createPayment = catchAsync(async (req, res) => {
   const { projectId } = req.params;
-  const { orderId, amount, status, userid, plotid } = req.body;
+  const { orderId, amount, status, userid, plotid, documentid, documentName } = req.body;
 
   const payment = await paymentService.createPayment({
     projectId,
@@ -54,6 +58,8 @@ const createPayment = catchAsync(async (req, res) => {
     status,
     userid: userid || null,
     plotid,
+    documentid: documentid || null,
+    documentName: documentName || null,
   });
 
   res.status(httpStatus.CREATED).json({
@@ -66,9 +72,15 @@ const createPayment = catchAsync(async (req, res) => {
         amount: payment.amount,
         status: payment.status,
         userid: payment.userid,
+        assignedUserName: payment.assignedUserName ?? null,
         plotid: payment.plotid ?? null,
         plotnumber: payment.plotnumber ?? null,
+        documentid: payment.documentid ?? null,
+        documentName: payment.documentName ?? null,
         createdAt: formatDate(payment.createdAt),
+        createdAtISO: payment.createdAt
+          ? new Date(payment.createdAt).toISOString()
+          : null,
         updatedAt: formatDate(payment.updatedAt),
       },
     },
@@ -77,16 +89,17 @@ const createPayment = catchAsync(async (req, res) => {
 
 const updatePayment = catchAsync(async (req, res) => {
   const { projectId, paymentId } = req.params;
-  const { orderId, amount, status, userid, plotid } = req.body;
+  const { amount, status, userid, plotid, documentid, documentName } = req.body;
 
   const payment = await paymentService.updatePayment({
     projectId,
     paymentId,
-    orderId,
     amount,
     status,
     userid,
     plotid,
+    documentid,
+    documentName,
   });
 
   res.status(httpStatus.OK).json({
@@ -99,9 +112,15 @@ const updatePayment = catchAsync(async (req, res) => {
         amount: payment.amount,
         status: payment.status,
         userid: payment.userid,
+        assignedUserName: payment.assignedUserName ?? null,
         plotid: payment.plotid ?? null,
         plotnumber: payment.plotnumber ?? null,
+        documentid: payment.documentid ?? null,
+        documentName: payment.documentName ?? null,
         createdAt: formatDate(payment.createdAt),
+        createdAtISO: payment.createdAt
+          ? new Date(payment.createdAt).toISOString()
+          : null,
         updatedAt: formatDate(payment.updatedAt),
       },
     },

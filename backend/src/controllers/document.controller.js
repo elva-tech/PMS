@@ -1,14 +1,21 @@
 const httpStatus = require("http-status");
-const Joi = require("joi");
 const catchAsync = require("../utils/catchAsync");
 const documentService = require("../services/document.service");
+const Plot = require("../models/plot.model");
 const { formatDate } = require("../utils/dateUtils");
 
 const formatDoc = (doc) => ({
   _id: doc._id,
   projectid: doc.projectid,
+  plotid: doc.plotid || null,
+  allPlots: Boolean(doc.allPlots),
   originalName: doc.originalName,
   contentType: doc.contentType,
+  documentType: doc.documentType || null,
+  otherLabel: doc.otherLabel || "",
+  remarks: doc.remarks || "",
+  documentTypeLabel:
+    doc.documentTypeLabel || documentService.documentTypeLabel(doc),
   assignedUserIds: doc.assignedUserIds || [],
   assignedUsers: doc.assignedUsers || [],
   createdAt: doc.createdAt ? formatDate(doc.createdAt) : null,
@@ -20,7 +27,7 @@ const listDocuments = catchAsync(async (req, res) => {
   const {
     page,
     limit,
-    filterUserId,
+    filterPlotId,
     search,
     searchBy,
     sortBy,
@@ -28,7 +35,7 @@ const listDocuments = catchAsync(async (req, res) => {
   } = req.query;
 
   const role = req.user?.role || req.user?.type;
-  const requestUserId = req.user?.userid;
+  const requestUserId = req.user?.userid || req.user?.usermongoid;
 
   const { documents, pagination } = await documentService.listDocumentsForProject(
     projectId,
@@ -39,7 +46,7 @@ const listDocuments = catchAsync(async (req, res) => {
       sortOrder,
       role,
       requestUserId,
-      filterUserId: filterUserId || undefined,
+      filterPlotId: filterPlotId || undefined,
       search: search || undefined,
       searchBy,
     }
@@ -54,10 +61,6 @@ const listDocuments = catchAsync(async (req, res) => {
   });
 });
 
-const uploadSchema = Joi.object({
-  assignedUserIds: Joi.array().items(Joi.string().trim()).default([]),
-});
-
 const uploadDocument = catchAsync(async (req, res) => {
   const files = req.files || [];
   if (!files.length) {
@@ -67,42 +70,57 @@ const uploadDocument = catchAsync(async (req, res) => {
     });
   }
 
-  let assignedUserIds = [];
-  const raw = req.body?.assignedUserIds;
-  if (raw !== undefined && raw !== null && raw !== "") {
-    try {
-      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-      const { value, error } = uploadSchema.validate({
-        assignedUserIds: parsed,
-      });
-      if (error) {
-        return res.status(httpStatus.BAD_REQUEST).json({
-          status: "error",
-          message: error.details.map((d) => d.message).join(", "),
-        });
-      }
-      assignedUserIds = value.assignedUserIds;
-    } catch {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        status: "error",
-        message: "assignedUserIds must be a JSON array of user ids",
-      });
-    }
+  const rawPlotId = req.body?.plotid;
+  const allPlots =
+    req.body?.allPlots === true ||
+    req.body?.allPlots === "true" ||
+    req.body?.allPlots === "1";
+
+  let documentType = (req.body?.documentType || "").trim();
+  let otherLabel = (req.body?.otherLabel || "").trim();
+  const remarks = (req.body?.remarks || "").trim();
+
+  if (!documentType) {
+    documentType = "other";
+    if (!otherLabel) otherLabel = "Payment document";
+  }
+
+  if (!documentService.DOCUMENT_TYPES.includes(documentType)) {
+    documentType = "other";
+  }
+
+  if (documentType === "other" && !otherLabel.trim()) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      status: "error",
+      message: "Enter a document name when type is Other",
+    });
   }
 
   const created = [];
   for (const file of files) {
-    const doc = await documentService.createDocument({
+    const batch = await documentService.createDocumentsFromUpload({
       projectId: req.params.projectId,
       originalName: file.originalname,
       contentType: file.mimetype,
       data: file.buffer,
-      assignedUserIds,
+      plotid: allPlots ? null : rawPlotId || null,
+      allPlots,
+      documentType,
+      otherLabel,
+      remarks,
     });
-    const assignedUsers = await documentService.resolveUserSummaries(
-      doc.assignedUserIds || []
-    );
-    created.push(formatDoc({ ...doc, assignedUsers }));
+    for (const doc of batch) {
+      const assignedUsers = await documentService.resolveUserSummaries(
+        doc.assignedUserIds || []
+      );
+      created.push(
+        formatDoc({
+          ...doc,
+          documentTypeLabel: documentService.documentTypeLabel(doc),
+          assignedUsers,
+        })
+      );
+    }
   }
 
   res.status(httpStatus.CREATED).json({
@@ -118,11 +136,37 @@ const downloadDocumentFile = catchAsync(async (req, res) => {
   const doc = await documentService.getDocumentFileMeta(projectId, documentId);
 
   const role = req.user?.role || req.user?.type;
-  const requestUserId = req.user?.userid;
+  const requestUserId = req.user?.userid || req.user?.usermongoid;
+  const requestMongoId = req.user?.usermongoid;
+  const allowedIds = new Set(
+    [requestUserId, requestMongoId].filter(Boolean).map((id) => String(id))
+  );
+  let hasPlotAccess = false;
+  if (role === "user" && allowedIds.size > 0) {
+    if (doc.allPlots) {
+      const anyAssigned = await Plot.findOne({
+        projectid: projectId,
+        assigneduserid: { $in: [...allowedIds] },
+      })
+        .select("_id")
+        .lean();
+      hasPlotAccess = Boolean(anyAssigned);
+    } else if (doc.plotid) {
+      const linkedPlot = await Plot.findOne({
+        _id: doc.plotid,
+        projectid: projectId,
+        assigneduserid: { $in: [...allowedIds] },
+      })
+        .select("_id")
+        .lean();
+      hasPlotAccess = Boolean(linkedPlot);
+    }
+  }
   if (
     role === "user" &&
-    requestUserId &&
-    !(doc.assignedUserIds || []).includes(requestUserId)
+    allowedIds.size > 0 &&
+    !(doc.assignedUserIds || []).some((id) => allowedIds.has(String(id))) &&
+    !hasPlotAccess
   ) {
     return res.status(httpStatus.FORBIDDEN).json({
       status: "error",

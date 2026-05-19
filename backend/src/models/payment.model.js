@@ -36,6 +36,16 @@ const paymentSchema = new mongoose.Schema(
       type: Number,
       default: null,
     },
+    documentid: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    documentName: {
+      type: String,
+      default: null,
+      trim: true,
+    },
   },
   { timestamps: true }
 );

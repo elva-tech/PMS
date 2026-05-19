@@ -5,8 +5,8 @@ const Login = lazy(() => import("../Pages/Login"));
 const balajilayout = lazy(() => import("../Pages/LayoutPages/BalajiLayout"));
 const main = lazy(() => import("../Pages/Main"));
 const ProjectDashboard = lazy(() => import("../Pages/ProjectDashboard"));
-const Plot = lazy(() => import("../Pages/Plot"));
 const CreateProjectPage = lazy(() => import("../Pages/CreateProjectPage"));
+const DeveloperAnalyticsPage = lazy(() => import("../Pages/DeveloperAnalyticsPage"));
 
 const pageroutes = [
   {
@@ -24,6 +24,10 @@ const pageroutes = [
   {
     path: "/project/edit/:id",
     component: CreateProjectPage,
+  },
+  {
+    path: "/developer-analytics",
+    component: DeveloperAnalyticsPage,
   },
   {
     path: "/project/:id",
@@ -51,6 +55,18 @@ const pageroutes = [
   },
   {
     path: "/project/:id/users",
+    component: main,
+  },
+  {
+    path: "/project/:id/analytics",
+    component: main,
+  },
+  {
+    path: "/project/:id/sharequote",
+    component: main,
+  },
+  {
+    path: "/project/:id/addsale",
     component: main,
   },
 ];

@@ -1,9 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "build",
-  "devCommand": "npm start",
-  "installCommand": "npm install",
-  "routes": [
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "headers": [
     {
       "src": "/static/(.*)",
       "headers": {

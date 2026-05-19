@@ -21,7 +21,7 @@ import {
   useUploadDocument,
   useDeleteDocument,
 } from "../hooks/useDocumentHooks";
-import { useUsers } from "../hooks/useUserHooks";
+import { usePlot } from "../hooks/usePlotHooks";
 
 const DocumentDetailsPage = () => {
   const { id: projectId } = useParams();
@@ -35,11 +35,14 @@ const DocumentDetailsPage = () => {
 
   const [page, setPage] = useState(1);
   const limit = isAdmin ? 10 : 100;
-  const viewerScope = isAdmin
-    ? `admin:${user?.user?.username || ""}`
-    : `user:${user?.user?.userid || ""}`;
 
-  const [filterUserId, setFilterUserId] = useState("");
+  const viewerScope = React.useMemo(() => {
+    return isAdmin
+      ? `admin:${user?.user?.username || ""}`
+      : `user:${user?.user?.userid || ""}`;
+  }, [isAdmin, user?.user?.username, user?.user?.userid]);
+
+  const [filterPlotId, setFilterPlotId] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchBy, setSearchBy] = useState("document");
@@ -53,16 +56,12 @@ const DocumentDetailsPage = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [filterUserId, debouncedSearch, searchBy, viewerScope]);
+  }, [filterPlotId, debouncedSearch, searchBy, viewerScope]);
 
-  const { data: usersPayload } = useUsers({
-    page: 1,
-    limit: 300,
-    sortBy: "username",
-    sortOrder: "asc",
-    enabled: isAdmin,
-  });
-  const usersList = usersPayload?.users || [];
+  const { data: plotsPayload } = usePlot(projectId, 1, 500, "plotnumber", "asc");
+  const plotsList = Array.isArray(plotsPayload?.data?.plots)
+    ? plotsPayload.data.plots
+    : [];
 
   const {
     data: docResponse,
@@ -74,7 +73,7 @@ const DocumentDetailsPage = () => {
     page,
     limit,
     viewerScope,
-    filterUserId: isAdmin ? filterUserId || undefined : undefined,
+    filterPlotId: isAdmin && filterPlotId ? filterPlotId : undefined,
     search: debouncedSearch || undefined,
     searchBy: isAdmin ? searchBy : "document",
   });
@@ -98,14 +97,18 @@ const DocumentDetailsPage = () => {
     });
   };
 
-  const handleUploadFiles = async (files, assignedUserIds) => {
+  const handleUploadFiles = async (files, meta) => {
     if (!files?.length) return;
     const formData = new FormData();
     files.forEach((f) => formData.append("files", f));
-    formData.append(
-      "assignedUserIds",
-      JSON.stringify(assignedUserIds || [])
-    );
+    const allPlots = Boolean(meta?.allPlots);
+    formData.append("allPlots", allPlots ? "true" : "false");
+    if (!allPlots && meta?.plotid) {
+      formData.append("plotid", meta.plotid);
+    }
+    formData.append("documentType", meta?.documentType || "other");
+    formData.append("otherLabel", meta?.otherLabel || "");
+    formData.append("remarks", meta?.remarks || "");
     try {
       await uploadMutation.mutateAsync({ projectId, formData });
       addToast("success", "Upload complete", "Document(s) uploaded.");
@@ -116,7 +119,7 @@ const DocumentDetailsPage = () => {
       addToast(
         "error",
         "Upload failed",
-        err?.response?.data?.message || err.message || "Could not upload"
+        "Something went wrong while uploading the document."
       );
     }
   };
@@ -140,78 +143,41 @@ const DocumentDetailsPage = () => {
     return map[ext] || "";
   };
 
-  const handleView = async (documentId, originalName, docContentType) => {
+  const handleView = async (documentId, originalName) => {
     try {
       const res = await axiosInstance.get(
         `/api/v1/documents/${projectId}/${documentId}/file`,
         {
           responseType: "blob",
-          headers: { Accept: "*/*" },
         }
       );
-
-      const raw = res.data;
-      const buf =
-        raw instanceof Blob ? await raw.arrayBuffer() : new Uint8Array(raw);
-
-      const headerType = (
-        res.headers?.["content-type"] ||
-        res.headers?.["Content-Type"] ||
-        ""
-      )
-        .split(";")[0]
-        .trim();
-
-      let mime =
-        headerType && !headerType.includes("application/json")
-          ? headerType
-          : docContentType || "";
-
-      if (!mime || mime === "application/octet-stream") {
-        mime = mimeFromFilename(originalName) || mime || "application/octet-stream";
+  
+      if (!res.data || res.data.size === 0) {
+        addToast("error", "Unable to load document", "File is empty");
+        return;
       }
-
-      const head = new TextDecoder().decode(buf.slice(0, 1));
-      if (head === "{" || head === "[") {
-        try {
-          const t = new TextDecoder().decode(buf);
-          const j = JSON.parse(t);
-          if (j?.status === "error" || j?.message) {
-            addToast("error", "View failed", j.message || "Could not open file");
-            return;
-          }
-        } catch {
-          /* not JSON — treat as binary */
-        }
-      }
-
-      const blob = new Blob([buf], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const newWin = window.open(url, "_blank", "noopener,noreferrer");
+  
+      const url = window.URL.createObjectURL(res.data);
+  
+      const newWin = window.open(url, "_blank");
+  
       if (!newWin) {
         const a = document.createElement("a");
         a.href = url;
         a.download = originalName || "download";
-        a.rel = "noopener noreferrer";
         document.body.appendChild(a);
         a.click();
         a.remove();
       }
-      setTimeout(() => URL.revokeObjectURL(url), 120_000);
+  
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+  
     } catch (err) {
-      let msg =
-        err?.response?.data?.message || err.message || "Could not open file";
-      const data = err?.response?.data;
-      if (data instanceof Blob) {
-        try {
-          const t = await data.text();
-          const j = JSON.parse(t);
-          if (j?.message) msg = j.message;
-        } catch {
-          /* keep default msg */
-        }
-      }
-      addToast("error", "View failed", msg);
+      addToast(
+        "error",
+        "Unable to load document",
+        "Something went wrong while opening the document."
+      );
     }
   };
 
@@ -259,13 +225,13 @@ const DocumentDetailsPage = () => {
             <Filter className="text-gray-600 mr-2 shrink-0" size={18} />
             <select
               className="bg-transparent focus:outline-none w-full text-sm"
-              value={filterUserId}
-              onChange={(e) => setFilterUserId(e.target.value)}
+              value={filterPlotId}
+              onChange={(e) => setFilterPlotId(e.target.value)}
             >
-              <option value="">Filter by user — All</option>
-              {usersList.map((u) => (
-                <option key={u.userid} value={u.userid}>
-                  {u.username}
+              <option value="">All plots</option>
+              {plotsList.map((p) => (
+                <option key={p._id} value={p._id}>
+                  Plot #{p.plotnumber}
                 </option>
               ))}
             </select>
@@ -282,8 +248,8 @@ const DocumentDetailsPage = () => {
                 value={searchBy}
                 onChange={(e) => setSearchBy(e.target.value)}
               >
-                <option value="document">Document</option>
-                <option value="user">User</option>
+                <option value="document">File name</option>
+                <option value="plot">Plot</option>
               </select>
             </>
           )}
@@ -292,8 +258,8 @@ const DocumentDetailsPage = () => {
             type="search"
             className="flex-1 min-w-0 bg-transparent focus:outline-none text-sm py-1"
             placeholder={
-              isAdmin && searchBy === "user"
-                ? "Name, email, or user id…"
+              isAdmin && searchBy === "plot"
+                ? "Plot number or direction…"
                 : "File name…"
             }
             value={searchInput}
@@ -321,10 +287,10 @@ const DocumentDetailsPage = () => {
             <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
               <thead className="bg-blue-600 text-white">
                 <tr>
-                  <th className="p-4 text-center md:text-left">File Name</th>
-                  <th className="p-4 text-center md:text-left">
-                    Assigned Users
-                  </th>
+                  <th className="p-4 text-center md:text-left">Plot</th>
+                  <th className="p-4 text-center md:text-left">Type</th>
+                  <th className="p-4 text-center md:text-left">File name</th>
+                  <th className="p-4 text-center md:text-left">Remarks</th>
                   <th className="p-4 text-center md:text-left">Date</th>
                   <th className="p-4 text-center md:text-left">Action</th>
                 </tr>
@@ -333,7 +299,7 @@ const DocumentDetailsPage = () => {
                 {documents.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={6}
                       className="p-6 text-center text-gray-500 font-normal"
                     >
                       No documents found for these filters.
@@ -346,6 +312,22 @@ const DocumentDetailsPage = () => {
                       className="border-b hover:bg-gray-100 text-sm md:text-base "
                     >
                       <td className="p-2">
+                        {doc.allPlots ? (
+                          <span className="font-medium text-blue-800">All plots</span>
+                        ) : (
+                          (() => {
+                            const p = plotsList.find(
+                              (plot) =>
+                                String(plot._id) === String(doc.plotid || "")
+                            );
+                            return p?.plotnumber != null ? `#${p.plotnumber}` : "—";
+                          })()
+                        )}
+                      </td>
+                      <td className="p-2 font-normal text-gray-800">
+                        {doc.documentTypeLabel || "—"}
+                      </td>
+                      <td className="p-2">
                         <div className="flex items-center gap-2">
                           <div className="flex-shrink-0 w-5">
                             <FileText className="text-blue-500 w-full h-full" />
@@ -353,13 +335,9 @@ const DocumentDetailsPage = () => {
                           <span className="break-words">{doc.originalName}</span>
                         </div>
                       </td>
-                      <td className="p-2 align-top">
-                        <span className="break-words font-normal text-gray-700">
-                          {(doc.assignedUsers || []).length
-                            ? (doc.assignedUsers || [])
-                                .map((u) => u.username)
-                                .join(", ")
-                            : "—"}
+                      <td className="p-2 align-top max-w-[12rem]">
+                        <span className="break-words font-normal text-gray-600 text-xs md:text-sm">
+                          {doc.remarks?.trim() ? doc.remarks : "—"}
                         </span>
                       </td>
                       <td className="p-2">
@@ -376,7 +354,7 @@ const DocumentDetailsPage = () => {
                             handleView(
                               doc._id,
                               doc.originalName,
-                              doc.contentType
+                              // doc.contentType
                             )
                           }
                           title="View"
@@ -468,7 +446,6 @@ const DocumentDetailsPage = () => {
 
       {documentUploadModal && (
         <UploadDocument
-          users={usersList}
           isAdmin={isAdmin}
           setDocumentUploadModal={(value) => {
             startTransition(() => {
@@ -476,6 +453,7 @@ const DocumentDetailsPage = () => {
             });
           }}
           sendFiles={handleUploadFiles}
+          plots={plotsList}
         />
       )}
     </div>

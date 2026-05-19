@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import axiosInstance from "../utils/axiosInstance";
-import { EyeIcon, Trash2, Edit2, Filter, ZoomIn } from "lucide-react";
+import { EyeIcon, Trash2, Edit2, Filter, ZoomIn, Search } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   usePlots,
@@ -64,17 +64,34 @@ const ProjectDetailsPage = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [plotToDelete, setPlotToDelete] = useState(null);
   const [plotNo, setPlotNo] = useState("");
+  const [advSearch, setAdvSearch] = useState("");
+  const [advSearchDebounced, setAdvSearchDebounced] = useState("");
+  const [advPlotStatus, setAdvPlotStatus] = useState("all");
+
+  useEffect(() => {
+    const t = setTimeout(() => setAdvSearchDebounced(advSearch.trim().toLowerCase()), 350);
+    return () => clearTimeout(t);
+  }, [advSearch]);
+
+  const filterActive = Boolean(advSearchDebounced) || advPlotStatus !== "all";
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [advSearchDebounced, advPlotStatus]);
+
+  const listPage = filterActive ? 1 : currentPage;
+  const listLimit = filterActive ? 500 : itemsPerPage;
 
   const {
     data: plotData = {},
     isLoading,
     isError,
     error,
-  } = usePlot(id, currentPage, itemsPerPage, sortBy, sortOrder);
+  } = usePlot(id, listPage, listLimit, sortBy, sortOrder);
   const updatePlotMutation = useUpdatePlot();
   const deletePlotMutation = useDeletePlot();
 
-  const plots = useMemo(() => {
+  const pagePlots = useMemo(() => {
     if (!plotData) return [];
     if (
       plotData.data &&
@@ -93,7 +110,7 @@ const ProjectDetailsPage = ({
     return [];
   }, [plotData]);
 
-  const pagination = useMemo(() => {
+  const serverPagination = useMemo(() => {
     return plotData && plotData.pagination
       ? plotData.pagination
       : {
@@ -104,6 +121,57 @@ const ProjectDetailsPage = ({
           hasPrevPage: false,
         };
   }, [plotData]);
+
+  const filteredPlots = useMemo(() => {
+    let rows = pagePlots;
+    if (advPlotStatus !== "all") {
+      rows = rows.filter((p) => String(p?.plotstatus || "") === advPlotStatus);
+    }
+    const q = advSearchDebounced;
+    if (!q) return rows;
+    return rows.filter((p) => {
+      const num = String(p?.plotnumber ?? "").toLowerCase();
+      const dir = String(p?.plotdirection ?? "").toLowerCase();
+      const size = String(p?.plotsize ?? "").toLowerCase();
+      const price = String(p?.plotprice ?? "").toLowerCase();
+      const st = String(p?.plotstatus ?? "").toLowerCase();
+      return (
+        num.includes(q) ||
+        dir.includes(q) ||
+        size.includes(q) ||
+        price.includes(q) ||
+        st.includes(q)
+      );
+    });
+  }, [pagePlots, advSearchDebounced, advPlotStatus]);
+
+  const clientTotalPages = Math.max(1, Math.ceil(filteredPlots.length / itemsPerPage));
+  const safeClientPage = Math.min(currentPage, clientTotalPages);
+
+  const displayPlots = useMemo(() => {
+    if (!filterActive) return pagePlots;
+    const start = (safeClientPage - 1) * itemsPerPage;
+    return filteredPlots.slice(start, start + itemsPerPage);
+  }, [filterActive, pagePlots, filteredPlots, safeClientPage, itemsPerPage]);
+
+  const pagination = useMemo(() => {
+    if (!filterActive) return serverPagination;
+    const totalRecords = filteredPlots.length;
+    const totalPages = clientTotalPages;
+    const current = safeClientPage;
+    return {
+      currentPage: current,
+      totalPages,
+      totalRecords,
+      hasNextPage: current < totalPages,
+      hasPrevPage: current > 1,
+    };
+  }, [filterActive, serverPagination, filteredPlots.length, clientTotalPages, safeClientPage]);
+
+  useEffect(() => {
+    if (!filterActive) return;
+    setCurrentPage((p) => Math.min(p, clientTotalPages));
+  }, [filterActive, clientTotalPages, filteredPlots.length]);
 
   const [editPlotData, setEditPlotData] = useState(null);
   const handleEditPlot = (plot) => {
@@ -159,9 +227,9 @@ const ProjectDetailsPage = ({
     setPlotToDelete(null);
   };
 
-  // API `image` matches project cards (logo / first upload); `brochure` is layout site map (second upload).
-  const logoPayload = projectImageData;
-  const layoutPayload = projectBrochureData;
+  // Backend stores first upload in `brochure` (logo) and second in `image` (site map/layout).
+  const logoPayload = projectBrochureData;
+  const layoutPayload = projectImageData;
 
   const heroIsPdf =
     logoPayload?.contentType === "application/pdf" && logoPayload?.data;
@@ -324,16 +392,59 @@ const ProjectDetailsPage = ({
           {/* Plots Table */}
           <div>
             <div className="overflow-x-auto rounded-xl border shadow-lg">
-              {!isLoading && !isError && plots.length === 0 ? (
+              {!isLoading && !isError && pagePlots.length === 0 ? (
                 <div className="text-center p-6 bg-gray-100 rounded-lg">
                   <p className="text-lg text-gray-700">
                     No plots found. Click "Add Plot" to create your first plot.
                   </p>
                 </div>
+              ) : !isLoading && !isError && filterActive && filteredPlots.length === 0 ? (
+                <div className="text-center p-6 bg-amber-50 rounded-lg border border-amber-100">
+                  <p className="text-sm text-amber-900">
+                    No plots match your search or status filter. Adjust filters or clear the search bar.
+                  </p>
+                </div>
               ) : !isLoading && !isError ? (
                 <>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-end px-2 pb-3 pt-2">
+                    <div className="flex-1 min-w-0 relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                      <input
+                        type="search"
+                        value={advSearch}
+                        onChange={(e) => setAdvSearch(e.target.value)}
+                        placeholder="Search number, direction, size, price, status…"
+                        className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Filter size={16} className="text-gray-500 hidden sm:block" />
+                      <select
+                        value={advPlotStatus}
+                        onChange={(e) => setAdvPlotStatus(e.target.value)}
+                        className="border border-gray-200 rounded-lg px-2 py-2 text-sm bg-white min-w-[8rem]"
+                      >
+                        <option value="all">All statuses</option>
+                        <option value="Available">Available</option>
+                        <option value="Reserved">Reserved</option>
+                        <option value="Sold">Sold</option>
+                      </select>
+                      {(advSearch || advPlotStatus !== "all") && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAdvSearch("");
+                            setAdvPlotStatus("all");
+                          }}
+                          className="text-xs text-blue-600 px-2 py-2 whitespace-nowrap"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white px-2">
-                    Available Plots
+                    Plots
                   </h2>
                   <table className="min-w-full text-sm text-left border-collapse rounded-lg overflow-hidden shadow-lg">
                   <thead className="bg-blue-600 text-white">
@@ -417,9 +528,9 @@ const ProjectDetailsPage = ({
                     </tr>
                   </thead>
                   <tbody className="bg-white">
-                    {plots.map((plot, index) => (
+                    {displayPlots.map((plot, index) => (
                       <tr
-                        key={index}
+                        key={plot._id || index}
                         className="border-b border-gray-200 hover:bg-gray-100"
                       >
                         <td className="text-center p-4 font-medium text-gray-900">
@@ -435,6 +546,8 @@ const ProjectDetailsPage = ({
                             className={`px-2 py-1 rounded-full text-xs ${
                               plot.plotstatus === "Available"
                                 ? "bg-green-100 text-green-700"
+                                : plot.plotstatus === "Reserved"
+                                  ? "bg-amber-100 text-amber-800"
                                 : "bg-red-100 text-red-700"
                             }`}
                           >
@@ -469,16 +582,19 @@ const ProjectDetailsPage = ({
               ) : null}
             </div>
             {/* Pagination Controls */}
-            {!isLoading && !isError && plots.length > 0 && (
+            {!isLoading && !isError && pagePlots.length > 0 && (!filterActive || filteredPlots.length > 0) && (
               <div className="flex flex-col sm:flex-row items-center justify-between bg-white px-4 py-3 border-t rounded-lg shadow-lg text-xs md:text-sm">
                 <div className="flex items-center mb-3 sm:mb-0">
                   <span className="text-sm text-gray-700 mr-3">
-                    Showing <span className="font-medium">{plots.length}</span>{" "}
+                    Showing <span className="font-medium">{displayPlots.length}</span>{" "}
                     of{" "}
                     <span className="font-medium">
-                      {pagination.totalRecords}
+                      {filterActive ? filteredPlots.length : pagination.totalRecords}
                     </span>{" "}
                     plots
+                    {filterActive ? (
+                      <span className="ml-2 text-gray-500">(filtered)</span>
+                    ) : null}
                   </span>
                 </div>
 

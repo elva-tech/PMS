@@ -5,7 +5,7 @@ export const useDocuments = (projectId, params = {}, queryOptions = {}) => {
   const {
     page = 1,
     limit = 10,
-    filterUserId,
+    filterPlotId,
     search,
     searchBy = "document",
     sortBy = "createdAt",
@@ -21,7 +21,7 @@ export const useDocuments = (projectId, params = {}, queryOptions = {}) => {
       viewerScope,
       page,
       limit,
-      filterUserId || "",
+      filterPlotId || "",
       search || "",
       searchBy,
       sortBy,
@@ -32,7 +32,7 @@ export const useDocuments = (projectId, params = {}, queryOptions = {}) => {
         params: {
           page,
           limit,
-          filterUserId: filterUserId || undefined,
+          filterPlotId: filterPlotId || undefined,
           search: search || undefined,
           searchBy,
           sortBy,

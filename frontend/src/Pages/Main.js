@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, Suspense, lazy } from "react";
 import { useLocation } from "react-router-dom";
 import sjdlogo1 from "../Images/sjd-logo1.png";
-import { Menu, ChevronRight } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useAuth } from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
@@ -13,8 +13,19 @@ import LayoutPageDetails from "./LayoutPageDetails";
 import GeneralInfoPage from "./GeneralInfoPage";
 import ProjectsDashboard from "./ProjectDashboard";
 import Plot from "./Plot";
+import ProjectAnalyticsPage from "./ProjectAnalyticsPage";
+import ShareQuotePage from "./ShareQuotePage";
 import Sidebar from "../Components/Sidebar";
+import BreadcrumbNav from "../Components/BreadcrumbNav";
 import axiosInstance from "../utils/axiosInstance";
+
+const AddSalePage = lazy(() =>
+  import(/* webpackChunkName: "add-sale" */ "./AddSalePage")
+);
+
+const pageSuspenseFallback = (
+  <div className="flex justify-center py-10 text-sm text-gray-500">Loading…</div>
+);
 
 const PropertyDetailsPage = () => {
   const [pageLoading, setPageLoading] = useState(true);
@@ -62,6 +73,9 @@ const PropertyDetailsPage = () => {
     if (path.includes("/plotallotment")) return "plotallotment";
     if (path.includes("/interestedbuyers")) return "interestedbuyers";
     if (path.includes("/payments")) return "payments";
+    if (path.includes("/analytics")) return "analytics";
+    if (path.includes("/sharequote")) return "sharequote";
+    if (path.includes("/addsale")) return "addsale";
 
     // Check for plots last (least specific condition)
     if (
@@ -72,7 +86,10 @@ const PropertyDetailsPage = () => {
       !path.includes("/documents") &&
       !path.includes("/plotallotment") &&
       !path.includes("/interestedbuyers") &&
-      !path.includes("/payments")
+      !path.includes("/payments") &&
+      !path.includes("/analytics") &&
+      !path.includes("/sharequote") &&
+      !path.includes("/addsale")
     )
       return "plots";
     // if (path.includes("/project")) return "project";
@@ -91,11 +108,28 @@ const PropertyDetailsPage = () => {
     const isEndUser =
       user?.user?.role === "user" && user?.user?.type === "user";
     if (!isEndUser) return;
-    const restricted = new Set(["users", "interestedbuyers", "plots"]);
+    const restricted = new Set([
+      "users",
+      "interestedbuyers",
+      "plots",
+      "analytics",
+      "sharequote",
+      "addsale",
+    ]);
     if (restricted.has(activeMenu)) {
       navigate(`/project/${id}/documents`, { replace: true });
     }
   }, [loading, user, id, activeMenu, navigate]);
+
+  useEffect(() => {
+    if (loading || id) return;
+    const isEndUser =
+      user?.user?.role === "user" && user?.user?.type === "user";
+    if (!isEndUser) return;
+    if (activeMenu === "sharequote") {
+      navigate("/project", { replace: true });
+    }
+  }, [loading, id, user, activeMenu, navigate]);
 
   useEffect(() => {
     if (!id || loading || !isLoggedIn) return;
@@ -142,6 +176,29 @@ const PropertyDetailsPage = () => {
     fetchProjectDetails();
   }, [id, loading, isLoggedIn]);
 
+  const breadcrumbItems = useMemo(() => {
+    if (!id) return [];
+    const sectionLabel =
+      {
+        plots: "Plots",
+        users: "Users",
+        documents: "Documents",
+        plotallotment: "Plot Allotment",
+        interestedbuyers: "Interested Buyers",
+        payments: "Payments",
+        analytics: "Analytics",
+        sharequote: "Share Quote",
+        addsale: "Add Sale",
+        layout: "Users",
+      }[activeMenu] || "Project";
+
+    return [
+      { label: "Projects", to: "/project" },
+      { label: projectName?.trim() ? projectName : "Project", to: `/project/${id}` },
+      { label: sectionLabel },
+    ];
+  }, [id, projectName, activeMenu]);
+
   const getCurrentPageTitle = () => {
     switch (activeMenu) {
       case "project":
@@ -156,6 +213,12 @@ const PropertyDetailsPage = () => {
         return "Interested Buyers";
       case "payments":
         return "Payments Made";
+      case "analytics":
+        return "Analytics";
+      case "sharequote":
+        return "Share Quote";
+      case "addsale":
+        return "Add Sale";
       case "users":
         return "Users";
       default:
@@ -191,6 +254,16 @@ const PropertyDetailsPage = () => {
         return <InterestedBuyersPage projectId={id} />;
       case "payments":
         return <PaymentsPage />;
+      case "analytics":
+        return <ProjectAnalyticsPage />;
+      case "sharequote":
+        return <ShareQuotePage />;
+      case "addsale":
+        return (
+          <Suspense fallback={pageSuspenseFallback}>
+            <AddSalePage />
+          </Suspense>
+        );
       case "users":
         return <LayoutPageDetails />;
       case "layout":
@@ -242,13 +315,23 @@ const PropertyDetailsPage = () => {
         <div className="flex-1 overflow-y-auto p-4">
           {activeMenu !== "plots" ? (
             <div className="bg-white rounded-lg shadow-2xl p-6 min-h-full">
+              <BreadcrumbNav items={breadcrumbItems} className="mb-3 text-gray-600" />
               <h2 className="flex flex-row text-xl font-semibold text-gray-800 pb-2 border-b items-center gap-2">
                 {getCurrentPageTitle()}
               </h2>
               {getCurrentPageComponent()}
             </div>
           ) : (
-            <div>{getCurrentPageComponent()}</div>
+            <div>
+              <BreadcrumbNav
+                items={breadcrumbItems}
+                className="mb-3 px-1 [&_ol]:border-white/30 [&_ol]:bg-white/10 [&_ol]:shadow-none"
+                linkClassName="text-blue-100 hover:text-white"
+                currentClassName="text-white font-semibold"
+                separatorClassName="text-blue-200/90"
+              />
+              {getCurrentPageComponent()}
+            </div>
           )}
         </div>
       </div>

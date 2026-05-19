@@ -2,9 +2,8 @@ const jwt = require("jsonwebtoken");
 const httpStatus = require("http-status");
 const { logger } = require("../utils/logger");
 const {
-  getUserByEmail,
+  getUserByPhone,
   validatePassword,
-  getUsersWithPasswords,
 } = require("../services/user.service");
 process.env.USERNAME =
   require("dotenv").config().parsed.USERNAME || process.env.USERNAME;
@@ -49,11 +48,65 @@ const ADMIN_CREDENTIALS = {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+    const loginId =
+      typeof username === "string" ? username.trim() : username ?? "";
+    // #region agent log
+    try {
+      typeof fetch === "function" &&
+        fetch("http://127.0.0.1:7337/ingest/f2e6f75b-2838-4947-b561-fbd2af5d0e3c", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "d4c373",
+          },
+          body: JSON.stringify({
+            sessionId: "d4c373",
+            runId: "pre-fix",
+            hypothesisId: "H4",
+            location: "backend/src/controllers/auth.controller.js:login",
+            message: "Login body keys and identifier characteristics",
+            data: {
+              bodyKeys: Object.keys(req.body || {}),
+              identifierLength: String(loginId || "").length,
+              digitsOnlyLength: String(loginId || "").replace(/\D/g, "").length,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+    } catch {}
+    // #endregion
+
+    // #region agent log
+    try {
+      typeof fetch === "function" &&
+        fetch(
+          "http://127.0.0.1:7337/ingest/f2e6f75b-2838-4947-b561-fbd2af5d0e3c",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "b36e33",
+            },
+            body: JSON.stringify({
+              sessionId: "b36e33",
+              runId: "pre-fix",
+              hypothesisId: "H4",
+              location: "backend/src/controllers/auth.controller.js:login",
+              message: "Login request received",
+              data: {
+                identifierLength: String(loginId || "").length,
+                digitsOnlyLength: String(loginId || "").replace(/\D/g, "").length,
+              },
+              timestamp: Date.now(),
+            }),
+          }
+        ).catch(() => {});
+    } catch {}
+    // #endregion
 
     // Check if credentials match admin
     if (
-      username === ADMIN_CREDENTIALS.username &&
+      loginId === ADMIN_CREDENTIALS.username &&
       password === ADMIN_CREDENTIALS.password
     ) {
       const token = jwt.sign(
@@ -77,14 +130,7 @@ const login = async (req, res) => {
       });
     }
 
-    // Check if credentials match by email
-    let user;
-    user = await getUserByEmail(username);
-    // Check if credentials match by email
-    if (!user) {
-      const allUsers = await getUsersWithPasswords();
-      user = allUsers.find((u) => u.username === username);
-    }
+    const user = await getUserByPhone(loginId);
 
     if (user) {
       const isPasswordValid = await validatePassword(
@@ -105,8 +151,10 @@ const login = async (req, res) => {
         const token = jwt.sign(
           {
             userid: user.userid,
+            usermongoid: String(user._id),
             username: user.username,
             useremail: user.useremail,
+            userphone: user.userphone,
             role: "user",
             type: "user",
           },
@@ -120,8 +168,10 @@ const login = async (req, res) => {
           message: "User login successful",
           user: {
             userid: user.userid,
+            usermongoid: String(user._id),
             username: user.username,
             useremail: user.useremail,
+            userphone: user.userphone,
             role: "user",
             type: "user",
           },
@@ -129,7 +179,6 @@ const login = async (req, res) => {
       }
     }
 
-    // If neither admin nor user credentials match
     return res.status(401).json({
       success: false,
       message: "Invalid credentials",

@@ -26,6 +26,8 @@ const createPayment = {
     status: Joi.string().valid("Success", "Pending", "Rejected").required(),
     userid: Joi.string().trim().allow(null, ""),
     plotid: Joi.string().trim().required(),
+    documentid: Joi.string().trim().allow(null, ""),
+    documentName: Joi.string().trim().allow(null, ""),
   }),
 };
 
@@ -35,16 +37,17 @@ const updatePayment = {
     paymentId: Joi.string().required(),
   }),
   body: Joi.object({
-    orderId: Joi.string().trim(),
     amount: Joi.number().min(0),
     status: Joi.string().valid("Success", "Pending", "Rejected"),
     userid: Joi.string().trim().allow(null, ""),
     plotid: Joi.string().trim().allow(null, ""),
+    documentid: Joi.string().trim().allow(null, ""),
+    documentName: Joi.string().trim().allow(null, ""),
   })
-    .or("orderId", "amount", "status", "userid", "plotid")
+    .or("amount", "status", "userid", "plotid", "documentid", "documentName")
     .messages({
       "object.missing":
-        "Provide at least one of: orderId, amount, status, userid, plotid",
+        "Provide at least one of: amount, status, userid, plotid, documentid, documentName",
     }),
 };
 

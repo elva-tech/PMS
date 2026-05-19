@@ -9,25 +9,25 @@ const documentController = require("../controllers/document.controller");
 const router = express.Router();
 
 const storage = multer.memoryStorage();
+const allowedMimes = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+
 const upload = multer({
   storage,
   limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    fileFilter: (req, file, cb) => {
-      // allow everything except dangerous executables
-      const blocked = ["application/x-msdownload"]; // .exe etc
-    
-      if (blocked.includes(file.mimetype)) {
-        cb(new Error("Unsupported file type"), false);
-      } else {
-        cb(null, true);
-      }
+    // Accept PDFs, common images, and doc/docx. Reject everything else.
+    const mime = file?.mimetype || "";
+    if (mime === "application/pdf" || mime.startsWith("image/")) {
+      return cb(null, true);
     }
-    if (allowed.has(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Unsupported file type"), false);
+    if (allowedMimes.has(mime)) {
+      return cb(null, true);
     }
+    return cb(new Error("Unsupported file type"), false);
   },
 });
 

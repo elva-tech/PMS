@@ -11,6 +11,7 @@ const userRoutes = require("./routes/user.routes");
 const documentRoutes = require("./routes/document.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const publicRoutes = require("./routes/public.routes");
+const shareQuoteRoutes = require("./routes/shareQuote.routes");
 const { errorConverter, errorHandler } = require("./middleware/error");
 
 const app = express();
@@ -117,6 +118,7 @@ app.use("/api/v1/plots", plotRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/documents", documentRoutes);
 app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/share-quote", shareQuoteRoutes);
 
 // Handle undefined routes
 app.all("*", (req, res, next) => {

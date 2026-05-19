@@ -5,9 +5,11 @@ const createContact = {
     fullName: Joi.string().required(),
     email: Joi.string().email().required(),
     phone: Joi.string().required(),
-    description: Joi.string().required(),
+    description: Joi.string().trim().allow("").optional().default(""),
     interested: Joi.number().integer().default(1),
     projectId: Joi.string().trim().allow(null, ""),
+    plotid: Joi.string().trim().allow(null, ""),
+    source: Joi.string().valid("ADMIN", "WEBSITE").default("ADMIN"),
   }),
 };
 
@@ -18,6 +20,9 @@ const getContacts = {
     sortBy: Joi.string().valid("createdAt", "fullName").default("createdAt"),
     sortOrder: Joi.string().valid("asc", "desc").default("desc"),
     projectId: Joi.string().trim().allow(null, ""),
+    plotid: Joi.string().trim().allow(null, ""),
+    source: Joi.string().valid("ADMIN", "WEBSITE").allow(null, ""),
+    interested: Joi.number().integer().valid(0, 1).allow(null),
   }),
 };
 

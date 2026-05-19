@@ -1,6 +1,11 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
+const httpStatus = require("http-status");
+const ApiError = require("../utils/ApiError");
+
+const normalizePhoneDigits = (phone) =>
+  String(phone || "").replace(/\D/g, "");
 
 // Helper function to check if a string is a valid ObjectId
 const isValidObjectId = (id) => {
@@ -20,12 +25,21 @@ const buildUserQuery = (userId) => {
 };
 
 const createUser = async (userData) => {
-  // Hash the password before saving
+  const normalizedPhone = normalizePhoneDigits(userData.userphone);
+  const dup = await User.findOne({ userphone: normalizedPhone });
+  if (dup) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      "This phone number is already registered"
+    );
+  }
+
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(userData.userpassword, saltRounds);
 
   const user = new User({
     ...userData,
+    userphone: normalizedPhone,
     userpassword: hashedPassword,
     updatedAt: new Date(),
   });
@@ -85,19 +99,36 @@ const getUserById = async (userId) => {
 };
 
 const updateUser = async (userId, updateData) => {
-  // If password is being updated, hash it
-  if (updateData.userpassword) {
-    const saltRounds = 10;
-    updateData.userpassword = await bcrypt.hash(
-      updateData.userpassword,
-      saltRounds
-    );
+  const patch = { ...updateData };
+
+  if (patch.userphone !== undefined) {
+    const normalizedPhone = normalizePhoneDigits(patch.userphone);
+    patch.userphone = normalizedPhone;
+    const target = await User.findOne(buildUserQuery(userId))
+      .select("userid")
+      .lean();
+    if (!target) {
+      return null;
+    }
+    const conflict = await User.findOne({ userphone: normalizedPhone })
+      .select("userid")
+      .lean();
+    if (conflict && conflict.userid !== target.userid) {
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        "This phone number is already registered"
+      );
+    }
   }
 
-  // Update the updatedAt timestamp
-  updateData.updatedAt = new Date();
+  if (patch.userpassword) {
+    const saltRounds = 10;
+    patch.userpassword = await bcrypt.hash(patch.userpassword, saltRounds);
+  }
 
-  return User.findOneAndUpdate(buildUserQuery(userId), updateData, {
+  patch.updatedAt = new Date();
+
+  return User.findOneAndUpdate(buildUserQuery(userId), patch, {
     new: true,
   }).select("-userpassword"); // Exclude password from response
 };
@@ -108,6 +139,12 @@ const deleteUser = async (userId) => {
 
 const getUserByEmail = async (email) => {
   return User.findOne({ useremail: email });
+};
+
+const getUserByPhone = async (phoneDigits) => {
+  const normalized = normalizePhoneDigits(phoneDigits);
+  if (!normalized) return null;
+  return User.findOne({ userphone: normalized });
 };
 
 const validatePassword = async (plainPassword, hashedPassword) => {
@@ -122,5 +159,7 @@ module.exports = {
   updateUser,
   deleteUser,
   getUserByEmail,
+  getUserByPhone,
+  normalizePhoneDigits,
   validatePassword,
 };

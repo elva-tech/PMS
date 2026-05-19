@@ -14,6 +14,7 @@ const createUser = catchAsync(async (req, res) => {
       userid: user.userid,
       username: user.username,
       useremail: user.useremail,
+      userphone: user.userphone,
       userstatus: user.userstatus,
       createdAt: formatDate(user.createdAt),
       updatedAt: formatDate(user.updatedAt),
@@ -32,9 +33,11 @@ const getUsers = catchAsync(async (req, res) => {
   });
 
   const formattedUsers = result.users.map((user) => ({
+    _id: user._id,
     userid: user.userid,
     username: user.username,
     useremail: user.useremail,
+    userphone: user.userphone,
     userstatus: user.userstatus,
     createdAt: formatDate(user.createdAt),
     updatedAt: formatDate(user.updatedAt),
@@ -64,9 +67,11 @@ const getUser = catchAsync(async (req, res) => {
     status: "success",
     message: "User retrieved successfully",
     data: {
+      _id: user._id,
       userid: user.userid,
       username: user.username,
       useremail: user.useremail,
+      userphone: user.userphone,
       userstatus: user.userstatus,
       createdAt: formatDate(user.createdAt),
       updatedAt: formatDate(user.updatedAt),
@@ -90,9 +95,11 @@ const updateUser = catchAsync(async (req, res) => {
     status: "success",
     message: "User updated successfully",
     data: {
+      _id: user._id,
       userid: user.userid,
       username: user.username,
       useremail: user.useremail,
+      userphone: user.userphone,
       userstatus: user.userstatus,
       createdAt: formatDate(user.createdAt),
       updatedAt: formatDate(user.updatedAt),
@@ -116,6 +123,7 @@ const deleteUser = catchAsync(async (req, res) => {
     status: "success",
     message: "User deleted successfully",
     data: {
+      _id: user._id,
       userid: user.userid,
       username: user.username,
       useremail: user.useremail,

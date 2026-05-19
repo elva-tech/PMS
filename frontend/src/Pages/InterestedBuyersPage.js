@@ -4,6 +4,25 @@ import axiosInstance from "../utils/axiosInstance";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import { useAuth } from "../Context/AuthContext";
 import { useToast } from "../Context/ToastContext";
+import { usePlot } from "../hooks/usePlotHooks";
+import InterestedBuyerForm from "../Components/InterestedBuyerForm";
+
+/** Plot # from persisted fields if present, else a conservative parse of the interest note (no new API). */
+const plotLabelFromContact = (contact) => {
+  const explicit = contact.plotNumber ?? contact.plotnumber;
+  if (
+    explicit !== undefined &&
+    explicit !== null &&
+    String(explicit).trim() !== ""
+  ) {
+    return `#${String(explicit).trim()}`;
+  }
+  const desc = (contact.description || "").trim();
+  const m =
+    desc.match(/\bplot\s*(?:number|no\.?)?\s*[:#]?\s*(\d{1,6})\b/i) ||
+    desc.match(/\b#\s*(\d{1,6})\b/);
+  return m ? `#${m[1]}` : "—";
+};
 
 const InterestedBuyersPage = ({ projectId }) => {
   const { user } = useAuth();
@@ -28,6 +47,7 @@ const InterestedBuyersPage = ({ projectId }) => {
     sortBy: "createdAt",
     sortOrder: "desc",
   });
+  const [sourceFilter, setSourceFilter] = useState("ALL");
 
   const [addOpen, setAddOpen] = useState(false);
   const [addSubmitting, setAddSubmitting] = useState(false);
@@ -35,8 +55,13 @@ const InterestedBuyersPage = ({ projectId }) => {
     fullName: "",
     email: "",
     phone: "",
+    plotid: "",
     description: "",
   });
+  const { data: plotPayload } = usePlot(projectId, 1, 500, "createdAt", "asc");
+  const plotsList = Array.isArray(plotPayload?.data?.plots)
+    ? plotPayload.data.plots
+    : [];
 
   const tooltipRef = useRef(null);
   const modalRef = useRef(null);
@@ -52,6 +77,7 @@ const InterestedBuyersPage = ({ projectId }) => {
         sortOrder: sortConfig.sortOrder,
       };
       if (projectId) params.projectId = projectId;
+      if (sourceFilter !== "ALL") params.source = sourceFilter;
 
       const response = await axiosInstance.get("/api/v1/contact/getContacts", {
         params,
@@ -92,40 +118,75 @@ const InterestedBuyersPage = ({ projectId }) => {
     }
   };
 
-  const handleAddBuyer = async (e) => {
-    e.preventDefault();
-    const fullName = newBuyer.fullName.trim();
-    const email = newBuyer.email.trim();
-    const phone = newBuyer.phone.trim().replace(/\D/g, "");
-    const description = newBuyer.description.trim();
-    if (!fullName || !email || !phone || !description) {
-      addToast("error", "Incomplete", "Fill all fields.");
+  const handleAddBuyer = async (buyerPayload = newBuyer) => {
+    const fullName = buyerPayload.fullName.trim();
+    const email = buyerPayload.email.trim();
+    const phone = buyerPayload.phone.trim().replace(/\D/g, "");
+    const description = buyerPayload.description.trim();
+    const selectedPlot = plotsList.find((p) => p._id === buyerPayload.plotid);
+
+    if (!fullName || !email || !phone) {
+      addToast("error", "Incomplete", "Fill name, email, and phone.");
       return;
     }
     if (phone.length !== 10) {
       addToast("error", "Phone", "Enter a 10-digit phone number.");
       return;
     }
+    if (!buyerPayload.plotid) {
+      addToast("error", "Plot required", "Select a plot.");
+      return;
+    }
+    const plotStatus = String(selectedPlot?.plotstatus || "");
+    if (plotStatus === "Sold") {
+      addToast("error", "Plot unavailable", "Cannot add buyers to sold plots.");
+      return;
+    }
+    if (plotStatus && plotStatus !== "Available" && plotStatus !== "Reserved") {
+      addToast("error", "Plot unavailable", "This plot status does not allow new leads.");
+      return;
+    }
     setAddSubmitting(true);
     try {
+      const descBody = description.trim();
+      const descriptionPayload = selectedPlot
+        ? `Plot #${selectedPlot.plotnumber}${descBody ? ` — ${descBody}` : " — interest registered"}`
+        : descBody || "Interest registered";
       await axiosInstance.post("/api/v1/contact", {
         fullName,
         email,
         phone,
-        description,
+        description: descriptionPayload,
         interested: 1,
         projectId: projectId || null,
+        plotid: buyerPayload.plotid,
+        source: "ADMIN",
       });
       addToast("success", "Buyer added", "Contact saved.");
-      setNewBuyer({ fullName: "", email: "", phone: "", description: "" });
+      setNewBuyer({
+        fullName: "",
+        email: "",
+        phone: "",
+        plotid: "",
+        description: "",
+      });
       setAddOpen(false);
       await fetchContacts();
     } catch (err) {
-      addToast(
-        "error",
-        "Could not add",
-        err.response?.data?.message || err.message || "Request failed"
-      );
+      const backendMessage =
+        err?.response?.data?.message || err?.message || "Could not add buyer.";
+      if (
+        err?.response?.status === 409 ||
+        /already exists|duplicate/i.test(String(backendMessage))
+      ) {
+        addToast(
+          "error",
+          "Buyer already exists",
+          "Buyer already exists for this phone and selected plot."
+        );
+      } else {
+        addToast("error", "Something went wrong", backendMessage);
+      }
     } finally {
       setAddSubmitting(false);
     }
@@ -142,6 +203,7 @@ const InterestedBuyersPage = ({ projectId }) => {
     sortConfig.sortBy,
     sortConfig.sortOrder,
     projectId,
+    sourceFilter,
   ]);
 
   useEffect(() => {
@@ -165,8 +227,12 @@ const InterestedBuyersPage = ({ projectId }) => {
     const name = (contact.fullName || "").toLowerCase();
     const email = (contact.email || "").toLowerCase();
     const phone = (contact.phone || "").toString();
+    const plotHint = plotLabelFromContact(contact).toLowerCase();
     return (
-      name.includes(term) || email.includes(term) || phone.includes(searchTerm)
+      name.includes(term) ||
+      email.includes(term) ||
+      phone.includes(searchTerm) ||
+      plotHint.includes(term.replace(/^#/, ""))
     );
   });
 
@@ -182,6 +248,29 @@ const InterestedBuyersPage = ({ projectId }) => {
           )}
         </div>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:space-x-4 w-full md:w-auto">
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+            {["ALL", "ADMIN", "WEBSITE"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  setPagination((p) => ({ ...p, currentPage: 1 }));
+                  setSourceFilter(item);
+                }}
+                className={`px-3 py-2 text-xs md:text-sm ${
+                  sourceFilter === item
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {item === "ALL"
+                  ? "All"
+                  : item === "ADMIN"
+                  ? "Admin Leads"
+                  : "Website Leads"}
+              </button>
+            ))}
+          </div>
           {isAdmin && (
             <button
               type="button"
@@ -226,59 +315,18 @@ const InterestedBuyersPage = ({ projectId }) => {
       </div>
 
       {isAdmin && addOpen && (
-        <form
-          onSubmit={handleAddBuyer}
-          className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-3"
-        >
-          <div className="md:col-span-2 text-sm font-medium text-gray-800">
-            New buyer (saved with &quot;Interested&quot;; link status with the
-            button in the table — updates the database via PATCH).
-          </div>
-          <input
-            className="border rounded-md px-3 py-2 text-sm"
-            placeholder="Full name"
-            value={newBuyer.fullName}
-            onChange={(e) =>
-              setNewBuyer((s) => ({ ...s, fullName: e.target.value }))
-            }
+        <div className="mb-6">
+          <InterestedBuyerForm
+            plots={plotsList}
+            initialValues={newBuyer}
+            isSubmitting={addSubmitting}
+            submitLabel="Save buyer"
+            onSubmit={async (values) => {
+              setNewBuyer(values);
+              await handleAddBuyer(values);
+            }}
           />
-          <input
-            className="border rounded-md px-3 py-2 text-sm"
-            placeholder="Email"
-            type="email"
-            value={newBuyer.email}
-            onChange={(e) =>
-              setNewBuyer((s) => ({ ...s, email: e.target.value }))
-            }
-          />
-          <input
-            className="border rounded-md px-3 py-2 text-sm"
-            placeholder="10-digit phone"
-            inputMode="numeric"
-            maxLength={10}
-            value={newBuyer.phone}
-            onChange={(e) =>
-              setNewBuyer((s) => ({ ...s, phone: e.target.value }))
-            }
-          />
-          <input
-            className="border rounded-md px-3 py-2 text-sm md:col-span-2"
-            placeholder="Short description / interest note"
-            value={newBuyer.description}
-            onChange={(e) =>
-              setNewBuyer((s) => ({ ...s, description: e.target.value }))
-            }
-          />
-          <div className="md:col-span-2 flex gap-2">
-            <button
-              type="submit"
-              disabled={addSubmitting}
-              className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md disabled:opacity-50"
-            >
-              {addSubmitting ? "Saving…" : "Save buyer"}
-            </button>
-          </div>
-        </form>
+        </div>
       )}
 
       {error && (
@@ -298,8 +346,10 @@ const InterestedBuyersPage = ({ projectId }) => {
               <thead>
                 <tr className="w-full bg-blue-600 text-left text-white uppercase text-xs md:text-sm">
                   <th className="py-3 px-6">Users Name</th>
+                  <th className="py-3 px-6">Plot #</th>
                   <th className="py-3 px-6">Phone Number</th>
                   <th className="py-3 px-6">Email</th>
+                  <th className="py-3 px-6">Source</th>
                   <th className="py-3 px-6">Description</th>
                   <th className="py-3 px-6">Status</th>
                 </tr>
@@ -311,8 +361,20 @@ const InterestedBuyersPage = ({ projectId }) => {
                     className="border-b border-gray-200 hover:bg-gray-100"
                   >
                     <td className="py-3 px-6">{contact.fullName}</td>
+                    <td className="py-3 px-6">{plotLabelFromContact(contact)}</td>
                     <td className="py-3 px-6">{contact.phone}</td>
                     <td className="py-3 px-6">{contact.email}</td>
+                    <td className="py-3 px-6">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          contact.source === "WEBSITE"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {contact.source || "ADMIN"}
+                      </span>
+                    </td>
                     <td
                       ref={tooltipRef}
                       className="py-3 px-6 relative cursor-pointer"

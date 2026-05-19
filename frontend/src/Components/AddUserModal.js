@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { X } from "lucide-react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useCreateUser, useUpdateUser } from "../hooks/useUserHooks";
+import { useToast } from "../Context/ToastContext";
 
 export default function AddUserModal({
   isOpen,
@@ -12,17 +13,23 @@ export default function AddUserModal({
 }) {
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
+  const { addToast } = useToast();
   const isEditMode = !!userToEdit;
 
   const initialValues = {
     name: userToEdit?.username || "",
     email: userToEdit?.useremail || "",
+    phone: (userToEdit?.userphone || "").replace(/\D/g, ""),
     password: "",
     confirmPassword: "",
   };
 
   const validationSchema = Yup.object({
     name: Yup.string().min(6).max(15).required("Name is required"),
+    phone: Yup.string()
+      .trim()
+      .matches(/^[0-9]{10}$/, "Enter a valid 10-digit phone number")
+      .required("Phone number is required"),
     email: Yup.string()
       .required("Email is required")
       .matches(
@@ -80,6 +87,7 @@ export default function AddUserModal({
       const userData = {
         username: values.name,
         useremail: values.email,
+        userphone: String(values.phone || "").replace(/\D/g, ""),
       };
 
       if (isEditMode) {
@@ -106,6 +114,16 @@ export default function AddUserModal({
       }
     } catch (error) {
       console.error("Error saving user:", error);
+      const status = error?.response?.status;
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Could not save user.";
+      if (status === 409) {
+        addToast("error", "Duplicate phone", msg);
+      } else {
+        addToast("error", "Save failed", msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -170,6 +188,25 @@ export default function AddUserModal({
                 />
                 <ErrorMessage
                   name="email"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Phone number
+                </label>
+                <Field
+                  type="text"
+                  name="phone"
+                  inputMode="numeric"
+                  maxLength={10}
+                  placeholder="10-digit mobile number"
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring focus:ring-blue-400"
+                />
+                <ErrorMessage
+                  name="phone"
                   component="div"
                   className="text-red-500 text-sm mt-1"
                 />

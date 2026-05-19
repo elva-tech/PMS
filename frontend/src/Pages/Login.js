@@ -32,7 +32,10 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
   }, []);
 
   const validationSchema = yup.object().shape({
-    email: yup.string().required("Username is required"),
+    phone: yup
+      .string()
+      .trim()
+      .required("Phone number or admin username is required"),
     password: yup.string().required("Password is required"),
   });
 
@@ -83,11 +86,11 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
         </div>
         <h2 className="text-2xl font-semibold text-white mb-4">Login</h2>
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ phone: "", password: "" }}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const loginResult = await login(values.email, values.password);
+              const loginResult = await login(values.phone.trim(), values.password);
               if (!loginResult.ok && loginResult.code === "ACCOUNT_INACTIVE") {
                 setInactiveModal({
                   open: true,
@@ -107,17 +110,6 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
                   stored?.user?.role === "user" &&
                   stored?.user?.type === "user"
                 ) {
-                  try {
-                    const res = await axiosInstance.get("/api/v1/projects");
-                    const projects = res?.data?.data?.projects || [];
-                    const firstId = projects[0]?._id;
-                    if (firstId) {
-                      navigate(`/project/${firstId}/documents`);
-                      return;
-                    }
-                  } catch (err) {
-                    console.error(err);
-                  }
                   navigate("/project");
                   return;
                 }
@@ -146,12 +138,13 @@ const Login = ({ isLoginOpen, setIsLoginOpen }) => {
                 </span>
                 <Field
                   type="text"
-                  name="email"
+                  name="phone"
                   className="w-full pl-10 bg-white bg-opacity-10 text-gray-800 placeholder-white py-2 px-3 rounded mb-2 focus:outline-none focus:ring-2 focus:to-blue-700"
-                  placeholder="Username"
+                  placeholder="Ph number or username"
+                  autoComplete="username"
                 />
                 <ErrorMessage
-                  name="email"
+                  name="phone"
                   component="div"
                   className="text-black text-xs"
                 />

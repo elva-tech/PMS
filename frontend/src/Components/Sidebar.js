@@ -9,6 +9,9 @@ import {
   LandPlot,
   CornerDownRight,
   HousePlus,
+  ChartSpline,
+  Send,
+  ShoppingCart,
 } from "lucide-react";
 import { FaUsers } from "react-icons/fa";
 import { PiUsersFour } from "react-icons/pi";
@@ -25,14 +28,12 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
 
     const items = [];
 
-    if (!isEndUser) {
-      items.push({
-        icon: <FolderKanban size={20} className="text-white" />,
-        label: "Project",
-        id: "project",
-        path: `/project`,
-      });
-    }
+    items.push({
+      icon: <FolderKanban size={20} className="text-white" />,
+      label: "Project",
+      id: "project",
+      path: `/project`,
+    });
 
     if (id && !isEndUser) {
       items.push({
@@ -49,6 +50,14 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
     }
 
     if (!id) {
+      if (!isEndUser) {
+        items.push({
+          icon: <ChartSpline size={20} className="text-white" />,
+          label: "Developer Analytics",
+          id: "developeranalytics",
+          path: `/developer-analytics`,
+        });
+      }
       return items;
     }
 
@@ -60,16 +69,16 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
         path: `/project/${id}/users`,
       },
       {
-        icon: <FileSpreadsheet size={20} className="text-white" />,
-        label: "Documents",
-        id: "documents",
-        path: `/project/${id}/documents`,
-      },
-      {
         icon: <HousePlus size={20} className="text-white" />,
         label: "Plot Allotment",
         id: "plotallotment",
         path: `/project/${id}/plotallotment`,
+      },
+      {
+        icon: <FileSpreadsheet size={20} className="text-white" />,
+        label: "Documents",
+        id: "documents",
+        path: `/project/${id}/documents`,
       },
       {
         icon: <PiUsersFour size={20} className="text-white" />,
@@ -83,11 +92,29 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
         id: "payments",
         path: `/project/${id}/payments`,
       },
+      {
+        icon: <ChartSpline size={20} className="text-white" />,
+        label: "Analytics",
+        id: "analytics",
+        path: `/project/${id}/analytics`,
+      },
+      {
+        icon: <Send size={20} className="text-white" />,
+        label: "Share Quote",
+        id: "sharequote",
+        path: `/project/${id}/sharequote`,
+      },
+      {
+        icon: <ShoppingCart size={20} className="text-white" />,
+        label: "Add Sale",
+        id: "addsale",
+        path: `/project/${id}/addsale`,
+      },
     ];
 
     const visible = isEndUser
       ? projectItems.filter((entry) =>
-          ["documents", "plotallotment", "payments"].includes(entry.id)
+          ["plotallotment", "documents", "payments"].includes(entry.id)
         )
       : projectItems;
 

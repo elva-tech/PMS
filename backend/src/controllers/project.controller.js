@@ -120,8 +120,48 @@ const createProject = catchAsync(async (req, res) => {
   });
 });
 
+
 const getProjects = catchAsync(async (req, res) => {
-  const projects = await projectService.getProjects();
+  const role = req.user?.role || req.user?.type;
+  const requestUserId = req.user?.userid;
+
+  let projects;
+
+  if (role === "user" && requestUserId) {
+    const Plot = require("../models/plot.model");
+    const Document = require("../models/document.model");
+    const Project = require("../models/project.model");
+    
+    // plots
+    const assignedPlots = await Plot.find({
+      assigneduserid: requestUserId,
+    })
+      .select("projectid")
+      .lean();
+    
+    // documents
+    const assignedDocs = await Document.find({
+      assignedUserIds: requestUserId,
+    })
+      .select("projectid")
+      .lean();
+    
+    // merge both
+    const projectIds = [
+      ...new Set([
+        ...assignedPlots.map((p) => p.projectid),
+        ...assignedDocs.map((d) => d.projectid),
+      ]),
+    ];
+    
+    projects = await Project.find({
+      _id: { $in: projectIds },
+    });
+  } else {
+    projects = await projectService.getProjects();
+  }
+
+  
 
   const projectsWithImage = projects.map((project) => ({
     _id: project._id,

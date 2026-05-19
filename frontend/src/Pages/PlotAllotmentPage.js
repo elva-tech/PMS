@@ -59,6 +59,7 @@ const PlotAllotmentPage = ({ projectId }) => {
     const m = {};
     users.forEach((u) => {
       m[u.userid] = u;
+      if (u._id) m[u._id] = u;
     });
     return m;
   }, [users]);
@@ -271,7 +272,7 @@ const PlotAllotmentPage = ({ projectId }) => {
                 #{p.plotnumber} — {p.plotstatus}
                 {p.assigneduserid
                   ? ` — assigned: ${
-                      userById[p.assigneduserid]?.username || p.assigneduserid
+                      userById[p.assigneduserid]?.username || "Assigned user"
                     }`
                   : ""}
               </option>
@@ -367,7 +368,7 @@ const PlotAllotmentPage = ({ projectId }) => {
                   <td className="py-3 px-4">
                     {plot.assigneduserid
                       ? userById[plot.assigneduserid]?.username ||
-                        plot.assigneduserid
+                        "Assigned user"
                       : "—"}
                   </td>
                   <td className="py-3 px-4">{plot.plotstatus}</td>

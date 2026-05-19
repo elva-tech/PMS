@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
 import sjdlogo1 from "../Images/sjd-logo1.png";
-import { HousePlus, LandPlot, Pencil, Trash2, FolderOpen } from "lucide-react";
+import {
+  HousePlus,
+  LandPlot,
+  Pencil,
+  Trash2,
+  FolderOpen,
+  ChartSpline,
+} from "lucide-react";
 import slnlayout from "../Images/sln-layout.jpg";
 import nrlayout from "../Images/nr-layout.jpg";
 import balajilayout from "../Images/balaji-layout.jpg";
 import dollarcolonylayout from "../Images/dollars-colony.jpg";
 import CreateProjectPage from "./CreateProjectPage";
 import { useNavigate } from "react-router-dom";
+import BreadcrumbNav from "../Components/BreadcrumbNav";
 import { useAuth } from "../Context/AuthContext";
 import axiosInstance from "../utils/axiosInstance";
 import {
@@ -24,7 +32,7 @@ const defaultImages = {
   "Not Started": nrlayout,
 };
 
-const ProjectCard = ({ project, onEdit, onDelete }) => {
+const ProjectCard = ({ project, onEdit, onDelete, canManageProject = true }) => {
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
   const projectId = project?._id || project?.id;
@@ -35,10 +43,10 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
   const hasImage = project?.hasImage || false;
 
   const getProjectImageSource = () => {
-    if (project?.image?.data && project?.image?.contentType) {
-      return `data:${project.image.contentType};base64,${project.image.data}`;
-    } else if (hasImage && projectId) {
-      return `${axiosInstance.defaults.baseURL}/api/v1/projects/${projectId}/image`;
+    // Keep dashboard cards aligned with details page mapping:
+    // brochure = logo card image, image = site map.
+    if (project?.brochure?.data && project?.brochure?.contentType) {
+      return `data:${project.brochure.contentType};base64,${project.brochure.data}`;
     }
     return defaultImages[projectStatus] || defaultImages["In Progress"];
   };
@@ -57,25 +65,27 @@ const ProjectCard = ({ project, onEdit, onDelete }) => {
           alt={projectName}
           className="w-full h-48 object-cover"
         />
-        <div className="absolute top-2 right-2 flex space-x-2">
-          <button
-            className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
-            onClick={() => {
-              navigate(`/project/edit/${projectId}`, { state: { project } });
-              onEdit(project);
-            }}
-            disabled={isDeleting}
-          >
-            <Pencil size={20} />
-          </button>
-          <button
-            className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            <Trash2 size={20} className={isDeleting ? "text-gray-400" : ""} />
-          </button>
-        </div>
+        {canManageProject && (
+          <div className="absolute top-2 right-2 flex space-x-2">
+            <button
+              className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
+              onClick={() => {
+                navigate(`/project/edit/${projectId}`, { state: { project } });
+                onEdit(project);
+              }}
+              disabled={isDeleting}
+            >
+              <Pencil size={20} />
+            </button>
+            <button
+              className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              <Trash2 size={20} className={isDeleting ? "text-gray-400" : ""} />
+            </button>
+          </div>
+        )}
       </div>
       <div className="p-4">
         <h2 className="text-xl font-bold mb-2">{projectName}</h2>
@@ -114,6 +124,12 @@ export default function ProjectsDashboard() {
   const { user } = useAuth();
   const isEndUser =
     user?.user?.role === "user" && user?.user?.type === "user";
+  const endUserIds = React.useMemo(() => {
+    const ids = new Set();
+    if (user?.user?.userid) ids.add(String(user.user.userid));
+    if (user?.user?.usermongoid) ids.add(String(user.user.usermongoid));
+    return ids;
+  }, [user]);
 
   const { data: projectsData = [], isLoading, isError, error } = useProjects();
   const deleteProjectMutation = useDeleteProject();
@@ -129,16 +145,46 @@ export default function ProjectsDashboard() {
     if (typeof projectsData === "object") return [projectsData];
     return [];
   }, [projectsData]);
+  const [visibleProjects, setVisibleProjects] = useState([]);
 
   useEffect(() => {
-    if (!isEndUser || isLoading) return;
-    if (projects.length > 0) {
-      const firstId = projects[0]._id;
-      if (firstId) {
-        navigate(`/project/${firstId}/documents`, { replace: true });
+    let mounted = true;
+    const computeVisibleProjects = async () => {
+      if (!isEndUser) {
+        setVisibleProjects(projects);
+        return;
       }
-    }
-  }, [isEndUser, isLoading, projects, navigate]);
+      const ids = [...endUserIds];
+      if (!ids.length || !projects.length) {
+        setVisibleProjects([]);
+        return;
+      }
+      const checks = await Promise.all(
+        projects.map(async (p) => {
+          const projectId = p?._id || p?.id;
+          if (!projectId) return null;
+          try {
+            const res = await axiosInstance.get(`/api/v1/plots/${projectId}`, {
+              params: { page: 1, limit: 500, sortBy: "createdAt", sortOrder: "desc" },
+            });
+            const rows = res?.data?.data?.plots || [];
+            const hasAssigned = rows.some((plot) =>
+              ids.includes(String(plot.assigneduserid || ""))
+            );
+            return hasAssigned ? p : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      if (!mounted) return;
+      setVisibleProjects(checks.filter(Boolean));
+    };
+    computeVisibleProjects();
+    return () => {
+      mounted = false;
+    };
+  }, [isEndUser, projects, endUserIds]);
 
   const [editProjectData, setEditProjectData] = useState(null);
   const [addProjectModal, setAddProjectModal] = useState(false);
@@ -248,21 +294,42 @@ export default function ProjectsDashboard() {
           </div>
         ) : (
           <div className="container mx-auto p-6 mt-2">
+            <div className="max-w-6xl mx-auto mb-4">
+              <BreadcrumbNav
+                items={[{ label: "Projects" }]}
+                className="text-left [&_ol]:border-white/30 [&_ol]:bg-white/10 [&_ol]:shadow-none"
+                linkClassName="text-blue-100 hover:text-white"
+                currentClassName="text-white font-semibold"
+                separatorClassName="text-blue-200/80"
+              />
+            </div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6">
               <h1 className="text-3xl font-bold mb-4 md:mb-0 text-white">
                 Projects Dashboard
               </h1>
               <div className="flex gap-3">
-                <button
-                  className="bg-white border border-gray-300 text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 hover:text-white"
-                  // onClick={() => setAddProjectModal(true)}
-                  onClick={() => {
-                    navigate("/project/create");
-                  }}
-                >
-                  <HousePlus size={25} />
-                  Add Project
-                </button>
+                {!isEndUser && (
+                  <button
+                    className="bg-white border border-gray-300 text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 hover:text-white"
+                    onClick={() => {
+                      navigate("/developer-analytics");
+                    }}
+                  >
+                    <ChartSpline size={22} />
+                    Developer Analytics
+                  </button>
+                )}
+                {!isEndUser && (
+                  <button
+                    className="bg-white border border-gray-300 text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 hover:text-white"
+                    onClick={() => {
+                      navigate("/project/create");
+                    }}
+                  >
+                    <HousePlus size={25} />
+                    Add Project
+                  </button>
+                )}
               </div>
             </div>
 
@@ -280,7 +347,7 @@ export default function ProjectsDashboard() {
               </div>
             )}
 
-            {!isLoading && !isError && projects.length === 0 && (
+            {!isLoading && !isError && visibleProjects.length === 0 && (
               <div className="text-center p-6 bg-gray-100 rounded-lg">
                 <p className="text-lg text-gray-700">
                   No projects found. Click "Add Project" to create your first
@@ -289,9 +356,9 @@ export default function ProjectsDashboard() {
               </div>
             )}
 
-            {!isLoading && !isError && projects.length > 0 && (
+            {!isLoading && !isError && visibleProjects.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                {projects.map((project) => (
+                {visibleProjects.map((project) => (
                   <ProjectCard
                     key={
                       project._id ||
@@ -301,6 +368,7 @@ export default function ProjectsDashboard() {
                     project={project}
                     onEdit={handleEditProject}
                     onDelete={handleDeleteClick}
+                    canManageProject={!isEndUser}
                   />
                 ))}
               </div>

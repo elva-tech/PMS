@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post(
   "/",
-  validate(contactValidation.createContact.body),
+  validate(contactValidation.createContact),
   contactController.createContact
 );
 

@@ -195,9 +195,13 @@ const Landingpage = () => {
                   onClick={() => navigate(`/home/project/${project._id}`)}
                 >
                   <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
-                    {project.image ? (
+                    {project.brochure || project.image ? (
                       <img
-                        src={`data:${project.image.contentType};base64,${project.image.data}`}
+                        src={
+                          project.brochure
+                            ? `data:${project.brochure.contentType};base64,${project.brochure.data}`
+                            : `data:${project.image.contentType};base64,${project.image.data}`
+                        }
                         alt={project.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />

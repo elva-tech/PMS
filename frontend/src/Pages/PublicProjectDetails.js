@@ -4,6 +4,7 @@ import axios from "axios";
 import { ArrowLeft, MapPin, Phone, User, Calendar } from "lucide-react";
 import Navbar from "../Components/Navbar";
 import FooterSection from "../Components/FooterSection";
+import SMSPreviewModal from "../Components/SMSPreviewModal";
 
 const PublicProjectDetails = () => {
   const { id } = useParams();
@@ -11,14 +12,30 @@ const PublicProjectDetails = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [leadModalOpen, setLeadModalOpen] = useState(false);
+  const [availablePlots, setAvailablePlots] = useState([]);
+  const [submittingLead, setSubmittingLead] = useState(false);
+  const [smsPreview, setSmsPreview] = useState("");
+  const [smsOpen, setSmsOpen] = useState(false);
+  const [infoModal, setInfoModal] = useState({ open: false, title: "", message: "" });
+  const [leadForm, setLeadForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    plotid: "",
+    description: "",
+  });
+  const baseUrl = process.env.REACT_APP_BASE_URL || "http://localhost:5000";
+  const selectedPlot = availablePlots.find(
+    (plot) => String(plot._id) === String(leadForm.plotid)
+  );
+  const hasPlots = availablePlots.length > 0;
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
         const response = await axios.get(
-          `${
-            process.env.REACT_APP_BASE_URL || "http://localhost:5000"
-          }/api/v1/public/projects/${id}`,
+          `${baseUrl}/api/v1/public/projects/${id}`,
         );
         if (response.data?.data?.project) {
           setProject(response.data.data.project);
@@ -32,6 +49,88 @@ const PublicProjectDetails = () => {
     };
     fetchProject();
   }, [id]);
+
+  useEffect(() => {
+    const fetchPlots = async () => {
+      try {
+        const response = await axios.get(`${baseUrl}/api/v1/public/projects/${id}/plots`);
+        const rows = response?.data?.data?.plots || [];
+        setAvailablePlots(rows);
+      } catch {
+        setAvailablePlots([]);
+      }
+    };
+    fetchPlots();
+  }, [baseUrl, id]);
+
+  const handleLeadSubmit = async (e) => {
+    e.preventDefault();
+    const fullName = leadForm.fullName.trim();
+    const email = leadForm.email.trim();
+    const phone = leadForm.phone.trim().replace(/\D/g, "");
+    const description = leadForm.description.trim();
+    if (!fullName || !email || !phone || !leadForm.plotid) {
+      setError("Please fill all required details.");
+      return;
+    }
+    if (!hasPlots) {
+      setError("No plots are available for inquiry right now.");
+      return;
+    }
+    if (phone.length !== 10) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    const st = String(selectedPlot?.plotstatus || "");
+    if (st === "Sold") {
+      setError("This plot is sold and cannot accept new inquiries.");
+      return;
+    }
+    if (st && st !== "Available" && st !== "Reserved") {
+      setError(`This plot status (${st}) does not allow inquiries.`);
+      return;
+    }
+    setSubmittingLead(true);
+    try {
+      const response = await axios.post(`${baseUrl}/api/v1/public/interested-buyers`, {
+        fullName,
+        email,
+        phone,
+        description: description || "",
+        projectId: id,
+        plotid: leadForm.plotid,
+      });
+      setLeadModalOpen(false);
+      setLeadForm({
+        fullName: "",
+        email: "",
+        phone: "",
+        plotid: "",
+        description: "",
+      });
+      setError(null);
+      setSmsPreview(response?.data?.data?.smsPreview || "");
+      setSmsOpen(true);
+    } catch (err) {
+      const backendMessage =
+        err?.response?.data?.message || "Unable to submit your interest right now.";
+      const duplicateDetected =
+        err?.response?.status === 409 ||
+        /already exists|duplicate/i.test(String(backendMessage));
+      if (duplicateDetected) {
+        setLeadModalOpen(false);
+        setInfoModal({
+          open: true,
+          title: "Buyer already exists",
+          message: "Buyer already exists for this phone and selected plot.",
+        });
+      } else {
+        setError(backendMessage);
+      }
+    } finally {
+      setSubmittingLead(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -76,9 +175,13 @@ const PublicProjectDetails = () => {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-5xl mx-auto">
           {/* Project Image */}
           <div className="w-full bg-gray-100 flex items-center justify-center p-4">
-            {project.image ? (
+            {project.brochure || project.image ? (
               <img
-                src={`data:${project.image.contentType};base64,${project.image.data}`}
+                src={
+                  project.brochure
+                    ? `data:${project.brochure.contentType};base64,${project.brochure.data}`
+                    : `data:${project.image.contentType};base64,${project.image.data}`
+                }
                 alt={project.name}
                 className="max-w-full max-h-[400px] object-contain rounded-lg shadow-md"
               />
@@ -186,15 +289,118 @@ const PublicProjectDetails = () => {
             {/* Contact Button */}
             <div className="mt-8 flex gap-4">
               <button
-                onClick={() => navigate("/home")}
+                onClick={() => setLeadModalOpen(true)}
                 className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
               >
-                Contact Us for More Details
+                Interested to Buy?
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {leadModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg">
+            <div className="px-5 py-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-800">Interested to Buy?</h3>
+              <button
+                type="button"
+                onClick={() => setLeadModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleLeadSubmit} className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                className="border rounded-md px-3 py-2 text-sm"
+                placeholder="Full name"
+                value={leadForm.fullName}
+                onChange={(e) => setLeadForm((s) => ({ ...s, fullName: e.target.value }))}
+              />
+              <input
+                className="border rounded-md px-3 py-2 text-sm"
+                type="email"
+                placeholder="Email"
+                value={leadForm.email}
+                onChange={(e) => setLeadForm((s) => ({ ...s, email: e.target.value }))}
+              />
+              <input
+                className="border rounded-md px-3 py-2 text-sm"
+                placeholder="Phone"
+                maxLength={10}
+                value={leadForm.phone}
+                onChange={(e) => setLeadForm((s) => ({ ...s, phone: e.target.value }))}
+              />
+              <select
+                className="border rounded-md px-3 py-2 text-sm md:col-span-2"
+                value={leadForm.plotid}
+                onChange={(e) => setLeadForm((s) => ({ ...s, plotid: e.target.value }))}
+              >
+                <option value="">
+                  {hasPlots ? "Select plot *" : "No plots available"}
+                </option>
+                {availablePlots.map((plot) => (
+                  <option key={plot._id} value={plot._id}>
+                    Plot #{plot.plotnumber} - {plot.plotstatus}
+                  </option>
+                ))}
+              </select>
+              {selectedPlot?.plotstatus === "Sold" ? (
+                <p className="md:col-span-2 text-sm text-red-600">
+                  This plot is sold — inquiry submission is not available.
+                </p>
+              ) : null}
+              {selectedPlot?.plotstatus === "Reserved" ? (
+                <p className="md:col-span-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-2 py-1.5">
+                  This plot is reserved — you can still register interest. Message is optional.
+                </p>
+              ) : null}
+              <input
+                className="border rounded-md px-3 py-2 text-sm md:col-span-2"
+                placeholder="Message / requirement (optional)"
+                value={leadForm.description}
+                onChange={(e) => setLeadForm((s) => ({ ...s, description: e.target.value }))}
+              />
+              <div className="md:col-span-2 flex justify-end gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setLeadModalOpen(false)}
+                  className="px-4 py-2 border rounded-md text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={
+                    submittingLead ||
+                    !hasPlots ||
+                    selectedPlot?.plotstatus === "Sold" ||
+                    !selectedPlot
+                  }
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:opacity-50"
+                >
+                  {submittingLead ? "Submitting..." : "Submit Inquiry"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <SMSPreviewModal
+        open={smsOpen}
+        onClose={() => setSmsOpen(false)}
+        title="Thanks for your interest"
+        message={smsPreview}
+      />
+      <SMSPreviewModal
+        open={infoModal.open}
+        onClose={() => setInfoModal({ open: false, title: "", message: "" })}
+        title={infoModal.title}
+        message={infoModal.message}
+      />
 
       {/* Footer */}
       <FooterSection />
