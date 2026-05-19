@@ -27,7 +27,12 @@ const defaultAllowedOrigins = [
   "http://localhost:2025",
 ];
 
-const envAllowedOrigins = (process.env.FRONTEND_URL || process.env.CORS_ORIGINS || "")
+const envAllowedOrigins = (
+  process.env.CORS_ORIGIN ||
+  process.env.FRONTEND_URL ||
+  process.env.CORS_ORIGINS ||
+  ""
+)
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
