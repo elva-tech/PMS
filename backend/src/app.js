@@ -13,6 +13,7 @@ const paymentRoutes = require("./routes/payment.routes");
 const publicRoutes = require("./routes/public.routes");
 const shareQuoteRoutes = require("./routes/shareQuote.routes");
 const { errorConverter, errorHandler } = require("./middleware/error");
+const { isAllowedOrigin, applyCorsHeaders } = require("./utils/corsOrigins");
 
 const app = express();
 
@@ -20,60 +21,43 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-// CORS — browser blocks responses without Access-Control-Allow-Origin for cross-origin XHR.
-const defaultAllowedOrigins = [
-  "https://pms-phi-nine.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:2025",
-];
+const corsAllowHeaders =
+  "Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override, Accept";
 
-const envAllowedOrigins = (
-  process.env.CORS_ORIGIN ||
-  process.env.FRONTEND_URL ||
-  process.env.CORS_ORIGINS ||
-  ""
-)
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+app.use((req, res, next) => {
+  applyCorsHeaders(req, res);
 
-const allowedOrigins = new Set([...defaultAllowedOrigins, ...envAllowedOrigins]);
+  if (req.method === "OPTIONS") {
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    );
+    res.setHeader("Access-Control-Allow-Headers", corsAllowHeaders);
+    res.setHeader("Access-Control-Max-Age", "86400");
+    return res.status(204).end();
+  }
 
-const isAllowedOrigin = (origin) => {
-  if (!origin) return true;
-  if (allowedOrigins.has(origin)) return true;
-  // Vercel production + preview URLs (e.g. pms-phi-nine.vercel.app, pms-xxx-team.vercel.app)
-  if (/^https:\/\/[\w.-]+\.vercel\.app$/i.test(origin)) return true;
-  return false;
-};
+  next();
+});
 
-const corsOptions = {
-  origin(origin, callback) {
-    if (config.env === "development" || process.env.NODE_ENV === "development") {
-      return callback(null, true);
-    }
-    if (isAllowedOrigin(origin)) {
-      return callback(null, true);
-    }
-    console.warn("CORS rejected origin:", origin);
-    return callback(null, false);
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-    "X-HTTP-Method-Override",
-    "Accept",
-  ],
-  exposedHeaders: ["Content-Length", "X-Requested-With", "Authorization"],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      const isDev =
+        config.env === "development" || process.env.NODE_ENV === "development";
+      if (isDev || isAllowedOrigin(origin)) {
+        return callback(null, origin);
+      }
+      console.warn("CORS rejected origin:", origin);
+      return callback(new Error(`CORS not allowed: ${origin}`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: corsAllowHeaders.split(", "),
+    exposedHeaders: ["Content-Length", "X-Requested-With", "Authorization"],
+  })
+);
 
 // Development logging
 if (config.env !== "test") {
