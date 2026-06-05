@@ -62,6 +62,10 @@ const pageroutes = [
     component: main,
   },
   {
+    path: "/project/:id/plot-health",
+    component: main,
+  },
+  {
     path: "/project/:id/sharequote",
     component: main,
   },

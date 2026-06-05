@@ -1,0 +1,401 @@
+projectid,plotnumber,plotsize,roadWidthFt,plotType,approvalStatus,plotdirection,plotprice,plotstatus,createdAt,dataSource
+seed_proj_01,1,2600.0,20.0,corner,panchayat,WEST,8756996,Sold,2025-01-25T11:36:59Z,synthetic
+seed_proj_01,2,2450.0,30.0,corner,bda,SOUTH EAST,8967471,Sold,2024-07-25T11:36:59Z,synthetic
+seed_proj_01,3,2550.0,30.0,road-facing,bda,SOUTH,9998727,Sold,2024-08-14T11:36:59Z,synthetic
+seed_proj_01,4,2600.0,25.0,road-facing,bda,EAST,10557570,Available,2024-06-27T11:36:59Z,synthetic
+seed_proj_01,5,2150.0,35.0,cul-de-sac,unapproved,EAST,6426308,Sold,2024-06-02T11:36:59Z,synthetic
+seed_proj_01,6,1950.0,40.0,corner,unapproved,SOUTH EAST,7064256,Reserved,2025-08-03T11:36:59Z,synthetic
+seed_proj_01,7,2200.0,25.0,road-facing,dtcp,NORTH EAST,8883402,Reserved,2024-09-26T11:36:59Z,synthetic
+seed_proj_01,8,850.0,20.0,cul-de-sac,unapproved,SOUTH,2335668,Reserved,2025-04-12T11:36:59Z,synthetic
+seed_proj_01,9,2000.0,40.0,park-facing,dtcp,WEST,7294498,Sold,2025-12-15T11:36:59Z,synthetic
+seed_proj_01,10,2900.0,40.0,road-facing,unapproved,WEST,8826121,Available,2025-01-25T11:36:59Z,synthetic
+seed_proj_01,11,1000.0,35.0,end,panchayat,SOUTH WEST,2982520,Sold,2026-04-27T11:36:59Z,synthetic
+seed_proj_01,12,1800.0,30.0,park-facing,panchayat,SOUTH EAST,6866253,Reserved,2026-02-06T11:36:59Z,synthetic
+seed_proj_01,13,1150.0,20.0,road-facing,dtcp,WEST,4292695,Available,2024-06-11T11:36:59Z,synthetic
+seed_proj_01,14,2650.0,30.0,park-facing,panchayat,SOUTH,9227854,Sold,2024-06-29T11:36:59Z,synthetic
+seed_proj_01,15,2250.0,20.0,cul-de-sac,other,NORTH EAST,7588916,Sold,2025-07-20T11:36:59Z,synthetic
+seed_proj_01,16,700.0,20.0,middle,bda,NORTH EAST,2685983,Sold,2026-03-20T11:36:59Z,synthetic
+seed_proj_01,17,1700.0,25.0,cul-de-sac,bda,SOUTH,6122115,Sold,2025-08-18T11:36:59Z,synthetic
+seed_proj_01,18,1450.0,25.0,cul-de-sac,dtcp,SOUTH EAST,5095555,Sold,2024-10-27T11:36:59Z,synthetic
+seed_proj_01,19,1650.0,20.0,corner,panchayat,EAST,6282609,Reserved,2024-06-12T11:36:59Z,synthetic
+seed_proj_01,20,1200.0,30.0,park-facing,dtcp,NORTH WEST,5004183,Reserved,2024-08-07T11:36:59Z,synthetic
+seed_proj_01,21,2400.0,30.0,park-facing,other,NORTH,8844305,Sold,2025-09-01T11:36:59Z,synthetic
+seed_proj_01,22,2750.0,30.0,end,bda,EAST,11125048,Sold,2026-01-10T11:36:59Z,synthetic
+seed_proj_01,23,3050.0,35.0,end,bda,SOUTH WEST,10454557,Sold,2024-12-29T11:36:59Z,synthetic
+seed_proj_01,24,2000.0,30.0,end,panchayat,SOUTH WEST,6004307,Sold,2026-02-25T11:36:59Z,synthetic
+seed_proj_01,25,1250.0,35.0,park-facing,other,NORTH,4643224,Reserved,2024-06-14T11:36:59Z,synthetic
+seed_proj_01,26,2750.0,35.0,cul-de-sac,bda,SOUTH WEST,8818161,Sold,2025-02-22T11:36:59Z,synthetic
+seed_proj_01,27,1400.0,20.0,park-facing,dtcp,NORTH,5385992,Sold,2025-04-17T11:36:59Z,synthetic
+seed_proj_01,28,1100.0,40.0,road-facing,dtcp,EAST,4183086,Sold,2024-09-27T11:36:59Z,synthetic
+seed_proj_01,29,3100.0,20.0,middle,other,SOUTH EAST,10557505,Sold,2024-10-25T11:36:59Z,synthetic
+seed_proj_01,30,3050.0,35.0,park-facing,unapproved,NORTH EAST,10408570,Sold,2025-07-17T11:36:59Z,synthetic
+seed_proj_01,31,2500.0,50.0,middle,other,NORTH,8642764,Reserved,2024-12-31T11:36:59Z,synthetic
+seed_proj_01,32,2350.0,40.0,middle,unapproved,NORTH WEST,7574846,Sold,2024-11-08T11:36:59Z,synthetic
+seed_proj_01,33,2500.0,30.0,corner,bda,NORTH EAST,10402283,Sold,2025-02-02T11:36:59Z,synthetic
+seed_proj_02,1,1650.0,25.0,corner,panchayat,SOUTH WEST,7288352,Sold,2024-11-10T11:36:59Z,synthetic
+seed_proj_02,2,1800.0,35.0,park-facing,panchayat,SOUTH EAST,9379223,Sold,2025-01-03T11:36:59Z,synthetic
+seed_proj_02,3,1500.0,20.0,end,panchayat,NORTH EAST,7885927,Available,2024-09-24T11:36:59Z,synthetic
+seed_proj_02,4,1500.0,35.0,corner,unapproved,NORTH EAST,7089594,Available,2024-06-10T11:36:59Z,synthetic
+seed_proj_02,5,3200.0,30.0,road-facing,dtcp,EAST,17826286,Available,2024-06-20T11:36:59Z,synthetic
+seed_proj_02,6,1850.0,40.0,corner,unapproved,SOUTH,8470057,Sold,2025-10-03T11:36:59Z,synthetic
+seed_proj_02,7,1450.0,40.0,end,panchayat,SOUTH WEST,6207293,Available,2025-07-05T11:36:59Z,synthetic
+seed_proj_02,8,2200.0,50.0,middle,unapproved,SOUTH WEST,8346896,Available,2024-09-05T11:36:59Z,synthetic
+seed_proj_02,9,2450.0,50.0,park-facing,bda,SOUTH WEST,12852423,Reserved,2025-04-04T11:36:59Z,synthetic
+seed_proj_02,10,1800.0,50.0,cul-de-sac,bda,SOUTH WEST,8642824,Sold,2025-05-18T11:36:59Z,synthetic
+seed_proj_02,11,2550.0,50.0,park-facing,dtcp,NORTH WEST,15050408,Reserved,2026-01-17T11:36:59Z,synthetic
+seed_proj_02,12,2000.0,25.0,cul-de-sac,panchayat,NORTH,9157126,Sold,2024-09-09T11:36:59Z,synthetic
+seed_proj_02,13,1050.0,25.0,park-facing,panchayat,SOUTH WEST,4795336,Sold,2025-04-01T11:36:59Z,synthetic
+seed_proj_02,14,2100.0,20.0,end,unapproved,NORTH WEST,9437546,Reserved,2025-05-04T11:36:59Z,synthetic
+seed_proj_02,15,1300.0,50.0,end,other,NORTH EAST,7244316,Sold,2025-04-20T11:36:59Z,synthetic
+seed_proj_02,16,2250.0,40.0,middle,bda,NORTH EAST,13185740,Available,2026-04-15T11:36:59Z,synthetic
+seed_proj_02,17,1400.0,40.0,corner,unapproved,NORTH WEST,6394889,Sold,2025-03-07T11:36:59Z,synthetic
+seed_proj_02,18,950.0,25.0,corner,dtcp,NORTH EAST,5731173,Available,2025-07-17T11:36:59Z,synthetic
+seed_proj_02,19,700.0,50.0,middle,bda,SOUTH WEST,3594781,Available,2026-04-08T11:36:59Z,synthetic
+seed_proj_02,20,750.0,30.0,end,bda,WEST,4303593,Sold,2025-12-16T11:36:59Z,synthetic
+seed_proj_02,21,600.0,30.0,end,other,NORTH WEST,2971807,Sold,2024-06-24T11:36:59Z,synthetic
+seed_proj_02,22,2250.0,30.0,park-facing,dtcp,NORTH,12450906,Available,2025-07-02T11:36:59Z,synthetic
+seed_proj_02,23,2050.0,40.0,road-facing,unapproved,SOUTH,8359550,Sold,2024-12-30T11:36:59Z,synthetic
+seed_proj_02,24,800.0,20.0,corner,dtcp,SOUTH EAST,4199148,Sold,2025-06-14T11:36:59Z,synthetic
+seed_proj_02,25,1700.0,20.0,road-facing,other,WEST,8551585,Sold,2024-06-25T11:36:59Z,synthetic
+seed_proj_02,26,2800.0,30.0,corner,bda,NORTH EAST,16135326,Sold,2025-06-01T11:36:59Z,synthetic
+seed_proj_02,27,3050.0,40.0,road-facing,dtcp,NORTH,16827246,Sold,2024-12-17T11:36:59Z,synthetic
+seed_proj_02,28,2250.0,50.0,middle,dtcp,WEST,10450083,Available,2024-06-14T11:36:59Z,synthetic
+seed_proj_02,29,3150.0,30.0,corner,unapproved,NORTH,15479879,Available,2025-04-24T11:36:59Z,synthetic
+seed_proj_02,30,850.0,35.0,corner,bda,SOUTH EAST,4987715,Reserved,2024-07-08T11:36:59Z,synthetic
+seed_proj_02,31,3200.0,25.0,end,dtcp,EAST,18685132,Sold,2025-06-03T11:36:59Z,synthetic
+seed_proj_02,32,2600.0,30.0,end,unapproved,SOUTH,10957813,Available,2026-03-18T11:36:59Z,synthetic
+seed_proj_02,33,2000.0,40.0,cul-de-sac,bda,NORTH WEST,9789480,Reserved,2025-07-14T11:36:59Z,synthetic
+seed_proj_03,1,1800.0,35.0,middle,other,NORTH,5385710,Sold,2024-06-20T11:36:59Z,synthetic
+seed_proj_03,2,1850.0,25.0,road-facing,dtcp,NORTH EAST,6286426,Reserved,2024-12-18T11:36:59Z,synthetic
+seed_proj_03,3,1200.0,25.0,end,bda,SOUTH,4015235,Sold,2025-02-05T11:36:59Z,synthetic
+seed_proj_03,4,700.0,35.0,middle,bda,SOUTH WEST,2086904,Reserved,2025-11-15T11:36:59Z,synthetic
+seed_proj_03,5,3200.0,25.0,road-facing,bda,NORTH EAST,11674896,Sold,2025-01-23T11:36:59Z,synthetic
+seed_proj_03,6,1700.0,20.0,park-facing,dtcp,SOUTH EAST,5337562,Reserved,2025-01-04T11:36:59Z,synthetic
+seed_proj_03,7,2000.0,40.0,corner,dtcp,NORTH,7483657,Sold,2024-12-04T11:36:59Z,synthetic
+seed_proj_03,8,2500.0,40.0,corner,other,WEST,7745228,Sold,2025-01-03T11:36:59Z,synthetic
+seed_proj_03,9,700.0,50.0,park-facing,panchayat,NORTH EAST,2403738,Sold,2024-12-25T11:36:59Z,synthetic
+seed_proj_03,10,2600.0,25.0,end,dtcp,SOUTH WEST,7804807,Sold,2025-07-24T11:36:59Z,synthetic
+seed_proj_03,11,950.0,30.0,park-facing,unapproved,SOUTH WEST,2544969,Available,2025-07-01T11:36:59Z,synthetic
+seed_proj_03,12,1550.0,35.0,road-facing,unapproved,EAST,4371350,Available,2024-08-15T11:36:59Z,synthetic
+seed_proj_03,13,2750.0,35.0,corner,bda,SOUTH,8477421,Sold,2026-01-03T11:36:59Z,synthetic
+seed_proj_03,14,650.0,50.0,end,unapproved,SOUTH EAST,1749127,Reserved,2024-05-31T11:36:59Z,synthetic
+seed_proj_03,15,1600.0,50.0,middle,dtcp,NORTH EAST,5362615,Sold,2024-08-11T11:36:59Z,synthetic
+seed_proj_03,16,850.0,20.0,middle,unapproved,SOUTH WEST,2155191,Reserved,2026-03-04T11:36:59Z,synthetic
+seed_proj_03,17,950.0,40.0,end,panchayat,EAST,2765327,Sold,2024-09-12T11:36:59Z,synthetic
+seed_proj_03,18,1050.0,25.0,cul-de-sac,other,NORTH WEST,3271711,Reserved,2024-12-21T11:36:59Z,synthetic
+seed_proj_03,19,1350.0,50.0,park-facing,panchayat,SOUTH WEST,3846978,Sold,2025-01-07T11:36:59Z,synthetic
+seed_proj_03,20,950.0,30.0,park-facing,bda,EAST,3466766,Sold,2026-04-06T11:36:59Z,synthetic
+seed_proj_03,21,850.0,35.0,road-facing,unapproved,WEST,2198288,Sold,2026-03-08T11:36:59Z,synthetic
+seed_proj_03,22,2400.0,40.0,end,panchayat,NORTH EAST,7600217,Sold,2026-03-19T11:36:59Z,synthetic
+seed_proj_03,23,700.0,20.0,end,panchayat,SOUTH WEST,1894837,Reserved,2026-04-12T11:36:59Z,synthetic
+seed_proj_03,24,1750.0,30.0,cul-de-sac,dtcp,SOUTH EAST,5384069,Reserved,2024-08-03T11:36:59Z,synthetic
+seed_proj_03,25,3050.0,35.0,end,bda,NORTH,9496903,Reserved,2025-06-01T11:36:59Z,synthetic
+seed_proj_03,26,2700.0,35.0,road-facing,unapproved,NORTH WEST,8370900,Sold,2025-06-29T11:36:59Z,synthetic
+seed_proj_03,27,3050.0,30.0,cul-de-sac,bda,SOUTH WEST,8954589,Sold,2024-06-27T11:36:59Z,synthetic
+seed_proj_03,28,1400.0,50.0,park-facing,bda,WEST,4561165,Reserved,2024-06-01T11:36:59Z,synthetic
+seed_proj_03,29,3050.0,25.0,corner,other,EAST,10534632,Available,2025-11-01T11:36:59Z,synthetic
+seed_proj_03,30,1900.0,25.0,corner,unapproved,SOUTH WEST,5428838,Sold,2025-10-14T11:36:59Z,synthetic
+seed_proj_03,31,3150.0,20.0,middle,bda,SOUTH WEST,8678376,Sold,2025-12-07T11:36:59Z,synthetic
+seed_proj_03,32,2100.0,30.0,end,dtcp,NORTH EAST,7068133,Available,2025-06-15T11:36:59Z,synthetic
+seed_proj_03,33,2800.0,20.0,cul-de-sac,panchayat,NORTH WEST,8188835,Reserved,2026-02-05T11:36:59Z,synthetic
+seed_proj_04,1,2250.0,35.0,road-facing,panchayat,SOUTH,13183471,Reserved,2025-12-15T11:36:59Z,synthetic
+seed_proj_04,2,2200.0,35.0,park-facing,other,NORTH,14642435,Reserved,2025-01-01T11:36:59Z,synthetic
+seed_proj_04,3,700.0,30.0,park-facing,bda,EAST,5217024,Available,2026-04-26T11:36:59Z,synthetic
+seed_proj_04,4,3000.0,20.0,middle,unapproved,SOUTH EAST,17108782,Reserved,2024-08-25T11:36:59Z,synthetic
+seed_proj_04,5,2750.0,50.0,corner,bda,NORTH,20754415,Available,2025-12-04T11:36:59Z,synthetic
+seed_proj_04,6,2700.0,40.0,end,unapproved,NORTH EAST,17354794,Sold,2025-10-23T11:36:59Z,synthetic
+seed_proj_04,7,3000.0,40.0,park-facing,bda,WEST,20836414,Sold,2025-10-16T11:36:59Z,synthetic
+seed_proj_04,8,750.0,30.0,park-facing,other,NORTH,5545020,Sold,2025-08-24T11:36:59Z,synthetic
+seed_proj_04,9,2800.0,40.0,cul-de-sac,bda,SOUTH EAST,18405530,Sold,2025-03-02T11:36:59Z,synthetic
+seed_proj_04,10,700.0,40.0,end,bda,NORTH,5574000,Sold,2024-07-11T11:36:59Z,synthetic
+seed_proj_04,11,2950.0,35.0,park-facing,bda,NORTH WEST,21800081,Sold,2026-04-20T11:36:59Z,synthetic
+seed_proj_04,12,1250.0,40.0,park-facing,panchayat,NORTH,8901804,Reserved,2025-02-13T11:36:59Z,synthetic
+seed_proj_04,13,3150.0,25.0,corner,dtcp,EAST,25599479,Sold,2026-03-28T11:36:59Z,synthetic
+seed_proj_04,14,850.0,35.0,park-facing,unapproved,SOUTH WEST,5056697,Sold,2024-05-29T11:36:59Z,synthetic
+seed_proj_04,15,1450.0,40.0,road-facing,dtcp,EAST,10926381,Sold,2026-02-08T11:36:59Z,synthetic
+seed_proj_04,16,2200.0,50.0,middle,dtcp,SOUTH,14040073,Available,2025-10-21T11:36:59Z,synthetic
+seed_proj_04,17,2750.0,40.0,cul-de-sac,unapproved,SOUTH,14575743,Reserved,2026-01-15T11:36:59Z,synthetic
+seed_proj_04,18,1000.0,20.0,end,unapproved,SOUTH WEST,5689042,Reserved,2025-08-24T11:36:59Z,synthetic
+seed_proj_04,19,2400.0,40.0,end,unapproved,EAST,14416461,Sold,2026-04-23T11:36:59Z,synthetic
+seed_proj_04,20,1850.0,30.0,road-facing,unapproved,NORTH WEST,12506942,Available,2025-08-24T11:36:59Z,synthetic
+seed_proj_04,21,1600.0,35.0,middle,unapproved,NORTH WEST,8972727,Sold,2025-06-23T11:36:59Z,synthetic
+seed_proj_04,22,1350.0,30.0,cul-de-sac,bda,SOUTH EAST,8833787,Available,2024-06-18T11:36:59Z,synthetic
+seed_proj_04,23,1700.0,25.0,cul-de-sac,other,NORTH,10945535,Reserved,2025-01-10T11:36:59Z,synthetic
+seed_proj_04,24,3050.0,50.0,road-facing,other,EAST,21590656,Sold,2026-02-20T11:36:59Z,synthetic
+seed_proj_04,25,1550.0,20.0,cul-de-sac,dtcp,NORTH,10407965,Sold,2026-03-31T11:36:59Z,synthetic
+seed_proj_04,26,2950.0,40.0,end,unapproved,SOUTH EAST,18376371,Available,2024-08-26T11:36:59Z,synthetic
+seed_proj_04,27,1800.0,40.0,park-facing,other,SOUTH,11063419,Sold,2025-03-28T11:36:59Z,synthetic
+seed_proj_04,28,1900.0,40.0,end,other,SOUTH EAST,12903818,Available,2025-10-12T11:36:59Z,synthetic
+seed_proj_04,29,3200.0,35.0,road-facing,other,SOUTH WEST,20380175,Available,2024-12-08T11:36:59Z,synthetic
+seed_proj_04,30,2350.0,40.0,corner,other,SOUTH,14713383,Sold,2025-08-03T11:36:59Z,synthetic
+seed_proj_04,31,1700.0,20.0,park-facing,dtcp,WEST,13039581,Sold,2025-07-04T11:36:59Z,synthetic
+seed_proj_04,32,1500.0,40.0,middle,other,SOUTH,8697407,Sold,2025-03-01T11:36:59Z,synthetic
+seed_proj_04,33,1800.0,35.0,corner,dtcp,SOUTH EAST,12719855,Reserved,2025-02-14T11:36:59Z,synthetic
+seed_proj_05,1,3200.0,25.0,park-facing,panchayat,NORTH WEST,14439180,Sold,2025-12-15T11:36:59Z,synthetic
+seed_proj_05,2,2650.0,30.0,end,panchayat,SOUTH,10023943,Sold,2025-09-10T11:36:59Z,synthetic
+seed_proj_05,3,2250.0,50.0,park-facing,dtcp,NORTH,11317175,Sold,2024-06-05T11:36:59Z,synthetic
+seed_proj_05,4,1050.0,20.0,road-facing,other,NORTH,4854587,Reserved,2025-02-14T11:36:59Z,synthetic
+seed_proj_05,5,1600.0,25.0,end,panchayat,SOUTH,5944853,Sold,2025-08-27T11:36:59Z,synthetic
+seed_proj_05,6,2150.0,35.0,corner,bda,SOUTH WEST,9032497,Reserved,2026-03-20T11:36:59Z,synthetic
+seed_proj_05,7,750.0,35.0,road-facing,panchayat,SOUTH EAST,3217428,Available,2026-02-21T11:36:59Z,synthetic
+seed_proj_05,8,1550.0,50.0,park-facing,bda,NORTH,7736626,Sold,2025-08-07T11:36:59Z,synthetic
+seed_proj_05,9,1100.0,30.0,end,panchayat,SOUTH,4060276,Sold,2024-09-19T11:36:59Z,synthetic
+seed_proj_05,10,2750.0,50.0,corner,bda,NORTH,13687490,Sold,2024-09-21T11:36:59Z,synthetic
+seed_proj_05,11,1750.0,20.0,road-facing,dtcp,EAST,8155254,Sold,2025-04-17T11:36:59Z,synthetic
+seed_proj_05,12,2450.0,35.0,end,other,WEST,11052313,Sold,2025-02-24T11:36:59Z,synthetic
+seed_proj_05,13,2150.0,20.0,end,panchayat,SOUTH,8705152,Sold,2025-08-30T11:36:59Z,synthetic
+seed_proj_05,14,1500.0,30.0,middle,unapproved,NORTH WEST,5323617,Sold,2025-08-01T11:36:59Z,synthetic
+seed_proj_05,15,950.0,20.0,end,panchayat,NORTH,4028716,Sold,2025-01-11T11:36:59Z,synthetic
+seed_proj_05,16,900.0,25.0,corner,dtcp,NORTH,3926140,Sold,2025-05-25T11:36:59Z,synthetic
+seed_proj_05,17,950.0,20.0,park-facing,dtcp,EAST,4411975,Reserved,2025-03-04T11:36:59Z,synthetic
+seed_proj_05,18,2350.0,35.0,corner,dtcp,NORTH EAST,11486591,Available,2025-10-27T11:36:59Z,synthetic
+seed_proj_05,19,650.0,30.0,road-facing,bda,NORTH,3353177,Sold,2025-03-28T11:36:59Z,synthetic
+seed_proj_05,20,1700.0,25.0,end,bda,NORTH WEST,7814285,Sold,2026-04-29T11:36:59Z,synthetic
+seed_proj_05,21,1650.0,40.0,end,bda,NORTH WEST,7207362,Sold,2025-02-06T11:36:59Z,synthetic
+seed_proj_05,22,3100.0,50.0,park-facing,panchayat,EAST,15421923,Reserved,2024-09-25T11:36:59Z,synthetic
+seed_proj_05,23,700.0,25.0,road-facing,panchayat,WEST,3113481,Reserved,2025-05-06T11:36:59Z,synthetic
+seed_proj_05,24,1400.0,20.0,cul-de-sac,dtcp,NORTH,6487763,Available,2025-07-02T11:36:59Z,synthetic
+seed_proj_05,25,650.0,30.0,middle,dtcp,SOUTH,2500138,Sold,2025-10-01T11:36:59Z,synthetic
+seed_proj_05,26,1200.0,35.0,cul-de-sac,other,NORTH EAST,4776052,Sold,2024-07-15T11:36:59Z,synthetic
+seed_proj_05,27,1500.0,20.0,park-facing,dtcp,NORTH EAST,7388874,Available,2025-11-26T11:36:59Z,synthetic
+seed_proj_05,28,3000.0,50.0,cul-de-sac,dtcp,SOUTH,11268365,Sold,2026-03-25T11:36:59Z,synthetic
+seed_proj_05,29,2200.0,40.0,road-facing,other,EAST,9363314,Sold,2025-03-28T11:36:59Z,synthetic
+seed_proj_05,30,2350.0,35.0,road-facing,panchayat,NORTH EAST,10862428,Reserved,2026-01-16T11:36:59Z,synthetic
+seed_proj_05,31,3100.0,30.0,road-facing,panchayat,SOUTH EAST,14084972,Sold,2025-04-13T11:36:59Z,synthetic
+seed_proj_05,32,650.0,30.0,middle,panchayat,NORTH EAST,2834273,Available,2025-04-12T11:36:59Z,synthetic
+seed_proj_05,33,3200.0,20.0,road-facing,bda,SOUTH,14016803,Sold,2025-01-09T11:36:59Z,synthetic
+seed_proj_06,1,2200.0,35.0,cul-de-sac,dtcp,NORTH,12984055,Sold,2025-09-22T11:36:59Z,synthetic
+seed_proj_06,2,1300.0,50.0,end,bda,NORTH EAST,8305919,Available,2025-04-09T11:36:59Z,synthetic
+seed_proj_06,3,1700.0,35.0,middle,bda,SOUTH WEST,9890203,Sold,2024-07-13T11:36:59Z,synthetic
+seed_proj_06,4,1600.0,30.0,middle,panchayat,WEST,7973586,Sold,2024-09-21T11:36:59Z,synthetic
+seed_proj_06,5,3200.0,25.0,middle,bda,SOUTH WEST,16293655,Sold,2025-09-13T11:36:59Z,synthetic
+seed_proj_06,6,2950.0,30.0,park-facing,panchayat,NORTH WEST,16134497,Sold,2025-03-06T11:36:59Z,synthetic
+seed_proj_06,7,2400.0,35.0,end,panchayat,EAST,13419686,Sold,2025-03-12T11:36:59Z,synthetic
+seed_proj_06,8,1950.0,35.0,park-facing,dtcp,NORTH,12298272,Reserved,2025-11-09T11:36:59Z,synthetic
+seed_proj_06,9,800.0,20.0,middle,panchayat,SOUTH WEST,3478529,Reserved,2024-11-29T11:36:59Z,synthetic
+seed_proj_06,10,1100.0,20.0,middle,dtcp,SOUTH EAST,6193948,Sold,2024-07-23T11:36:59Z,synthetic
+seed_proj_06,11,600.0,30.0,park-facing,dtcp,NORTH EAST,4043896,Reserved,2025-03-06T11:36:59Z,synthetic
+seed_proj_06,12,1500.0,25.0,corner,other,SOUTH WEST,8832628,Sold,2025-01-17T11:36:59Z,synthetic
+seed_proj_06,13,1500.0,30.0,park-facing,dtcp,SOUTH,8953366,Sold,2024-08-01T11:36:59Z,synthetic
+seed_proj_06,14,1450.0,50.0,corner,panchayat,NORTH WEST,8720084,Sold,2024-12-21T11:36:59Z,synthetic
+seed_proj_06,15,3150.0,40.0,cul-de-sac,unapproved,EAST,15807766,Reserved,2024-06-04T11:36:59Z,synthetic
+seed_proj_06,16,2250.0,50.0,road-facing,other,WEST,13238744,Sold,2025-11-20T11:36:59Z,synthetic
+seed_proj_06,17,2200.0,35.0,park-facing,bda,SOUTH,12302796,Available,2024-12-06T11:36:59Z,synthetic
+seed_proj_06,18,2950.0,50.0,corner,dtcp,SOUTH EAST,19360269,Available,2025-05-25T11:36:59Z,synthetic
+seed_proj_06,19,2350.0,40.0,road-facing,unapproved,NORTH WEST,12937960,Available,2025-03-06T11:36:59Z,synthetic
+seed_proj_06,20,900.0,30.0,road-facing,bda,WEST,5029464,Sold,2024-12-05T11:36:59Z,synthetic
+seed_proj_06,21,600.0,40.0,cul-de-sac,dtcp,SOUTH EAST,3461412,Reserved,2025-08-18T11:36:59Z,synthetic
+seed_proj_06,22,1450.0,35.0,middle,panchayat,SOUTH WEST,6785408,Sold,2024-06-10T11:36:59Z,synthetic
+seed_proj_06,23,1000.0,50.0,cul-de-sac,bda,NORTH WEST,5859343,Sold,2025-10-07T11:36:59Z,synthetic
+seed_proj_06,24,1450.0,25.0,middle,panchayat,EAST,8366563,Sold,2025-07-09T11:36:59Z,synthetic
+seed_proj_06,25,2800.0,50.0,corner,unapproved,SOUTH EAST,15372005,Available,2025-10-13T11:36:59Z,synthetic
+seed_proj_06,26,1500.0,35.0,end,dtcp,EAST,9143107,Sold,2024-07-28T11:36:59Z,synthetic
+seed_proj_06,27,2550.0,50.0,middle,unapproved,NORTH WEST,11939986,Sold,2024-08-04T11:36:59Z,synthetic
+seed_proj_06,28,2250.0,35.0,road-facing,dtcp,SOUTH,13232179,Sold,2025-04-11T11:36:59Z,synthetic
+seed_proj_06,29,2200.0,40.0,park-facing,unapproved,NORTH,11426249,Sold,2024-10-26T11:36:59Z,synthetic
+seed_proj_06,30,2800.0,50.0,park-facing,dtcp,EAST,18455989,Sold,2025-12-29T11:36:59Z,synthetic
+seed_proj_06,31,2300.0,20.0,cul-de-sac,other,SOUTH,10351127,Reserved,2025-03-25T11:36:59Z,synthetic
+seed_proj_06,32,3100.0,40.0,middle,bda,NORTH EAST,20769309,Sold,2024-11-21T11:36:59Z,synthetic
+seed_proj_06,33,1050.0,25.0,end,bda,NORTH EAST,6354073,Sold,2025-12-19T11:36:59Z,synthetic
+seed_proj_07,1,2700.0,50.0,end,dtcp,NORTH EAST,7705098,Reserved,2024-07-12T11:36:59Z,synthetic
+seed_proj_07,2,1950.0,30.0,middle,bda,NORTH WEST,4962094,Available,2026-04-10T11:36:59Z,synthetic
+seed_proj_07,3,2200.0,50.0,corner,other,SOUTH EAST,5868112,Reserved,2024-12-01T11:36:59Z,synthetic
+seed_proj_07,4,600.0,50.0,end,other,EAST,1566451,Reserved,2025-09-30T11:36:59Z,synthetic
+seed_proj_07,5,2250.0,30.0,park-facing,unapproved,SOUTH WEST,5516973,Sold,2024-11-16T11:36:59Z,synthetic
+seed_proj_07,6,1400.0,35.0,end,other,SOUTH EAST,3828583,Sold,2024-06-22T11:36:59Z,synthetic
+seed_proj_07,7,1300.0,35.0,middle,dtcp,SOUTH WEST,2918675,Available,2025-03-10T11:36:59Z,synthetic
+seed_proj_07,8,2500.0,40.0,cul-de-sac,dtcp,NORTH EAST,7399272,Sold,2024-08-27T11:36:59Z,synthetic
+seed_proj_07,9,2450.0,20.0,end,unapproved,SOUTH EAST,6128546,Sold,2024-08-20T11:36:59Z,synthetic
+seed_proj_07,10,2300.0,20.0,cul-de-sac,unapproved,SOUTH EAST,5392693,Sold,2026-02-03T11:36:59Z,synthetic
+seed_proj_07,11,1500.0,40.0,road-facing,unapproved,NORTH EAST,4161370,Sold,2025-02-20T11:36:59Z,synthetic
+seed_proj_07,12,2400.0,30.0,road-facing,panchayat,SOUTH EAST,6091260,Sold,2025-11-15T11:36:59Z,synthetic
+seed_proj_07,13,900.0,25.0,road-facing,unapproved,NORTH WEST,2112069,Reserved,2025-04-01T11:36:59Z,synthetic
+seed_proj_07,14,1850.0,40.0,cul-de-sac,other,NORTH EAST,4992130,Reserved,2025-04-26T11:36:59Z,synthetic
+seed_proj_07,15,1350.0,50.0,corner,bda,SOUTH,3926704,Sold,2025-09-10T11:36:59Z,synthetic
+seed_proj_07,16,2500.0,25.0,park-facing,unapproved,NORTH,6264668,Sold,2025-05-17T11:36:59Z,synthetic
+seed_proj_07,17,3050.0,35.0,cul-de-sac,unapproved,NORTH,7125840,Available,2025-05-14T11:36:59Z,synthetic
+seed_proj_07,18,800.0,40.0,end,unapproved,NORTH WEST,1933488,Sold,2026-01-10T11:36:59Z,synthetic
+seed_proj_07,19,950.0,20.0,cul-de-sac,unapproved,NORTH,2090690,Reserved,2025-02-20T11:36:59Z,synthetic
+seed_proj_07,20,2100.0,40.0,corner,other,NORTH WEST,5753389,Available,2025-07-28T11:36:59Z,synthetic
+seed_proj_07,21,2100.0,40.0,middle,panchayat,EAST,5619570,Available,2025-10-11T11:36:59Z,synthetic
+seed_proj_07,22,1050.0,50.0,end,unapproved,NORTH,2632510,Sold,2024-07-24T11:36:59Z,synthetic
+seed_proj_07,23,900.0,35.0,cul-de-sac,panchayat,NORTH EAST,2344075,Sold,2024-12-16T11:36:59Z,synthetic
+seed_proj_07,24,3050.0,50.0,park-facing,dtcp,SOUTH EAST,9279741,Reserved,2024-08-18T11:36:59Z,synthetic
+seed_proj_07,25,2650.0,35.0,middle,unapproved,NORTH WEST,6021291,Reserved,2026-03-05T11:36:59Z,synthetic
+seed_proj_07,26,650.0,35.0,road-facing,dtcp,SOUTH,1800847,Sold,2024-12-28T11:36:59Z,synthetic
+seed_proj_07,27,2050.0,40.0,middle,other,SOUTH WEST,4767925,Sold,2025-08-06T11:36:59Z,synthetic
+seed_proj_07,28,1050.0,30.0,corner,dtcp,EAST,3198009,Sold,2025-03-21T11:36:59Z,synthetic
+seed_proj_07,29,1350.0,25.0,cul-de-sac,unapproved,SOUTH EAST,2757841,Sold,2024-07-16T11:36:59Z,synthetic
+seed_proj_07,30,2050.0,40.0,park-facing,panchayat,SOUTH WEST,4711680,Sold,2024-12-05T11:36:59Z,synthetic
+seed_proj_07,31,1750.0,35.0,cul-de-sac,dtcp,NORTH WEST,4658872,Sold,2026-03-26T11:36:59Z,synthetic
+seed_proj_07,32,1200.0,35.0,cul-de-sac,dtcp,WEST,2978168,Available,2026-01-04T11:36:59Z,synthetic
+seed_proj_07,33,1350.0,50.0,park-facing,panchayat,NORTH,3828136,Sold,2024-07-28T11:36:59Z,synthetic
+seed_proj_08,1,750.0,20.0,middle,bda,SOUTH,5963500,Sold,2024-10-21T11:36:59Z,synthetic
+seed_proj_08,2,2800.0,35.0,end,other,EAST,22546448,Reserved,2025-10-22T11:36:59Z,synthetic
+seed_proj_08,3,650.0,40.0,middle,other,WEST,4561771,Sold,2025-12-18T11:36:59Z,synthetic
+seed_proj_08,4,1150.0,20.0,end,dtcp,SOUTH WEST,8643598,Sold,2026-02-07T11:36:59Z,synthetic
+seed_proj_08,5,2050.0,50.0,corner,panchayat,SOUTH EAST,15968703,Sold,2024-09-23T11:36:59Z,synthetic
+seed_proj_08,6,2600.0,25.0,road-facing,other,SOUTH EAST,21240484,Sold,2025-06-11T11:36:59Z,synthetic
+seed_proj_08,7,2350.0,30.0,middle,unapproved,SOUTH EAST,14731838,Sold,2025-06-24T11:36:59Z,synthetic
+seed_proj_08,8,600.0,30.0,end,bda,NORTH WEST,4937405,Sold,2025-06-26T11:36:59Z,synthetic
+seed_proj_08,9,850.0,40.0,park-facing,other,WEST,6971196,Sold,2025-02-09T11:36:59Z,synthetic
+seed_proj_08,10,1900.0,20.0,end,other,NORTH,15184651,Available,2025-07-07T11:36:59Z,synthetic
+seed_proj_08,11,3100.0,35.0,end,bda,NORTH WEST,26768766,Sold,2024-11-09T11:36:59Z,synthetic
+seed_proj_08,12,1350.0,25.0,corner,panchayat,SOUTH EAST,11196761,Sold,2024-07-30T11:36:59Z,synthetic
+seed_proj_08,13,1050.0,35.0,corner,bda,WEST,9015697,Sold,2025-09-25T11:36:59Z,synthetic
+seed_proj_08,14,1250.0,40.0,road-facing,panchayat,SOUTH WEST,9251757,Reserved,2026-02-20T11:36:59Z,synthetic
+seed_proj_08,15,1800.0,50.0,middle,panchayat,SOUTH,12486066,Sold,2026-03-20T11:36:59Z,synthetic
+seed_proj_08,16,1350.0,40.0,middle,panchayat,SOUTH WEST,9807291,Available,2025-09-11T11:36:59Z,synthetic
+seed_proj_08,17,1050.0,30.0,park-facing,bda,SOUTH,8743960,Available,2025-10-04T11:36:59Z,synthetic
+seed_proj_08,18,1000.0,30.0,cul-de-sac,other,EAST,7141910,Available,2024-07-16T11:36:59Z,synthetic
+seed_proj_08,19,2950.0,30.0,end,bda,SOUTH,23739219,Sold,2024-07-03T11:36:59Z,synthetic
+seed_proj_08,20,1750.0,25.0,park-facing,unapproved,SOUTH WEST,12294565,Sold,2025-06-01T11:36:59Z,synthetic
+seed_proj_08,21,2050.0,25.0,park-facing,unapproved,NORTH,15582319,Reserved,2025-08-21T11:36:59Z,synthetic
+seed_proj_08,22,2250.0,40.0,park-facing,dtcp,SOUTH EAST,19657195,Reserved,2026-01-27T11:36:59Z,synthetic
+seed_proj_08,23,2900.0,40.0,corner,bda,EAST,26364825,Available,2025-01-24T11:36:59Z,synthetic
+seed_proj_08,24,2600.0,30.0,corner,other,SOUTH EAST,21756105,Reserved,2025-01-28T11:36:59Z,synthetic
+seed_proj_08,25,1500.0,50.0,end,dtcp,EAST,13220347,Sold,2026-04-23T11:36:59Z,synthetic
+seed_proj_08,26,1350.0,40.0,middle,other,WEST,10322847,Sold,2024-08-28T11:36:59Z,synthetic
+seed_proj_08,27,2400.0,40.0,end,unapproved,NORTH WEST,17300199,Sold,2025-09-27T11:36:59Z,synthetic
+seed_proj_08,28,2550.0,20.0,corner,other,SOUTH,20627309,Available,2024-08-13T11:36:59Z,synthetic
+seed_proj_08,29,1300.0,50.0,middle,bda,NORTH,10195158,Sold,2025-06-26T11:36:59Z,synthetic
+seed_proj_08,30,2200.0,40.0,middle,dtcp,SOUTH,16253884,Sold,2024-10-27T11:36:59Z,synthetic
+seed_proj_08,31,1650.0,35.0,park-facing,dtcp,NORTH EAST,15849334,Reserved,2024-09-22T11:36:59Z,synthetic
+seed_proj_08,32,2500.0,35.0,end,other,SOUTH,16813172,Sold,2024-11-27T11:36:59Z,synthetic
+seed_proj_08,33,650.0,35.0,road-facing,bda,WEST,5325253,Sold,2025-06-15T11:36:59Z,synthetic
+seed_proj_09,1,700.0,50.0,road-facing,dtcp,NORTH WEST,2831099,Available,2025-11-19T11:36:59Z,synthetic
+seed_proj_09,2,1450.0,20.0,corner,other,SOUTH,5171992,Sold,2025-04-02T11:36:59Z,synthetic
+seed_proj_09,3,750.0,20.0,park-facing,unapproved,EAST,3162817,Reserved,2025-01-05T11:36:59Z,synthetic
+seed_proj_09,4,900.0,35.0,middle,unapproved,SOUTH WEST,2645921,Sold,2025-11-06T11:36:59Z,synthetic
+seed_proj_09,5,1500.0,30.0,road-facing,other,EAST,6244764,Reserved,2025-05-16T11:36:59Z,synthetic
+seed_proj_09,6,1250.0,50.0,road-facing,unapproved,SOUTH EAST,4633950,Reserved,2026-02-17T11:36:59Z,synthetic
+seed_proj_09,7,2500.0,20.0,cul-de-sac,other,SOUTH EAST,8955306,Sold,2024-06-01T11:36:59Z,synthetic
+seed_proj_09,8,1600.0,30.0,road-facing,panchayat,SOUTH EAST,6346570,Sold,2024-09-02T11:36:59Z,synthetic
+seed_proj_09,9,1850.0,50.0,middle,unapproved,SOUTH EAST,5757352,Available,2024-12-17T11:36:59Z,synthetic
+seed_proj_09,10,2700.0,35.0,end,dtcp,EAST,12370466,Available,2025-08-30T11:36:59Z,synthetic
+seed_proj_09,11,2850.0,40.0,middle,unapproved,NORTH WEST,9389172,Sold,2025-01-01T11:36:59Z,synthetic
+seed_proj_09,12,2600.0,50.0,cul-de-sac,dtcp,NORTH EAST,10986906,Reserved,2024-09-29T11:36:59Z,synthetic
+seed_proj_09,13,1400.0,20.0,cul-de-sac,unapproved,EAST,4412978,Reserved,2025-11-02T11:36:59Z,synthetic
+seed_proj_09,14,2450.0,50.0,end,unapproved,NORTH WEST,9549082,Sold,2024-07-16T11:36:59Z,synthetic
+seed_proj_09,15,1100.0,25.0,road-facing,panchayat,NORTH,4464994,Sold,2026-04-17T11:36:59Z,synthetic
+seed_proj_09,16,1500.0,35.0,park-facing,panchayat,NORTH,6332148,Sold,2025-10-12T11:36:59Z,synthetic
+seed_proj_09,17,2250.0,30.0,cul-de-sac,bda,NORTH WEST,9081088,Reserved,2025-09-19T11:36:59Z,synthetic
+seed_proj_09,18,2500.0,50.0,corner,dtcp,SOUTH,10852562,Reserved,2024-06-15T11:36:59Z,synthetic
+seed_proj_09,19,3050.0,30.0,middle,bda,SOUTH,11433411,Sold,2025-09-18T11:36:59Z,synthetic
+seed_proj_09,20,2550.0,50.0,corner,unapproved,NORTH EAST,10039427,Sold,2024-11-18T11:36:59Z,synthetic
+seed_proj_09,21,2850.0,35.0,park-facing,unapproved,SOUTH EAST,10787714,Sold,2025-05-16T11:36:59Z,synthetic
+seed_proj_09,22,850.0,35.0,middle,bda,EAST,3755740,Reserved,2025-08-28T11:36:59Z,synthetic
+seed_proj_09,23,2150.0,35.0,corner,other,NORTH EAST,10555387,Available,2024-10-27T11:36:59Z,synthetic
+seed_proj_09,24,1050.0,50.0,road-facing,bda,SOUTH,4179008,Sold,2026-01-11T11:36:59Z,synthetic
+seed_proj_09,25,950.0,35.0,road-facing,other,WEST,3527039,Sold,2025-02-28T11:36:59Z,synthetic
+seed_proj_09,26,1100.0,50.0,middle,other,EAST,4272679,Available,2024-12-28T11:36:59Z,synthetic
+seed_proj_09,27,2800.0,25.0,end,bda,NORTH EAST,12466514,Reserved,2026-01-22T11:36:59Z,synthetic
+seed_proj_09,28,2550.0,30.0,road-facing,other,WEST,10016055,Available,2025-05-22T11:36:59Z,synthetic
+seed_proj_09,29,2550.0,35.0,corner,dtcp,NORTH,11322997,Reserved,2026-01-19T11:36:59Z,synthetic
+seed_proj_09,30,1350.0,50.0,park-facing,bda,SOUTH EAST,5516074,Sold,2024-09-24T11:36:59Z,synthetic
+seed_proj_09,31,750.0,30.0,end,dtcp,SOUTH WEST,3077417,Available,2024-09-01T11:36:59Z,synthetic
+seed_proj_09,32,2100.0,35.0,middle,dtcp,SOUTH EAST,8648435,Sold,2026-01-19T11:36:59Z,synthetic
+seed_proj_09,33,2000.0,35.0,end,dtcp,NORTH,8711050,Available,2025-03-10T11:36:59Z,synthetic
+seed_proj_10,1,1150.0,30.0,cul-de-sac,unapproved,NORTH,5121041,Sold,2024-06-08T11:36:59Z,synthetic
+seed_proj_10,2,1750.0,20.0,corner,unapproved,NORTH WEST,8908138,Available,2025-09-27T11:36:59Z,synthetic
+seed_proj_10,3,3000.0,50.0,end,panchayat,NORTH WEST,16344945,Sold,2026-02-21T11:36:59Z,synthetic
+seed_proj_10,4,1200.0,35.0,corner,dtcp,SOUTH EAST,6899686,Sold,2025-02-23T11:36:59Z,synthetic
+seed_proj_10,5,2000.0,50.0,cul-de-sac,dtcp,NORTH EAST,10933835,Sold,2025-12-15T11:36:59Z,synthetic
+seed_proj_10,6,3100.0,30.0,end,panchayat,WEST,16594724,Available,2025-11-23T11:36:59Z,synthetic
+seed_proj_10,7,1100.0,25.0,corner,dtcp,NORTH WEST,6256423,Reserved,2024-12-04T11:36:59Z,synthetic
+seed_proj_10,8,3050.0,25.0,park-facing,panchayat,EAST,16310412,Sold,2024-12-25T11:36:59Z,synthetic
+seed_proj_10,9,700.0,25.0,cul-de-sac,other,SOUTH,3120899,Sold,2024-06-11T11:36:59Z,synthetic
+seed_proj_10,10,850.0,40.0,park-facing,bda,SOUTH WEST,4529022,Sold,2025-01-30T11:36:59Z,synthetic
+seed_proj_10,11,2950.0,35.0,park-facing,panchayat,EAST,17570686,Available,2025-07-24T11:36:59Z,synthetic
+seed_proj_10,12,1900.0,25.0,road-facing,unapproved,EAST,10427559,Sold,2024-07-17T11:36:59Z,synthetic
+seed_proj_10,13,2100.0,20.0,cul-de-sac,panchayat,SOUTH EAST,10014165,Sold,2025-12-28T11:36:59Z,synthetic
+seed_proj_10,14,1750.0,40.0,cul-de-sac,other,NORTH,8912378,Sold,2025-10-24T11:36:59Z,synthetic
+seed_proj_10,15,3000.0,20.0,road-facing,bda,NORTH WEST,16815467,Sold,2025-09-18T11:36:59Z,synthetic
+seed_proj_10,16,1050.0,40.0,end,bda,SOUTH,5884804,Available,2025-09-14T11:36:59Z,synthetic
+seed_proj_10,17,1000.0,50.0,end,bda,NORTH EAST,5687570,Sold,2025-08-13T11:36:59Z,synthetic
+seed_proj_10,18,700.0,20.0,middle,dtcp,SOUTH,3376544,Sold,2026-01-18T11:36:59Z,synthetic
+seed_proj_10,19,3200.0,40.0,corner,other,WEST,17005623,Sold,2025-04-06T11:36:59Z,synthetic
+seed_proj_10,20,1950.0,25.0,road-facing,bda,SOUTH EAST,11566508,Sold,2025-01-30T11:36:59Z,synthetic
+seed_proj_10,21,1300.0,40.0,park-facing,panchayat,SOUTH EAST,6890809,Sold,2026-01-15T11:36:59Z,synthetic
+seed_proj_10,22,2950.0,25.0,corner,panchayat,WEST,15685325,Sold,2025-03-11T11:36:59Z,synthetic
+seed_proj_10,23,2150.0,40.0,middle,bda,SOUTH WEST,10383022,Sold,2026-01-21T11:36:59Z,synthetic
+seed_proj_10,24,3000.0,20.0,cul-de-sac,other,SOUTH WEST,13483301,Available,2026-03-24T11:36:59Z,synthetic
+seed_proj_10,25,700.0,25.0,road-facing,panchayat,EAST,3679775,Available,2024-09-01T11:36:59Z,synthetic
+seed_proj_10,26,1800.0,40.0,cul-de-sac,panchayat,NORTH EAST,8424508,Sold,2025-08-22T11:36:59Z,synthetic
+seed_proj_10,27,1350.0,25.0,cul-de-sac,panchayat,SOUTH,5522797,Sold,2025-03-26T11:36:59Z,synthetic
+seed_proj_10,28,1600.0,40.0,corner,unapproved,SOUTH,8046016,Sold,2025-03-14T11:36:59Z,synthetic
+seed_proj_10,29,3150.0,25.0,road-facing,dtcp,SOUTH,17384658,Reserved,2024-07-29T11:36:59Z,synthetic
+seed_proj_10,30,2200.0,35.0,cul-de-sac,other,EAST,11160640,Sold,2025-10-06T11:36:59Z,synthetic
+seed_proj_10,31,1750.0,35.0,end,bda,EAST,10583357,Sold,2025-01-09T11:36:59Z,synthetic
+seed_proj_10,32,2150.0,40.0,park-facing,unapproved,NORTH,11139358,Sold,2026-02-23T11:36:59Z,synthetic
+seed_proj_10,33,1900.0,30.0,cul-de-sac,dtcp,SOUTH EAST,9722637,Sold,2025-03-26T11:36:59Z,synthetic
+seed_proj_11,1,3150.0,50.0,cul-de-sac,bda,SOUTH EAST,19579252,Sold,2025-12-02T11:36:59Z,synthetic
+seed_proj_11,2,1750.0,35.0,cul-de-sac,panchayat,NORTH EAST,10622993,Sold,2024-10-29T11:36:59Z,synthetic
+seed_proj_11,3,1350.0,35.0,park-facing,dtcp,SOUTH EAST,9865377,Sold,2025-01-02T11:36:59Z,synthetic
+seed_proj_11,4,2950.0,35.0,middle,unapproved,SOUTH,14081508,Sold,2025-03-15T11:36:59Z,synthetic
+seed_proj_11,5,1200.0,50.0,middle,panchayat,SOUTH,6045981,Sold,2025-03-01T11:36:59Z,synthetic
+seed_proj_11,6,1750.0,25.0,park-facing,unapproved,WEST,9816487,Sold,2024-09-26T11:36:59Z,synthetic
+seed_proj_11,7,950.0,20.0,cul-de-sac,other,SOUTH EAST,5311814,Available,2025-10-27T11:36:59Z,synthetic
+seed_proj_11,8,1900.0,25.0,corner,panchayat,NORTH EAST,12348940,Sold,2026-02-14T11:36:59Z,synthetic
+seed_proj_11,9,900.0,40.0,corner,dtcp,NORTH WEST,5910358,Sold,2025-11-07T11:36:59Z,synthetic
+seed_proj_11,10,2200.0,35.0,middle,unapproved,EAST,12437681,Sold,2025-02-07T11:36:59Z,synthetic
+seed_proj_11,11,1100.0,30.0,cul-de-sac,unapproved,EAST,5541627,Reserved,2025-01-16T11:36:59Z,synthetic
+seed_proj_11,12,2150.0,20.0,cul-de-sac,bda,SOUTH,12946581,Sold,2025-08-20T11:36:59Z,synthetic
+seed_proj_11,13,3050.0,35.0,cul-de-sac,dtcp,NORTH WEST,18584972,Sold,2026-04-24T11:36:59Z,synthetic
+seed_proj_11,14,1650.0,20.0,cul-de-sac,other,SOUTH WEST,9054860,Sold,2025-03-17T11:36:59Z,synthetic
+seed_proj_11,15,850.0,20.0,end,bda,SOUTH EAST,5511134,Available,2025-03-28T11:36:59Z,synthetic
+seed_proj_11,16,2100.0,30.0,road-facing,other,SOUTH EAST,13523574,Sold,2026-02-03T11:36:59Z,synthetic
+seed_proj_11,17,1500.0,35.0,park-facing,dtcp,SOUTH WEST,9511870,Sold,2025-08-13T11:36:59Z,synthetic
+seed_proj_11,18,1700.0,30.0,road-facing,dtcp,NORTH,11790408,Sold,2025-10-20T11:36:59Z,synthetic
+seed_proj_11,19,1250.0,25.0,corner,other,NORTH EAST,8463576,Sold,2024-06-07T11:36:59Z,synthetic
+seed_proj_11,20,1850.0,30.0,corner,bda,EAST,12773504,Sold,2025-02-21T11:36:59Z,synthetic
+seed_proj_11,21,650.0,20.0,end,bda,SOUTH WEST,3953000,Available,2025-07-06T11:36:59Z,synthetic
+seed_proj_11,22,700.0,35.0,park-facing,unapproved,SOUTH WEST,3558628,Sold,2025-10-15T11:36:59Z,synthetic
+seed_proj_11,23,2100.0,30.0,park-facing,bda,WEST,14940727,Reserved,2025-11-15T11:36:59Z,synthetic
+seed_proj_11,24,2550.0,25.0,middle,dtcp,SOUTH WEST,14742147,Sold,2024-11-30T11:36:59Z,synthetic
+seed_proj_11,25,700.0,20.0,middle,unapproved,SOUTH,3587353,Reserved,2025-02-05T11:36:59Z,synthetic
+seed_proj_11,26,3150.0,35.0,corner,dtcp,SOUTH,18637755,Reserved,2025-10-05T11:36:59Z,synthetic
+seed_proj_11,27,2000.0,35.0,corner,bda,SOUTH WEST,12521431,Sold,2025-01-15T11:36:59Z,synthetic
+seed_proj_11,28,2250.0,50.0,middle,dtcp,SOUTH WEST,12604681,Sold,2024-07-22T11:36:59Z,synthetic
+seed_proj_11,29,2850.0,50.0,road-facing,panchayat,SOUTH EAST,17728190,Available,2025-02-01T11:36:59Z,synthetic
+seed_proj_11,30,2800.0,30.0,cul-de-sac,unapproved,WEST,12966802,Sold,2024-10-24T11:36:59Z,synthetic
+seed_proj_11,31,2450.0,30.0,end,panchayat,SOUTH EAST,14769734,Reserved,2024-09-27T11:36:59Z,synthetic
+seed_proj_11,32,2850.0,50.0,cul-de-sac,other,WEST,15298780,Sold,2025-03-04T11:36:59Z,synthetic
+seed_proj_11,33,850.0,20.0,corner,unapproved,EAST,5199537,Available,2025-11-14T11:36:59Z,synthetic
+seed_proj_12,1,1050.0,40.0,end,unapproved,SOUTH WEST,3794133,Sold,2025-11-24T11:36:59Z,synthetic
+seed_proj_12,2,950.0,30.0,middle,panchayat,NORTH EAST,4196484,Sold,2024-09-20T11:36:59Z,synthetic
+seed_proj_12,3,1550.0,40.0,park-facing,panchayat,SOUTH EAST,7555133,Available,2025-05-17T11:36:59Z,synthetic
+seed_proj_12,4,2300.0,20.0,cul-de-sac,unapproved,NORTH EAST,9565535,Sold,2024-12-28T11:36:59Z,synthetic
+seed_proj_12,5,2200.0,20.0,corner,other,EAST,11483916,Sold,2025-06-09T11:36:59Z,synthetic
+seed_proj_12,6,1800.0,30.0,corner,dtcp,SOUTH,7622428,Reserved,2025-06-02T11:36:59Z,synthetic
+seed_proj_12,7,1400.0,35.0,corner,dtcp,WEST,6263038,Sold,2024-10-09T11:36:59Z,synthetic
+seed_proj_12,8,2450.0,50.0,corner,bda,EAST,13415166,Sold,2024-08-02T11:36:59Z,synthetic
+seed_proj_12,9,1500.0,50.0,end,dtcp,NORTH,6917689,Available,2025-12-07T11:36:59Z,synthetic
+seed_proj_12,10,2900.0,40.0,middle,unapproved,WEST,11561828,Reserved,2024-07-07T11:36:59Z,synthetic
+seed_proj_12,11,600.0,40.0,park-facing,dtcp,NORTH,3139752,Sold,2024-08-22T11:36:59Z,synthetic
+seed_proj_12,12,1700.0,35.0,end,dtcp,SOUTH,7745760,Available,2025-04-23T11:36:59Z,synthetic
+seed_proj_12,13,700.0,30.0,park-facing,other,WEST,3350847,Sold,2025-12-20T11:36:59Z,synthetic
+seed_proj_12,14,1400.0,40.0,end,other,NORTH EAST,7294410,Sold,2025-07-23T11:36:59Z,synthetic
+seed_proj_12,15,950.0,50.0,road-facing,unapproved,SOUTH WEST,3878103,Sold,2026-02-12T11:36:59Z,synthetic
+seed_proj_12,16,1350.0,25.0,end,panchayat,NORTH EAST,6056964,Sold,2026-02-14T11:36:59Z,synthetic
+seed_proj_12,17,3050.0,40.0,road-facing,unapproved,SOUTH,10682989,Available,2026-03-07T11:36:59Z,synthetic
+seed_proj_12,18,1500.0,35.0,park-facing,dtcp,SOUTH EAST,7062869,Sold,2026-04-17T11:36:59Z,synthetic
+seed_proj_12,19,2500.0,50.0,corner,other,WEST,11104957,Reserved,2024-10-22T11:36:59Z,synthetic
+seed_proj_12,20,3050.0,25.0,end,unapproved,NORTH EAST,13500509,Reserved,2024-06-15T11:36:59Z,synthetic
+seed_proj_12,21,2100.0,50.0,cul-de-sac,unapproved,NORTH WEST,7688732,Reserved,2025-05-25T11:36:59Z,synthetic
+seed_proj_12,22,3150.0,50.0,park-facing,bda,SOUTH EAST,16247148,Sold,2025-11-02T11:36:59Z,synthetic
+seed_proj_12,23,1650.0,40.0,end,bda,WEST,7999802,Sold,2024-07-30T11:36:59Z,synthetic
+seed_proj_12,24,1950.0,50.0,corner,dtcp,EAST,9146574,Sold,2025-07-17T11:36:59Z,synthetic
+seed_proj_12,25,1000.0,40.0,road-facing,unapproved,WEST,4279933,Sold,2024-12-30T11:36:59Z,synthetic
+seed_proj_12,26,1450.0,40.0,park-facing,other,NORTH,6778002,Sold,2025-09-06T11:36:59Z,synthetic
+seed_proj_12,27,2450.0,20.0,park-facing,other,NORTH WEST,11506148,Available,2025-07-20T11:36:59Z,synthetic
+seed_proj_12,28,1300.0,20.0,corner,dtcp,NORTH WEST,5877997,Sold,2025-06-27T11:36:59Z,synthetic
+seed_proj_12,29,1500.0,30.0,park-facing,unapproved,NORTH,6150280,Available,2025-10-19T11:36:59Z,synthetic
+seed_proj_12,30,1950.0,50.0,park-facing,bda,SOUTH WEST,9316141,Available,2025-06-27T11:36:59Z,synthetic
+seed_proj_12,31,1600.0,40.0,corner,other,NORTH,8103138,Sold,2024-07-14T11:36:59Z,synthetic
+seed_proj_12,32,1550.0,20.0,end,dtcp,EAST,7684505,Sold,2025-03-05T11:36:59Z,synthetic
+seed_proj_12,33,1850.0,25.0,corner,bda,SOUTH EAST,8705316,Available,2025-12-04T11:36:59Z,synthetic
+seed_proj_08,397,800.0,35.0,road-facing,bda,NORTH WEST,7125561,Reserved,2025-01-16T11:36:59Z,synthetic
+seed_proj_07,398,2700.0,25.0,cul-de-sac,other,SOUTH,6608024,Available,2025-04-17T11:36:59Z,synthetic
+seed_proj_02,399,3000.0,20.0,road-facing,panchayat,SOUTH EAST,14819416,Available,2025-12-11T11:36:59Z,synthetic
+seed_proj_06,400,2700.0,50.0,park-facing,unapproved,SOUTH WEST,12185079,Sold,2026-04-18T11:36:59Z,synthetic

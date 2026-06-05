@@ -1,10 +1,40 @@
 const httpStatus = require("http-status");
 const plotService = require("../services/plot.service");
+const plotPricePredictionService = require("../services/plotPricePrediction.service");
+const deadPlotDetectionService = require("../services/deadPlotDetection.service");
 const userService = require("../services/user.service");
 const ApiError = require("../utils/ApiError");
 const catchAsync = require("../utils/catchAsync");
 const { formatDate } = require("../utils/dateUtils");
 const { logger } = require("../utils/logger");
+const {
+  PLOT_TYPE_LABELS,
+  APPROVAL_LABELS,
+} = require("../constants/plotAiFeatures");
+
+const formatPlot = (plot) => ({
+  _id: plot._id,
+  projectId: plot.projectid,
+  plotnumber: plot.plotnumber,
+  plotsize: plot.plotsize,
+  plotprice: plot.plotprice,
+  plotdirection: plot.plotdirection,
+  plotType: plot.plotType || "middle",
+  plotTypeLabel: PLOT_TYPE_LABELS[plot.plotType] || plot.plotType || "Middle",
+  roadWidthFt: plot.roadWidthFt ?? null,
+  approvalStatus: plot.approvalStatus || "unapproved",
+  approvalStatusLabel:
+    APPROVAL_LABELS[plot.approvalStatus] || plot.approvalStatus || "Unapproved",
+  plotstatus: plot.plotstatus,
+  assigneduserid: plot.assigneduserid ?? null,
+  paymentSummary: plot.paymentSummary || {
+    totalSuccessAmount: 0,
+    totalPendingAmount: 0,
+    installmentCount: 0,
+  },
+  createdAt: plot.createdAt ? formatDate(plot.createdAt) : null,
+  updatedAt: plot.updatedAt ? formatDate(plot.updatedAt) : null,
+});
 
 const assertAssignedUserExists = async (assigneduserid) => {
   if (!assigneduserid) return;
@@ -55,24 +85,34 @@ const getPlots = catchAsync(async (req, res) => {
     status: "success",
     pagination,
     data: {
-      plots: plots.map((plot) => ({
-        _id: plot._id,
-        projectId: plot.projectid,
-        plotnumber: plot.plotnumber,
-        plotsize: plot.plotsize,
-        plotprice: plot.plotprice,
-        plotdirection: plot.plotdirection,
-        plotstatus: plot.plotstatus,
-        assigneduserid: plot.assigneduserid ?? null,
-        paymentSummary: plot.paymentSummary || {
-          totalSuccessAmount: 0,
-          totalPendingAmount: 0,
-          installmentCount: 0,
-        },
-        createdAt: formatDate(plot.createdAt),
-        updatedAt: formatDate(plot.updatedAt),
-      })),
+      plots: plots.map(formatPlot),
     },
+  });
+});
+
+const getDeadPlotHealth = catchAsync(async (req, res) => {
+  const { projectId } = req.params;
+  const data = await deadPlotDetectionService.getProjectPlotHealth(
+    projectId,
+    req.query
+  );
+
+  res.status(httpStatus.OK).json({
+    status: "success",
+    data,
+  });
+});
+
+const estimatePlotPrice = catchAsync(async (req, res) => {
+  const { projectId } = req.params;
+  const estimate = await plotPricePredictionService.estimatePlotPrice(
+    projectId,
+    req.query
+  );
+
+  res.status(httpStatus.OK).json({
+    status: "success",
+    data: { estimate },
   });
 });
 
@@ -111,18 +151,7 @@ const createPlot = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).json({
     status: "success",
     data: {
-      plot: {
-        _id: newPlot._id,
-        projectId: newPlot.projectid,
-        plotnumber: newPlot.plotnumber,
-        plotsize: newPlot.plotsize,
-        plotprice: newPlot.plotprice,
-        plotdirection: newPlot.plotdirection,
-        plotstatus: newPlot.plotstatus,
-        assigneduserid: newPlot.assigneduserid ?? null,
-        createdAt: formatDate(newPlot.createdAt),
-        updatedAt: formatDate(newPlot.updatedAt),
-      },
+      plot: formatPlot(newPlot),
     },
   });
 });
@@ -161,18 +190,7 @@ const updatePlot = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).json({
     status: "success",
     data: {
-      plot: {
-        _id: updatedPlot._id,
-        projectId: updatedPlot.projectid,
-        plotnumber: updatedPlot.plotnumber,
-        plotsize: updatedPlot.plotsize,
-        plotprice: updatedPlot.plotprice,
-        plotdirection: updatedPlot.plotdirection,
-        plotstatus: updatedPlot.plotstatus,
-        assigneduserid: updatedPlot.assigneduserid ?? null,
-        createdAt: formatDate(updatedPlot.createdAt),
-        updatedAt: formatDate(updatedPlot.updatedAt),
-      },
+      plot: formatPlot(updatedPlot),
     },
   });
 });
@@ -227,29 +245,15 @@ const getAllPlots = catchAsync(async (req, res) => {
     status: "success",
     pagination,
     data: {
-      plots: plots.map((plot) => ({
-        _id: plot._id,
-        projectId: plot.projectid,
-        plotnumber: plot.plotnumber,
-        plotsize: plot.plotsize,
-        plotprice: plot.plotprice,
-        plotdirection: plot.plotdirection,
-        plotstatus: plot.plotstatus,
-        assigneduserid: plot.assigneduserid ?? null,
-        paymentSummary: plot.paymentSummary || {
-          totalSuccessAmount: 0,
-          totalPendingAmount: 0,
-          installmentCount: 0,
-        },
-        createdAt: formatDate(plot.createdAt),
-        updatedAt: formatDate(plot.updatedAt),
-      })),
+      plots: plots.map(formatPlot),
     },
   });
 });
 
 module.exports = {
   getPlots,
+  getDeadPlotHealth,
+  estimatePlotPrice,
   createPlot,
   updatePlot,
   deletePlot,

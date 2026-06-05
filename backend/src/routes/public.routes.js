@@ -16,7 +16,9 @@ router.get("/projects/:projectId/plots", async (req, res, next) => {
     const { projectId } = req.params;
     const plots = await Plot.find({ projectid: projectId })
       .sort({ plotnumber: 1 })
-      .select("_id plotnumber plotsize plotdirection plotprice plotstatus projectid")
+      .select(
+        "_id plotnumber plotsize plotdirection plotprice plotstatus projectid plotType roadWidthFt approvalStatus"
+      )
       .lean();
     res.status(200).send({
       status: "success",
