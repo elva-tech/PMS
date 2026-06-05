@@ -524,6 +524,21 @@ const ProjectDetailsPage = ({
                         {sortBy === "plotstatus" &&
                           (sortOrder === "asc" ? "↑" : "↓")}
                       </th>
+                      <th
+                        className="text-center px-4 py-4 cursor-pointer whitespace-nowrap"
+                        onClick={() => {
+                          if (sortBy === "createdAt") {
+                            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                          } else {
+                            setSortBy("createdAt");
+                            setSortOrder("desc");
+                          }
+                        }}
+                      >
+                        Created{" "}
+                        {sortBy === "createdAt" &&
+                          (sortOrder === "asc" ? "↑" : "↓")}
+                      </th>
                       <th className="text-center px-4 py-4">Actions</th>
                     </tr>
                   </thead>
@@ -553,6 +568,11 @@ const ProjectDetailsPage = ({
                           >
                             {plot.plotstatus}
                           </span>
+                        </td>
+                        <td className="text-center p-4 text-xs whitespace-nowrap">
+                          {plot.createdAt
+                            ? plot.createdAt.split(",")[0]
+                            : "—"}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex items-center justify-center space-x-3">

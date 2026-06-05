@@ -14,6 +14,7 @@ import GeneralInfoPage from "./GeneralInfoPage";
 import ProjectsDashboard from "./ProjectDashboard";
 import Plot from "./Plot";
 import ProjectAnalyticsPage from "./ProjectAnalyticsPage";
+import PlotHealthAiPage from "./PlotHealthAiPage";
 import ShareQuotePage from "./ShareQuotePage";
 import Sidebar from "../Components/Sidebar";
 import BreadcrumbNav from "../Components/BreadcrumbNav";
@@ -73,6 +74,7 @@ const PropertyDetailsPage = () => {
     if (path.includes("/plotallotment")) return "plotallotment";
     if (path.includes("/interestedbuyers")) return "interestedbuyers";
     if (path.includes("/payments")) return "payments";
+    if (path.includes("/plot-health")) return "plothealth";
     if (path.includes("/analytics")) return "analytics";
     if (path.includes("/sharequote")) return "sharequote";
     if (path.includes("/addsale")) return "addsale";
@@ -88,6 +90,7 @@ const PropertyDetailsPage = () => {
       !path.includes("/interestedbuyers") &&
       !path.includes("/payments") &&
       !path.includes("/analytics") &&
+      !path.includes("/plot-health") &&
       !path.includes("/sharequote") &&
       !path.includes("/addsale")
     )
@@ -113,6 +116,7 @@ const PropertyDetailsPage = () => {
       "interestedbuyers",
       "plots",
       "analytics",
+      "plothealth",
       "sharequote",
       "addsale",
     ]);
@@ -187,6 +191,7 @@ const PropertyDetailsPage = () => {
         interestedbuyers: "Interested Buyers",
         payments: "Payments",
         analytics: "Analytics",
+        plothealth: "Plot Health AI",
         sharequote: "Share Quote",
         addsale: "Add Sale",
         layout: "Users",
@@ -215,6 +220,8 @@ const PropertyDetailsPage = () => {
         return "Payments Made";
       case "analytics":
         return "Analytics";
+      case "plothealth":
+        return "Plot Health AI";
       case "sharequote":
         return "Share Quote";
       case "addsale":
@@ -256,6 +263,8 @@ const PropertyDetailsPage = () => {
         return <PaymentsPage />;
       case "analytics":
         return <ProjectAnalyticsPage />;
+      case "plothealth":
+        return <PlotHealthAiPage />;
       case "sharequote":
         return <ShareQuotePage />;
       case "addsale":

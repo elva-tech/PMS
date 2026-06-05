@@ -12,6 +12,30 @@ const verifyProjectExists = async (projectId) => {
   return true;
 };
 
+const assertPlotNumberAvailable = async (
+  projectId,
+  plotnumber,
+  excludePlotId = null
+) => {
+  const num = Number(plotnumber);
+  if (!Number.isFinite(num)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid plot number");
+  }
+
+  const filter = { projectid: projectId, plotnumber: num };
+  if (excludePlotId) {
+    filter._id = { $ne: excludePlotId };
+  }
+
+  const existing = await Plot.findOne(filter).select("_id plotnumber").lean();
+  if (existing) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      `Plot number ${num} already exists in this project`
+    );
+  }
+};
+
 const getPlots = async (
   projectId,
   { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = {}
@@ -98,11 +122,34 @@ const getPlots = async (
 
 const createPlot = async (plotData) => {
   await verifyProjectExists(plotData.projectid);
-  return Plot.create(plotData);
+  await assertPlotNumberAvailable(plotData.projectid, plotData.plotnumber);
+  try {
+    return await Plot.create(plotData);
+  } catch (err) {
+    if (err?.code === 11000) {
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        `Plot number ${plotData.plotnumber} already exists in this project`
+      );
+    }
+    throw err;
+  }
 };
 
 const updatePlot = async (projectId, plotId, plotData) => {
   await verifyProjectExists(projectId);
+
+  const existing = await Plot.findOne({ _id: plotId, projectid: projectId });
+  if (!existing) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Plot not found in this project");
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(plotData, "plotnumber") &&
+    plotData.plotnumber != null
+  ) {
+    await assertPlotNumberAvailable(projectId, plotData.plotnumber, plotId);
+  }
 
   const updateOps = {};
   const setData = { ...plotData };
@@ -123,23 +170,40 @@ const updatePlot = async (projectId, plotId, plotData) => {
   }
 
   if (!updateOps.$set && !updateOps.$unset) {
-    return Plot.findOne({ _id: plotId, projectid: projectId });
+    return existing;
   }
 
   const mongoUpdate = {};
   if (updateOps.$set) mongoUpdate.$set = updateOps.$set;
   if (updateOps.$unset) mongoUpdate.$unset = updateOps.$unset;
 
-  return Plot.findOneAndUpdate(
-    { _id: plotId, projectid: projectId },
-    mongoUpdate,
-    { new: true }
-  );
+  try {
+    return await Plot.findOneAndUpdate(
+      { _id: plotId, projectid: projectId },
+      mongoUpdate,
+      { new: true }
+    );
+  } catch (err) {
+    if (err?.code === 11000) {
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        `Plot number ${plotData.plotnumber} already exists in this project`
+      );
+    }
+    throw err;
+  }
 };
 
 const deletePlot = async (projectId, plotId) => {
   await verifyProjectExists(projectId);
-  return Plot.findByIdAndDelete(plotId);
+  const deleted = await Plot.findOneAndDelete({
+    _id: plotId,
+    projectid: projectId,
+  });
+  if (!deleted) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Plot not found in this project");
+  }
+  return deleted;
 };
 
 const getAllPlots = async ({

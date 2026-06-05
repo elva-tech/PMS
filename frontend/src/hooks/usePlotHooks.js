@@ -78,6 +78,18 @@ export const useDeletePlot = () => {
   });
 };
 
+export const usePlotPriceEstimate = () => {
+  return useMutation({
+    mutationFn: async ({ projectId, params }) => {
+      const res = await axiosInstance.get(
+        `/api/v1/plots/${projectId}/ai/price-estimate`,
+        { params }
+      );
+      return res?.data?.data?.estimate;
+    },
+  });
+};
+
 export const useUpdatePlot = () => {
   const queryClient = useQueryClient();
   return useMutation({

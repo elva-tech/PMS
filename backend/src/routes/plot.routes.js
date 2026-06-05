@@ -9,6 +9,18 @@ router.use(auth);
 
 router.get("/", plotController.getAllPlots);
 
+router.get(
+  "/:projectId/ai/price-estimate",
+  validate(plotValidation.estimatePlotPrice),
+  plotController.estimatePlotPrice
+);
+
+router.get(
+  "/:projectId/ai/plot-health",
+  validate(plotValidation.deadPlotHealth),
+  plotController.getDeadPlotHealth
+);
+
 router.get("/:projectId", plotController.getPlots);
 
 router.post(

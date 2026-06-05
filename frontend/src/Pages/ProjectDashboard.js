@@ -124,12 +124,12 @@ export default function ProjectsDashboard() {
   const { user } = useAuth();
   const isEndUser =
     user?.user?.role === "user" && user?.user?.type === "user";
-  const endUserIds = React.useMemo(() => {
-    const ids = new Set();
-    if (user?.user?.userid) ids.add(String(user.user.userid));
-    if (user?.user?.usermongoid) ids.add(String(user.user.usermongoid));
+  const endUserIdList = React.useMemo(() => {
+    const ids = [];
+    if (user?.user?.userid) ids.push(String(user.user.userid));
+    if (user?.user?.usermongoid) ids.push(String(user.user.usermongoid));
     return ids;
-  }, [user]);
+  }, [user?.user?.userid, user?.user?.usermongoid]);
 
   const { data: projectsData = [], isLoading, isError, error } = useProjects();
   const deleteProjectMutation = useDeleteProject();
@@ -145,18 +145,25 @@ export default function ProjectsDashboard() {
     if (typeof projectsData === "object") return [projectsData];
     return [];
   }, [projectsData]);
-  const [visibleProjects, setVisibleProjects] = useState([]);
+
+  const projectIdsKey = React.useMemo(
+    () =>
+      projects
+        .map((p) => p?._id || p?.id)
+        .filter(Boolean)
+        .join(","),
+    [projects]
+  );
+
+  const [endUserProjects, setEndUserProjects] = useState([]);
 
   useEffect(() => {
+    if (!isEndUser) return;
+
     let mounted = true;
     const computeVisibleProjects = async () => {
-      if (!isEndUser) {
-        setVisibleProjects(projects);
-        return;
-      }
-      const ids = [...endUserIds];
-      if (!ids.length || !projects.length) {
-        setVisibleProjects([]);
+      if (!endUserIdList.length || !projects.length) {
+        if (mounted) setEndUserProjects([]);
         return;
       }
       const checks = await Promise.all(
@@ -169,7 +176,7 @@ export default function ProjectsDashboard() {
             });
             const rows = res?.data?.data?.plots || [];
             const hasAssigned = rows.some((plot) =>
-              ids.includes(String(plot.assigneduserid || ""))
+              endUserIdList.includes(String(plot.assigneduserid || ""))
             );
             return hasAssigned ? p : null;
           } catch {
@@ -178,13 +185,15 @@ export default function ProjectsDashboard() {
         })
       );
       if (!mounted) return;
-      setVisibleProjects(checks.filter(Boolean));
+      setEndUserProjects(checks.filter(Boolean));
     };
     computeVisibleProjects();
     return () => {
       mounted = false;
     };
-  }, [isEndUser, projects, endUserIds]);
+  }, [isEndUser, projectIdsKey, endUserIdList]);
+
+  const visibleProjects = isEndUser ? endUserProjects : projects;
 
   const [editProjectData, setEditProjectData] = useState(null);
   const [addProjectModal, setAddProjectModal] = useState(false);

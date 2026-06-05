@@ -12,6 +12,7 @@ import { useUsers } from "../hooks/useUserHooks";
 import DeleteModal from "../Components/DeleteModal";
 import CreatePlotModal from "../Components/CreatePlotModal";
 import { useAuth } from "../Context/AuthContext";
+import { plotTypeLabel, approvalStatusLabel } from "../constants/plotFeatures";
 
 const GeneralInfoPage = ({ projectId }) => {
   const { user } = useAuth();
@@ -242,6 +243,9 @@ const GeneralInfoPage = ({ projectId }) => {
               <thead>
                 <tr className="w-full bg-blue-600 text-left text-white uppercase text-xs md:text-sm mt-4">
                   <th className="py-3 px-4">Plot Number</th>
+                  <th className="py-3 px-4">Type</th>
+                  <th className="py-3 px-4">Road (ft)</th>
+                  <th className="py-3 px-4">Approval</th>
                   <th className="py-3 px-4">Plot Size</th>
                   <th className="py-3 px-4">Price</th>
                   <th className="py-3 px-4">Direction</th>
@@ -274,6 +278,16 @@ const GeneralInfoPage = ({ projectId }) => {
                       className="border-b border-gray-200 hover:bg-gray-100"
                     >
                       <td className="py-3 px-4">{plot.plotnumber}</td>
+                      <td className="py-3 px-4 text-xs font-normal">
+                        {plot.plotTypeLabel || plotTypeLabel(plot.plotType)}
+                      </td>
+                      <td className="py-3 px-4 font-normal">
+                        {plot.roadWidthFt != null ? plot.roadWidthFt : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-xs font-normal">
+                        {plot.approvalStatusLabel ||
+                          approvalStatusLabel(plot.approvalStatus)}
+                      </td>
                       <td className="py-3 px-4">{plot.plotsize}</td>
                       <td className="py-3 px-4">
                         {plot.plotprice
@@ -301,7 +315,9 @@ const GeneralInfoPage = ({ projectId }) => {
                         </td>
                       )}
                       <td className="py-3 px-4">
-                        {plot.createdAt?.split(",")[0] || "N/A"}
+                        {plot.createdAt
+                          ? plot.createdAt.split(",")[0]
+                          : "—"}
                       </td>
                       {isAdmin && (
                         <td className="py-3 px-4 flex gap-2">

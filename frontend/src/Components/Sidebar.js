@@ -12,6 +12,7 @@ import {
   ChartSpline,
   Send,
   ShoppingCart,
+  Sparkles,
 } from "lucide-react";
 import { FaUsers } from "react-icons/fa";
 import { PiUsersFour } from "react-icons/pi";
@@ -97,6 +98,12 @@ const Sidebar = ({ activeMenu, setIsSidebarOpen }) => {
         label: "Analytics",
         id: "analytics",
         path: `/project/${id}/analytics`,
+      },
+      {
+        icon: <Sparkles size={20} className="text-white" />,
+        label: "Plot Health AI",
+        id: "plothealth",
+        path: `/project/${id}/plot-health`,
       },
       {
         icon: <Send size={20} className="text-white" />,
