@@ -10,7 +10,7 @@ import joblib
 import pandas as pd
 from dotenv import load_dotenv
 
-from config import DEFAULT_MODEL_PATH, RULES_VERSION
+from config import DEFAULT_MODEL_PATH, NEW_LISTING_GRACE_DAYS, RULES_VERSION
 from features import apply_project_layout_medians, enrich_record, records_to_feature_frame
 from presentation import build_customer_view
 from rules import classify_by_rules
@@ -54,7 +54,11 @@ def _risk_band(prob_dead: float, classification: str) -> str:
 def _insights_for_response(rule_result: dict, classification: str) -> tuple[list, list]:
     """Active plots: no alarmist tips. Slow/Dead: full PRD guidance."""
     if classification == "Active":
-        healthy = [r for r in rule_result["reasons"] if r.get("code") == "healthy"]
+        healthy = [
+            r
+            for r in rule_result["reasons"]
+            if r.get("code") in ("healthy", "healthy_demand")
+        ]
         if not healthy:
             healthy = [
                 {
@@ -105,7 +109,10 @@ def analyze_plot(raw: dict, *, artifact: dict | None = None) -> dict[str, Any]:
             prob_dead = prob_by_class.get("Dead", prob_dead)
         except Exception:
             pass
-        final_status = _merge_status(rule_result["ruleStatus"], ml_status)
+        if rule_result["ruleStatus"] == "Active":
+            final_status = "Active"
+        else:
+            final_status = _merge_status(rule_result["ruleStatus"], ml_status)
 
     reasons, actions = _insights_for_response(rule_result, final_status)
     risk_band = _risk_band(float(prob_dead), final_status)

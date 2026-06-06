@@ -68,6 +68,7 @@ class ContactService {
         projectId: normalizedProjectId,
         plotid: plot ? plotId : null,
         plotnumber: plot ? Number(plot.plotnumber) : null,
+        description: String(contactData.description || "").trim() || "—",
       };
       const contact = new Contact(contactWithDefaults);
       const savedContact = await contact.save();
@@ -175,6 +176,14 @@ class ContactService {
     }
   }
 
+  async deleteContact(contactId) {
+    const deleted = await Contact.findByIdAndDelete(contactId).lean();
+    if (!deleted) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Contact not found");
+    }
+    return { id: deleted._id };
+  }
+
   async updateContactStatus(contactId, interestedStatus) {
     try {
       const contact = await Contact.findByIdAndUpdate(
@@ -184,7 +193,7 @@ class ContactService {
       ).lean();
 
       if (!contact) {
-        throw new Error("Contact not found");
+        throw new ApiError(httpStatus.NOT_FOUND, "Contact not found");
       }
 
       const { _id, __v, createdAt, ...rest } = contact;

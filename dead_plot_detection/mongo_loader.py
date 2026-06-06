@@ -59,7 +59,7 @@ def _contact_stats(
             stats[plot_key]["last"] = created
 
     cursor = db.contacts.find(
-        {"projectId": project_id},
+        {"projectId": project_id, "interested": 1},
         {"plotid": 1, "plotnumber": 1, "createdAt": 1},
     )
     for doc in cursor:

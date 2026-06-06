@@ -13,8 +13,7 @@ const serializeFileField = (field) =>
       }
     : null;
 
-const createProject = catchAsync(async (req, res) => {
-  const files = req.files || {};
+const buildProjectFileMeta = async (files = {}) => {
   const brochureFile = files.brochure?.[0];
   const imageFile = files.image?.[0];
 
@@ -51,6 +50,12 @@ const createProject = catchAsync(async (req, res) => {
       };
     }
   }
+
+  return { imageMeta, brochureMeta };
+};
+
+const createProject = catchAsync(async (req, res) => {
+  const { imageMeta, brochureMeta } = await buildProjectFileMeta(req.files);
 
   if (req.body.coordinates) {
     if (typeof req.body.coordinates === "string") {
@@ -256,9 +261,36 @@ const getProjectImage = catchAsync(async (req, res) => {
 });
 
 const updateProject = catchAsync(async (req, res) => {
+  const { imageMeta, brochureMeta } = await buildProjectFileMeta(req.files);
+
+  if (req.body.coordinates && typeof req.body.coordinates === "string") {
+    try {
+      req.body.coordinates = JSON.parse(req.body.coordinates);
+    } catch (error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        status: "error",
+        message: "Invalid coordinates format.",
+      });
+    }
+  }
+
+  if (req.body.startDate && typeof req.body.startDate === "string") {
+    req.body.startDate = new Date(req.body.startDate);
+  }
+  if (req.body.endDate && typeof req.body.endDate === "string") {
+    req.body.endDate = new Date(req.body.endDate);
+  }
+  if (req.body.contactNumber != null && req.body.contactNumber !== "") {
+    req.body.contactNumber = Number(
+      String(req.body.contactNumber).replace(/\D/g, "")
+    );
+  }
+
   const project = await projectService.updateProject(
     req.params.projectId,
-    req.body
+    req.body,
+    imageMeta,
+    brochureMeta
   );
 
   if (!project) {
@@ -281,6 +313,7 @@ const updateProject = catchAsync(async (req, res) => {
         createdAt: formatDate(project.createdAt),
         updatedAt: formatDate(project.updatedAt),
         hasImage: project.image && project.image.data ? true : false,
+        hasBrochure: project.brochure && project.brochure.data ? true : false,
       },
     },
   });

@@ -26,6 +26,12 @@ const getContacts = {
   }),
 };
 
+const deleteContact = {
+  params: Joi.object().keys({
+    contactId: Joi.string().required(),
+  }),
+};
+
 const updateContactStatus = {
   params: Joi.object().keys({
     contactId: Joi.string().required(),
@@ -38,5 +44,6 @@ const updateContactStatus = {
 module.exports = {
   createContact,
   getContacts,
+  deleteContact,
   updateContactStatus,
 };

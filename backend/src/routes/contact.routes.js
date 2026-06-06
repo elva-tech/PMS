@@ -26,4 +26,11 @@ router.patch(
   contactController.updateContactStatus
 );
 
+router.delete(
+  "/:contactId",
+  auth,
+  validate(contactValidation.deleteContact),
+  contactController.deleteContact
+);
+
 module.exports = router;

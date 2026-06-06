@@ -30,6 +30,13 @@ const badgeIcon = (classification) => {
 const money = (n) =>
   Number(n) > 0 ? `₹${Number(n).toLocaleString("en-IN")}` : "—";
 
+const listedLabel = (days) => {
+  const d = Number(days);
+  if (!Number.isFinite(d) || d <= 0) return "Recently listed";
+  if (d === 1) return "1 day on market";
+  return `${d} days on market`;
+};
+
 export default function PlotHealthAiPage() {
   const { id: projectId } = useParams();
   const [searchParams] = useSearchParams();
@@ -193,7 +200,7 @@ export default function PlotHealthAiPage() {
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {money(plot.features?.price)} · {plot.features?.interestedBuyers ?? 0}{" "}
-                      interested buyers · {plot.features?.daysUnsold ?? 0} days listed
+                      interested buyers · {listedLabel(plot.features?.daysUnsold)}
                     </p>
                   </div>
                   <span

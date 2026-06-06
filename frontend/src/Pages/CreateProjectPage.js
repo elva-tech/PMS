@@ -127,25 +127,39 @@ export default function CreateProjectPage({ projectToEdit = null }) {
     const formattedStartDate = ddmmyyyyToYyyymmdd(values.startDate);
     const formattedEndDate = ddmmyyyyToYyyymmdd(values.endDate);
     if (isEditMode) {
-      const payload = {
-        name: values.name,
-        location: values.location,
-        status: values.status,
-        description: values.description,
-        projectManager: values.projectManager,
-        contactNumber: String(values.contactNumber).replace(/\D/g, ""),
-        coordinates: {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("location", values.location);
+      formData.append("status", values.status);
+      formData.append("description", values.description);
+      formData.append("projectManager", values.projectManager);
+      formData.append(
+        "contactNumber",
+        String(values.contactNumber).replace(/\D/g, "")
+      );
+      formData.append(
+        "coordinates",
+        JSON.stringify({
           latitude: values.coordinates.latitude,
           longitude: values.coordinates.longitude,
-        },
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        amenities: values.amenities,
-      };
-      const projectId = id;
+        })
+      );
+      formData.append("startDate", formattedStartDate);
+      formData.append("endDate", formattedEndDate);
+      values.amenities.forEach((amenity) => {
+        formData.append("amenities[]", amenity);
+      });
+      if (values.brochureFiles?.length > 0) {
+        const b = values.brochureFiles[0];
+        if (b) formData.append("brochure", b);
+      }
+      if (values.attachments?.length > 0) {
+        const imageFile = values.attachments[0];
+        if (imageFile) formData.append("image", imageFile);
+      }
       await updateProjectMutation.mutateAsync({
-        id: projectId,
-        data: payload,
+        id,
+        data: formData,
       });
       addToast("success", "Project Updated", "Project updated successfully!");
     } else {

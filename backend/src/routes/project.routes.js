@@ -7,6 +7,15 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
+const normalizeProjectFormBody = (req, _res, next) => {
+  const raw = req.body.amenities ?? req.body["amenities[]"];
+  if (raw != null) {
+    req.body.amenities = Array.isArray(raw) ? raw : [raw];
+    delete req.body["amenities[]"];
+  }
+  next();
+};
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -44,6 +53,7 @@ router
       { name: "brochure", maxCount: 1 },
       { name: "image", maxCount: 1 },
     ]),
+    normalizeProjectFormBody,
     validate(projectValidation.createProject),
     projectController.createProject
   )
@@ -53,6 +63,11 @@ router
   .route("/:projectId")
   .get(projectController.getProject)
   .put(
+    upload.fields([
+      { name: "brochure", maxCount: 1 },
+      { name: "image", maxCount: 1 },
+    ]),
+    normalizeProjectFormBody,
     validate(projectValidation.updateProject),
     projectController.updateProject
   )
