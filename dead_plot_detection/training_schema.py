@@ -124,6 +124,11 @@ def row_to_record(raw: dict) -> dict:
         "dead_label": (
             None if is_missing(raw.get("dead_label")) else raw.get("dead_label")
         ),
+        "plot_number": (
+            int(raw["plot_number"])
+            if raw.get("plot_number") is not None and not is_missing(raw.get("plot_number"))
+            else None
+        ),
     }
 
 

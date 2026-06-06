@@ -9,6 +9,7 @@ from config import (
     HIGH_INTEREST_MIN_DAYS,
     HIGH_INTEREST_NO_SALE,
     LOW_INTERESTED_THRESHOLD,
+    NEW_LISTING_GRACE_DAYS,
     OVERPRICE_PCT,
     RULES_VERSION,
     SLOW_DAYS,
@@ -55,16 +56,86 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         }
 
     days = int(enriched.get("days_unsold") or 0)
+    is_new_listing = days < NEW_LISTING_GRACE_DAYS
+    plot_ref = (
+        f"Plot #{record.get('plot_number')}"
+        if record.get("plot_number") is not None
+        else "This plot"
+    )
+    layout_name = str(record.get("layout") or "this layout").replace("_", " ")
     interested = int(enriched.get("interested_buyers") or 0)
     price_vs = float(enriched.get("price_vs_layout_median_pct") or 0)
     road_facing = bool(enriched.get("road_facing"))
     days_since_ix = int(enriched.get("days_since_interaction") or 0)
     nearby_sold = int(enriched.get("nearby_sold_count") or 0)
+    plot_type = str(enriched.get("plot_type") or "normal")
+    price_per_sqft = float(enriched.get("price_per_sqft") or 0)
 
     reasons: list[dict] = []
     actions: list[dict] = []
     dead_points = 0
     slow_points = 0
+
+    # --- Positive signals (precise, plot-specific) ---
+    if is_new_listing and interested >= LOW_INTERESTED_THRESHOLD:
+        reasons.append(
+            {
+                "factor": f"{plot_ref}: {interested} interested buyer(s) in first {NEW_LISTING_GRACE_DAYS} days — strong launch",
+                "severity": "low",
+                "code": "healthy",
+            }
+        )
+    elif is_new_listing:
+        reasons.append(
+            {
+                "factor": f"{plot_ref}: recently listed — allow {NEW_LISTING_GRACE_DAYS} days to build buyer interest",
+                "severity": "low",
+                "code": "healthy",
+            }
+        )
+
+    if road_facing:
+        reasons.append(
+            {
+                "factor": f"{plot_ref}: road-facing / high visibility in {layout_name}",
+                "severity": "low",
+                "code": "healthy",
+            }
+        )
+
+    if price_vs <= -OVERPRICE_PCT:
+        reasons.append(
+            {
+                "factor": f"{plot_ref}: priced ~{abs(price_vs):.0f}% below {layout_name} median — competitive",
+                "severity": "low",
+                "code": "healthy",
+            }
+        )
+
+    if interested == 1 and not is_new_listing:
+        slow_points += 1
+        reasons.append(
+            {
+                "factor": f"{plot_ref}: only 1 interested buyer — nurture this lead",
+                "severity": "medium",
+                "code": "single_buyer",
+            }
+        )
+        actions.append(
+            {
+                "action": "retarget_buyers",
+                "detail": f"{plot_ref}: call the interested buyer within 48 hours; offer site visit",
+                "priority": 1,
+            }
+        )
+    elif 2 <= interested < HIGH_INTEREST_NO_SALE and not is_new_listing:
+        reasons.append(
+            {
+                "factor": f"{plot_ref}: {interested} interested buyers — warming demand",
+                "severity": "low",
+                "code": "healthy",
+            }
+        )
 
     # --- Time (PRD §5) ---
     if days >= DEAD_DAYS:
@@ -79,7 +150,7 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "reduce_price",
-                "detail": "Reduce price by 5-10% to re-activate demand",
+                "detail": f"{plot_ref}: reduce price 5-10% (₹{price_per_sqft:,.0f}/sqft now) to re-activate demand",
                 "priority": 1,
             }
         )
@@ -95,13 +166,13 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "offer_promotion",
-                "detail": "Run a limited-time discount or booking incentive",
+                "detail": f"{plot_ref}: limited-time booking offer after {days} days unsold in {layout_name}",
                 "priority": 2,
             }
         )
 
     # --- Demand: interested buyers (maps to PMS contacts) ---
-    if interested < LOW_INTERESTED_THRESHOLD:
+    if interested == 0 and not is_new_listing:
         slow_points += 1
         dead_points += 1 if days >= SLOW_DAYS else 0
         reasons.append(
@@ -114,15 +185,23 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "improve_visibility",
-                "detail": "Highlight plot on layout map and project dashboard",
+                "detail": f"{plot_ref}: highlight on layout map and {layout_name} dashboard",
                 "priority": 2,
             }
         )
         actions.append(
             {
                 "action": "retarget_buyers",
-                "detail": "Follow up with past project inquiries and channel partners",
+                "detail": f"{plot_ref}: follow up with past inquiries and channel partners",
                 "priority": 3,
+            }
+        )
+    elif interested == 0 and is_new_listing:
+        actions.append(
+            {
+                "action": "improve_visibility",
+                "detail": f"{plot_ref}: share listing with brokers and past {layout_name} inquiries this week",
+                "priority": 2,
             }
         )
 
@@ -143,20 +222,20 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "reduce_price",
-                "detail": "Reduce price by 5-8%; buyers are interested but not converting",
+                "detail": f"{plot_ref}: reduce 5-8% — {interested} buyers interested but not converting",
                 "priority": 1,
             }
         )
         actions.append(
             {
                 "action": "retarget_buyers",
-                "detail": "Call/message interested buyers; offer site visit or payment plan",
+                "detail": f"{plot_ref}: call all {interested} interested buyers; offer site visit or EMI plan",
                 "priority": 2,
             }
         )
 
     # --- Pricing vs layout (PRD §8–§9) ---
-    if price_vs >= OVERPRICE_PCT:
+    if price_vs >= OVERPRICE_PCT and not is_new_listing:
         dead_points += 1
         slow_points += 1
         reasons.append(
@@ -170,17 +249,22 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "reduce_price",
-                "detail": f"Consider reducing price by {pct}% to align with similar plots",
+                "detail": f"{plot_ref}: consider reducing price by {pct}% vs similar plots in {layout_name}",
                 "priority": 1,
             }
         )
 
     # --- Visibility ---
-    if not road_facing:
+    if not road_facing and not is_new_listing:
         slow_points += 1
+        visibility_note = (
+            "interior plot — highlight access path"
+            if plot_type == "normal"
+            else f"{plot_type} plot — highlight unique layout benefits"
+        )
         reasons.append(
             {
-                "factor": "Not road-facing - lower visibility in layout",
+                "factor": f"{plot_ref}: not road-facing — {visibility_note}",
                 "severity": "medium",
                 "code": "low_visibility",
             }
@@ -188,13 +272,13 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "improve_visibility",
-                "detail": "Emphasize access route, corner benefits, or proximity in listing",
+                "detail": f"{plot_ref}: {visibility_note} in {layout_name} listings",
                 "priority": 3,
             }
         )
 
     # --- Stale interaction ---
-    if days_since_ix >= STALE_INTERACTION_DAYS and interested > 0:
+    if days_since_ix >= STALE_INTERACTION_DAYS and interested > 0 and not is_new_listing:
         slow_points += 1
         reasons.append(
             {
@@ -206,13 +290,13 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         actions.append(
             {
                 "action": "retarget_buyers",
-                "detail": "Re-contact interested buyers from CRM",
+                "detail": f"{plot_ref}: re-contact {interested} interested buyer(s) — no follow-up in {days_since_ix} days",
                 "priority": 2,
             }
         )
 
     # --- Layout demand ---
-    if nearby_sold == 0 and days >= SLOW_DAYS:
+    if nearby_sold == 0 and days >= SLOW_DAYS and not is_new_listing:
         slow_points += 1
         reasons.append(
             {
@@ -230,7 +314,9 @@ def classify_by_rules(record: dict, *, reference_date=None) -> dict[str, Any]:
         )
 
     # --- Final rule status ---
-    if dead_points >= 3:
+    if is_new_listing and dead_points < 3:
+        rule_status = "Active"
+    elif dead_points >= 3:
         rule_status = "Dead"
     elif dead_points >= 1 or slow_points >= 2:
         rule_status = "Slow"

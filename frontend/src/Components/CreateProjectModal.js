@@ -41,26 +41,39 @@ export default function CreateProject({
   console.log("Project to edit:", projectToEdit);
   const handleSubmit = async (values) => {
     if (isEditMode) {
-      const payload = {
-        name: values.name,
-        location: values.location,
-        status: values.status,
-        description: values.description,
-        projectManager: values.projectManager,
-        contactNumber: String(values.contactNumber).replace(/\D/g, ""),
-        coordinates: {
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("location", values.location);
+      formData.append("status", values.status);
+      formData.append("description", values.description);
+      formData.append("projectManager", values.projectManager);
+      formData.append(
+        "contactNumber",
+        String(values.contactNumber).replace(/\D/g, "")
+      );
+      formData.append(
+        "coordinates",
+        JSON.stringify({
           latitude: values.coordinates.latitude,
           longitude: values.coordinates.longitude,
-        },
-        startDate: values.startDate,
-        endDate: values.endDate,
-      };
+        })
+      );
+      formData.append("startDate", values.startDate);
+      formData.append("endDate", values.endDate);
+      if (values.brochureFiles?.length > 0) {
+        const b = values.brochureFiles[0];
+        if (b) formData.append("brochure", b);
+      }
+      if (values.attachments?.length > 0) {
+        const imageFile = values.attachments[0];
+        if (imageFile) formData.append("image", imageFile);
+      }
 
       const projectId = projectToEdit._id || projectToEdit.id;
 
       return await updateProjectMutation.mutateAsync({
         id: projectId,
-        data: payload,
+        data: formData,
       });
     } else {
       const formData = new FormData();

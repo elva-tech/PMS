@@ -34,8 +34,28 @@ const getProjectById = async (id) => {
   return Project.findById(id);
 };
 
-const updateProject = async (id, updateData) => {
-  return Project.findByIdAndUpdate(id, updateData, { new: true });
+const updateProject = async (
+  id,
+  updateData,
+  imageMeta = null,
+  brochureMeta = null
+) => {
+  const payload = { ...updateData };
+  if (imageMeta?.data) {
+    payload.image = {
+      data: imageMeta.data,
+      contentType: imageMeta.contentType,
+      originalName: imageMeta.originalName,
+    };
+  }
+  if (brochureMeta?.data) {
+    payload.brochure = {
+      data: brochureMeta.data,
+      contentType: brochureMeta.contentType,
+      originalName: brochureMeta.originalName,
+    };
+  }
+  return Project.findByIdAndUpdate(id, payload, { new: true });
 };
 
 const deleteProject = async (id) => {

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, X, UserPlus } from "lucide-react";
+import { Search, X, UserPlus, Trash2 } from "lucide-react";
 import axiosInstance from "../utils/axiosInstance";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import { useAuth } from "../Context/AuthContext";
 import { useToast } from "../Context/ToastContext";
 import { usePlot } from "../hooks/usePlotHooks";
 import InterestedBuyerForm from "../Components/InterestedBuyerForm";
+import DeleteModal from "../Components/DeleteModal";
 
 /** Plot # from persisted fields if present, else a conservative parse of the interest note (no new API). */
 const plotLabelFromContact = (contact) => {
@@ -36,6 +37,9 @@ const InterestedBuyersPage = ({ projectId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [statusUpdateLoading, setStatusUpdateLoading] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -115,6 +119,41 @@ const InterestedBuyersPage = ({ projectId }) => {
       );
     } finally {
       setStatusUpdateLoading(null);
+    }
+  };
+
+  const handleDeleteClick = (contact) => {
+    setContactToDelete(contact);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setContactToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!contactToDelete) return;
+    const id = String(contactToDelete.id);
+    setDeleteLoading(id);
+    try {
+      await axiosInstance.delete(`/api/v1/contact/${id}`);
+      setContacts((prev) => prev.filter((c) => String(c.id) !== id));
+      setPagination((prev) => ({
+        ...prev,
+        totalRecords: Math.max(0, (prev.totalRecords || 1) - 1),
+      }));
+      addToast("success", "Deleted", "Interested buyer removed.");
+      setIsDeleteModalOpen(false);
+      setContactToDelete(null);
+    } catch (err) {
+      addToast(
+        "error",
+        "Delete failed",
+        err.response?.data?.message || "Failed to delete contact"
+      );
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -352,6 +391,7 @@ const InterestedBuyersPage = ({ projectId }) => {
                   <th className="py-3 px-6">Source</th>
                   <th className="py-3 px-6">Description</th>
                   <th className="py-3 px-6">Status</th>
+                  {isAdmin ? <th className="py-3 px-6">Actions</th> : null}
                 </tr>
               </thead>
               <tbody className="text-gray-600 text-xs md:text-sm font-semibold">
@@ -448,6 +488,23 @@ const InterestedBuyersPage = ({ projectId }) => {
                         )}
                       </button>
                     </td>
+                    {isAdmin ? (
+                      <td className="py-3 px-6">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(contact)}
+                          disabled={deleteLoading === String(contact.id)}
+                          className="p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-50"
+                          title="Delete"
+                        >
+                          {deleteLoading === String(contact.id) ? (
+                            <span className="inline-block w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </button>
+                      </td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>
@@ -515,6 +572,18 @@ const InterestedBuyersPage = ({ projectId }) => {
             </div>
           </div>
         </div>
+      )}
+      {isDeleteModalOpen && contactToDelete && (
+        <DeleteModal
+          title="Delete interested buyer"
+          message={`Remove ${
+            contactToDelete.fullName?.trim() || "this buyer"
+          } from the list?`}
+          confirmText="Delete"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          isLoading={deleteLoading === String(contactToDelete.id)}
+        />
       )}
     </div>
   );

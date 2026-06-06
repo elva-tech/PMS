@@ -25,6 +25,15 @@ const getContacts = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(contacts);
 });
 
+const deleteContact = catchAsync(async (req, res) => {
+  const { contactId } = req.params;
+  await contactService.deleteContact(contactId);
+  res.status(httpStatus.OK).send({
+    status: "success",
+    message: "Contact deleted",
+  });
+});
+
 const updateContactStatus = catchAsync(async (req, res) => {
   const { contactId } = req.params;
   const { interested } = req.body;
@@ -47,6 +56,7 @@ const createPublicInterestedBuyer = catchAsync(async (req, res) => {
 module.exports = {
   createContact,
   getContacts,
+  deleteContact,
   updateContactStatus,
   createPublicInterestedBuyer,
 };

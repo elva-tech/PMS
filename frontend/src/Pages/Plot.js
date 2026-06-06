@@ -57,8 +57,8 @@ const ProjectDetailsPage = ({
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortBy, setSortBy] = useState("plotnumber");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -552,7 +552,11 @@ const ProjectDetailsPage = ({
                           {plot.plotnumber}
                         </td>
                         <td className="text-center p-4">{plot.plotsize}</td>
-                        <td className="text-center p-4">{plot.plotprice}</td>
+                        <td className="text-center p-4">
+                          {plot.plotprice != null
+                            ? `₹${Number(plot.plotprice).toLocaleString("en-IN")}`
+                            : "—"}
+                        </td>
                         <td className="text-center p-4">
                           {plot.plotdirection}
                         </td>

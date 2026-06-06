@@ -65,8 +65,12 @@ export const useUpdateProject = () => {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      const projectId = variables?.id;
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
+      }
     },
     onError: (error) => {
       console.error("Error updating project:", error);
