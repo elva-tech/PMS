@@ -10,3 +10,9 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: AI_ANALYTICS_URL
+        value: https://pms-price-ai.onrender.com
+      - key: DEAD_PLOT_AI_URL
+        value: https://pms-dead-plot.onrender.com
+      - key: DEAD_PLOT_AI_TIMEOUT_MS
+        value: "45000"

@@ -73,7 +73,7 @@ Backend + frontend (both features)
 Step	Command
 Backend	cd backend → npm run dev (:5000)
 Frontend	cd frontend → npm start
-Price AI env	AI_ANALYTICS_URL=http://127.0.0.1:8000 in backend/.env
+Price AI env	AI_ANALYTICS_URL=https://pms-price-ai.onrender.com (backend/.env + Render pms-api)
 Dead plot env	DEAD_PLOT_AI_URL=http://127.0.0.1:8001 in backend/.env
 UI	Project sidebar → Plot Health AI (/project/:id/plot-health)
 
