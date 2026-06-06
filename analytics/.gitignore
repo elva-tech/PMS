@@ -2,5 +2,5 @@
 __pycache__/
 *.pyc
 .env
-models/*.joblib
+# models/*.joblib — committed for Render deploy
 data/plots_production_export.csv
