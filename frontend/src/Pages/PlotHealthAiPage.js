@@ -246,6 +246,7 @@ export default function PlotHealthAiPage() {
                     {selected.deadProbability != null
                       ? ` · Dead probability ${(selected.deadProbability * 100).toFixed(1)}%`
                       : ""}
+                    {selected.rulesVersion ? ` · Rules v${selected.rulesVersion}` : ""}
                   </p>
                 ) : null}
               </div>
@@ -276,6 +277,9 @@ export default function PlotHealthAiPage() {
                 </div>
                 <div className="rounded border border-gray-100 px-2 py-1.5">
                   Area: {selected.features?.plotArea ?? "—"} sqft
+                </div>
+                <div className="rounded border border-gray-100 px-2 py-1.5 col-span-2">
+                  Listed: {listedLabel(selected.features?.daysUnsold)}
                 </div>
               </div>
 

@@ -2,7 +2,7 @@
 
 import os
 
-RULES_VERSION = "1.0.0"
+RULES_VERSION = "1.1.0"
 
 SLOW_DAYS = int(os.getenv("DEAD_PLOT_SLOW_DAYS", "60"))
 DEAD_DAYS = int(os.getenv("DEAD_PLOT_DEAD_DAYS", "120"))

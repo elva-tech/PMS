@@ -43,6 +43,19 @@ def is_listed_inventory(status: str) -> bool:
     return str(status or "").strip() not in ("Sold",)
 
 
+def _align_probabilities(
+    prob_by_class: dict[str, float], final_status: str, prob_dead: float
+) -> tuple[dict[str, float], float]:
+    """Displayed class % must match final status (rules can override ML)."""
+    labels = list(CLASS_LABELS)
+    if final_status == "Active":
+        return {c: (1.0 if c == "Active" else 0.0) for c in labels}, 0.0
+    base = {c: float(prob_by_class.get(c, 0.0)) for c in labels}
+    base[final_status] = max(base.get(final_status, 0.0), 0.65)
+    total = sum(base.values()) or 1.0
+    return {c: round(base[c] / total, 4) for c in labels}, float(prob_dead)
+
+
 def _risk_band(prob_dead: float, classification: str) -> str:
     if classification == "Dead" or prob_dead >= 0.7:
         return "high"
@@ -113,6 +126,10 @@ def analyze_plot(raw: dict, *, artifact: dict | None = None) -> dict[str, Any]:
             final_status = "Active"
         else:
             final_status = _merge_status(rule_result["ruleStatus"], ml_status)
+
+    prob_by_class, prob_dead = _align_probabilities(
+        prob_by_class, final_status, prob_dead
+    )
 
     reasons, actions = _insights_for_response(rule_result, final_status)
     risk_band = _risk_band(float(prob_dead), final_status)
