@@ -19,4 +19,5 @@ module.exports = {
     secret: process.env.JWT_SECRET || "your-secret-key",
     accessExpirationMinutes: process.env.JWT_ACCESS_EXPIRATION_MINUTES || 30,
   },
+  assistant: require("./assistant.config"),
 };
