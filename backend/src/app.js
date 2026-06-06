@@ -12,6 +12,7 @@ const documentRoutes = require("./routes/document.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const publicRoutes = require("./routes/public.routes");
 const shareQuoteRoutes = require("./routes/shareQuote.routes");
+const assistantRoutes = require("./routes/assistant.routes");
 const { errorConverter, errorHandler } = require("./middleware/error");
 const { corsOriginList, applyCorsHeaders } = require("./utils/corsOrigins");
 
@@ -96,6 +97,7 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/documents", documentRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/share-quote", shareQuoteRoutes);
+app.use("/api/v1/assistant", assistantRoutes);
 
 app.all("*", (req, res, next) => {
   const err = new Error(`Can't find ${req.originalUrl} on this server!`);

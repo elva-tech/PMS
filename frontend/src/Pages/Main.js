@@ -19,6 +19,7 @@ import ShareQuotePage from "./ShareQuotePage";
 import Sidebar from "../Components/Sidebar";
 import BreadcrumbNav from "../Components/BreadcrumbNav";
 import axiosInstance from "../utils/axiosInstance";
+import { ProjectAssistantFab } from "../projectAssistant";
 
 const AddSalePage = lazy(() =>
   import(/* webpackChunkName: "add-sale" */ "./AddSalePage")
@@ -344,6 +345,10 @@ const PropertyDetailsPage = () => {
           )}
         </div>
       </div>
+
+      {id ? (
+        <ProjectAssistantFab projectId={id} projectName={projectName} />
+      ) : null}
     </div>
   );
 };
