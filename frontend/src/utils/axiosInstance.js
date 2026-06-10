@@ -44,7 +44,9 @@ axiosInstance.interceptors.response.use(
 
     config.__retryCount = config.__retryCount || 0;
 
+    const isAssistantChat = String(config?.url || "").includes("/assistant/chat");
     const shouldRetry =
+      !isAssistantChat &&
       (!response || response.status >= 500) &&
       config.__retryCount < MAX_RETRIES;
 

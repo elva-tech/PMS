@@ -16,3 +16,7 @@ services:
         value: https://pms-dead-plot.onrender.com
       - key: DEAD_PLOT_AI_TIMEOUT_MS
         value: "45000"
+      - key: ADMIN_ASSISTANT_URL
+        value: https://pms-admin-assistant.onrender.com
+      - key: ADMIN_ASSISTANT_TIMEOUT_MS
+        value: "45000"

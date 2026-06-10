@@ -1,12 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { Bot, Send, Trash2, X } from "lucide-react";
-import { useProjectAnalytics } from "../hooks/useAnalyticsHooks";
-import { usePlotHealthAi } from "../hooks/useDeadPlotHooks";
 import { PRESET_QUESTIONS } from "./constants";
-import { buildProjectSnapshot } from "./buildProjectSnapshot";
-import { resolveAssistantReply } from "./resolveAssistantReply";
 import { useProjectAssistantChat } from "./useProjectAssistantChat";
 import { useAssistantConfig } from "./useAssistantConfig";
 import AssistantMessage from "./AssistantMessage";
@@ -17,18 +13,8 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
   const inputRef = useRef(null);
   const { data: brand } = useAssistantConfig();
 
-  const analytics = useProjectAnalytics(projectId);
-  const { data: plotHealth, isLoading: healthLoading } = usePlotHealthAi(projectId);
-
-  const snapshot = useMemo(
-    () => buildProjectSnapshot(analytics, plotHealth),
-    [analytics, plotHealth]
-  );
-
-  const { messages, isTyping, sendUserMessage, clearChat } = useProjectAssistantChat(projectId);
-
-  const replyFor = (question) => () =>
-    resolveAssistantReply({ question, snapshot, projectId, brand });
+  const { messages, isTyping, sendUserMessage, clearChat } =
+    useProjectAssistantChat(projectId);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,9 +31,9 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
 
   const handleSend = (text) => {
     const value = (text ?? input).trim();
-    if (!value || isTyping || analytics.isLoading) return;
+    if (!value || isTyping) return;
     if (text == null) setInput("");
-    sendUserMessage(value, replyFor(value));
+    sendUserMessage(value);
   };
 
   const showWelcome = messages.length === 0;
@@ -76,7 +62,7 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
               <div className="min-w-0 flex-1">
                 <h2 className="font-semibold text-base truncate">{assistantName}</h2>
                 <p className="text-xs text-blue-100 truncate">
-                  {projectName || snapshot.projectName} · {brand?.tagline}
+                  {projectName || "This project"} · {brand?.tagline}
                 </p>
               </div>
             </div>
@@ -112,7 +98,7 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
                 Ask anything about this project
               </div>
               <p className="text-gray-600 text-xs leading-relaxed">
-                Revenue, inventory, buyers, and plot health for this project.
+                Plots, revenue, payments, buyers, and plot health — powered by Gemini.
               </p>
             </div>
           ) : null}
@@ -146,7 +132,7 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
                   <button
                     key={q.id}
                     type="button"
-                    disabled={analytics.isLoading || healthLoading}
+                    disabled={isTyping}
                     onClick={() => handleSend(q.label)}
                     className="text-left text-sm px-3 py-2.5 rounded-xl border border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50 disabled:opacity-50 transition break-words"
                   >
@@ -161,9 +147,6 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
         </div>
 
         <div className="shrink-0 border-t border-gray-100 p-3 bg-white min-w-0">
-          {(analytics.isLoading || healthLoading) && showWelcome ? (
-            <p className="text-xs text-gray-500 mb-2">Loading project data…</p>
-          ) : null}
           <form
             className="flex gap-2 min-w-0"
             onSubmit={(e) => {
@@ -177,20 +160,23 @@ export default function ProjectAssistantModal({ projectId, projectName, onClose 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about revenue, plots, buyers…"
-              disabled={isTyping || analytics.isLoading}
+              disabled={isTyping}
               className="flex-1 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 disabled:bg-gray-50"
             />
             <button
               type="submit"
-              disabled={!input.trim() || isTyping || analytics.isLoading}
+              disabled={!input.trim() || isTyping}
               className="shrink-0 w-11 h-11 rounded-xl bg-blue-700 text-white flex items-center justify-center hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
           <p className="text-[10px] text-gray-400 mt-2 text-center truncate">
-            Scoped to this project ·{" "}
-            <Link to={`/project/${projectId}/plot-health`} className="text-blue-600 hover:underline">
+            Admin only · Scoped to this project ·{" "}
+            <Link
+              to={`/project/${projectId}/plot-health`}
+              className="text-blue-600 hover:underline"
+            >
               Plot Health AI
             </Link>
           </p>
